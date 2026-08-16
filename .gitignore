@@ -3,6 +3,8 @@
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+.pytest_cache/
 data/papers/
 data/cache/
+data/session_evidence/
 results/

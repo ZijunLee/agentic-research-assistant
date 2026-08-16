@@ -7,6 +7,5 @@ dependencies:
   - python=3.11
   - pip
   - pip:
-      # Runtime dependencies will be added during implementation.
-      # Keep this file synchronized with the actual working environment.
-      []
+      # Phase 1 uses only pytest beyond the Python standard library.
+      - pytest>=8,<9

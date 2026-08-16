@@ -124,3 +124,61 @@ Date: 2026-08-16
 - make the first Git commit
 - open the repository as a Codex Desktop project
 - ask Codex to read the frozen design documents before modifying code
+
+---
+
+### 2026-08-16 — Phase 1 contracts and package scaffolding
+
+**Codex / AI-assisted work**
+- Created the lightweight Python package structure without an agent framework.
+- Added dependency-free typed configuration, scientific evidence/claim schemas,
+  provider and tool protocols, and execution trace/failure contracts.
+- Encoded approved invariants including one-based evidence pages, separate base
+  and session evidence, RRF retrieval configuration, and two verifier calls total.
+- Added minimal unit tests for configuration, schemas, interfaces, traces, and
+  failure behavior.
+
+**Human decisions / review**
+- Approved a lightweight custom Python orchestration loop for a later phase.
+- Froze a configurable single-provider abstraction and configurable local
+  sentence-transformers embeddings without selecting concrete models.
+- Required runtime literature expansion to remain isolated from the frozen base
+  corpus and deferred ML dataset selection to a separate approval.
+- Approved the Phase 1 scope and explicitly excluded API, PDF, embedding, LLM,
+  orchestration, and ML implementations.
+
+**Validation**
+- Ran the Phase 1 suite with Python 3.11.15 and pytest 8.4.2 in the dedicated
+  `l3s_agent_311` Conda environment: 17 tests passed.
+- These unit-test results validate software contracts only and are not
+  scientific or system-evaluation metrics.
+
+**Known issues / next steps**
+- Concrete LLM and embedding models remain intentionally unset.
+- The solar-generation dataset remains unapproved and unimplemented.
+- All external tools and the two-agent orchestration loop remain future work.
+
+---
+
+### 2026-08-17 — Phase 1 trace and verifier contract corrections
+
+**Codex / AI-assisted work**
+- Made session evidence opt-in and added validation requiring a concrete session ID.
+- Extended execution traces to retain tool results, produced evidence IDs, and failures.
+- Extended verifier traces to retain complete structured verification results.
+- Added simple validation for inconsistent PASS results and unknown finding claim IDs.
+- Clarified multimodal provider/tool layering and provisional execution-budget values.
+
+**Human decisions / review**
+- Selected the six corrections after a read-only Phase 1 review.
+- Kept the existing configuration structure, ML approval placeholder, generic mappings,
+  provisional search/tool limits, and dependency set unchanged.
+
+**Validation**
+- The corrected suite contains 23 passing unit tests in `l3s_agent_311`.
+- Python compilation, dependency consistency, and Git whitespace checks pass.
+
+**Known issues / next steps**
+- Retrieval implementations must use the shared session-scope validator.
+- Literature, PDF, retrieval, provider, orchestration, and ML implementations remain
+  outside Phase 1.

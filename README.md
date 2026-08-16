@@ -6,9 +6,12 @@ The goal is to build an agentic scientific-research assistant that can automatic
 
 ## Status
 
-**Design frozen; implementation not started yet.**
+**Phase 1 contracts and package scaffolding implemented.**
 
-The current repository contains the architecture and evaluation specification that the implementation should follow.
+The repository currently contains the frozen design plus typed configuration,
+schemas, provider/tool interfaces, trace/failure contracts, and unit tests. It
+does not yet contain literature, PDF, retrieval, LLM, orchestration, or ML
+implementations.
 
 ## Core design
 
@@ -96,6 +99,45 @@ A reproducible environment definition is stored in:
 environment.yml
 ```
 
+Create or update the dedicated environment, then run the Phase 1 tests:
+
+```bash
+conda env update -n l3s_agent_311 -f environment.yml
+conda run -n l3s_agent_311 python -m pytest
+```
+
+Phase 1 adds only `pytest`; all package code otherwise uses the Python standard
+library.
+
+## Phase 1 configuration
+
+Non-secret defaults are stored in `config/default.toml`. Concrete LLM and local
+sentence-transformers model names are intentionally unset. Configure them later
+through TOML or the documented `L3S_*` environment variables after model
+selection is approved.
+
+The configuration freezes these boundaries:
+
+- BM25 and dense retrieval combined by Reciprocal Rank Fusion
+- chunks never crossing PDF page boundaries
+- exactly two verifier calls at most
+- separate frozen base-corpus and temporary session-evidence paths
+- no ML dataset until separately approved
+
+The Python contracts live under `src/l3s_agent/`:
+
+- `models.py`: papers, evidence, claims, drafts, and verification data
+- `interfaces.py`: configurable provider and Research Agent tool protocols
+- `tracing.py`: tool/verifier traces and structured failures
+- `config.py`: TOML loading, environment overrides, and invariant checks
+
+`PageInspectionTool` is the Research-Agent-facing page-inspection capability.
+It uses `LLMProvider.inspect_page` as the lower-level multimodal provider call;
+the provider method is not exposed to the Research Agent as a separate tool.
+
+The configured limits of two search rounds and twelve tool calls are provisional
+MVP safety limits for bounded execution, not scientifically justified values.
+
 ## Secrets
 
 API keys and local secrets should be stored in:
@@ -135,6 +177,5 @@ The implementation is expected to include:
 
 ## Running the project
 
-Implementation commands will be added after the first working version is built.
-
-For now, this repository is the frozen design baseline for Codex-assisted implementation.
+There is no runtime CLI yet. It will be added after the approved implementation
+phases introduce working tools and the lightweight custom orchestration loop.

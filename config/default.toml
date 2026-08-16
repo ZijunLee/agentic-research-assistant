@@ -1,0 +1,43 @@
+[llm]
+# Configure these values locally or with L3S_LLM_* environment variables.
+provider = ""
+text_model = ""
+verifier_model = ""
+multimodal_model = ""
+
+[embedding]
+# Must name a local sentence-transformers model before dense retrieval is run.
+model = ""
+local_only = true
+
+[retrieval]
+lexical_backend = "bm25"
+dense_enabled = true
+fusion = "rrf"
+rrf_k = 60
+
+[chunking]
+target_min_tokens = 500
+target_max_tokens = 800
+overlap_tokens = 100
+cross_page_boundaries = false
+
+[budgets]
+# Provisional MVP safety limits for bounded execution. These values are not
+# scientifically justified and may be revised after runtime evaluation.
+max_verifier_calls = 2
+max_search_rounds = 2
+max_tool_calls = 12
+
+[paths]
+base_corpus_manifest = "data/manifests/corpus.json"
+base_index_dir = "data/cache/base_index"
+session_evidence_dir = "data/cache/sessions"
+trace_dir = "results/traces"
+result_dir = "results"
+
+[ml_dataset]
+# Dataset selection is intentionally blocked pending separate scientific approval.
+approved = false
+adapter = ""
+path = ""
