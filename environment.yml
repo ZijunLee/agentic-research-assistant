@@ -1,0 +1,12 @@
+name: l3s_agent_311
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      # Runtime dependencies will be added during implementation.
+      # Keep this file synchronized with the actual working environment.
+      []
