@@ -182,3 +182,148 @@ Date: 2026-08-16
 - Retrieval implementations must use the shared session-scope validator.
 - Literature, PDF, retrieval, provider, orchestration, and ML implementations remain
   outside Phase 1.
+
+---
+
+### 2026-08-17 — Phase 2 automated literature corpus construction
+
+**Codex / AI-assisted work**
+- Implemented a bounded OpenAlex Works client with required-key handling, retries,
+  response caching/checksums, metadata normalization, and offline mock testing.
+- Implemented deterministic multi-source relevance filtering/ranking across titles,
+  reconstructed abstracts, OpenAlex topics/keywords, and matched-query provenance.
+- Added DOI, normalized-title, and conservative fuzzy author/year deduplication with
+  recorded provenance and merged repeated-query matches.
+- Added OA PDF downloading, byte-level PDF validation, SHA-256 calculation,
+  deterministic download backfill, and per-run PDF directories.
+- Added stable manifest serialization with candidate decisions, score breakdowns,
+  failures, exact request parameters, overwrite protection, and completeness status.
+- Added the Phase 2 CLI and offline test fixtures without implementing PDF parsing,
+  chunking, embeddings, RAG, vision, agent orchestration, or ML.
+- Corrected OpenAlex search ordering to use the documented default relevance order
+  and moved API-key authentication from the URL to a bearer header.
+- Added credential-safe OpenAlex exceptions that suppress credential-bearing HTTP
+  exception chains and regression coverage for strings, reprs, tracebacks, cached
+  metadata, error records, and manifests.
+
+**Human decisions / review**
+- Froze the scientific topic, solar/wind modalities, work types, English-language
+  policy, no-hard-year-cutoff policy, OA PDF requirement, 8/10/12 corpus bounds,
+  35/35/20/5/5 ranking weights, and conservative fuzzy threshold.
+- Required rule-driven selection without modality, conflict, regional, or evaluation
+  quotas and required frozen base/runtime-session separation.
+- Approved `httpx>=0.27,<1` as the sole new runtime dependency.
+
+**Validation**
+- The complete offline suite contains 43 passing tests in `l3s_agent_311`.
+- Python compilation, dependency consistency, and Git whitespace checks pass.
+- The live OpenAlex corpus build was not run because `OPENALEX_API_KEY` was not
+  configured; no papers, citations, or scientific results were fabricated.
+
+**Known issues / next steps**
+- Configure `OPENALEX_API_KEY` in the environment before the first live build.
+- Manually inspect the automatically generated corpus only after collection; do not
+  replace its papers manually when creating evaluation labels.
+- PDF parsing and indexing remain a later phase.
+
+---
+
+### 2026-08-17 — Sanitized OpenAlex transport diagnostics
+
+**Codex / AI-assisted work**
+- Retained only the final HTTPX transport exception class name and completed attempt
+  count when bounded OpenAlex retries are exhausted.
+- Added offline regression coverage for repeated timeouts, credential-safe exception
+  rendering and records, and post-200 cache failures that must not trigger retries.
+
+**Human decisions / review**
+- Approved the minimal diagnostic change without altering request parameters, HTTP
+  client construction, timeouts, backoff, redirects, caching, or corpus logic.
+
+**Validation**
+- The complete offline suite contains 47 passing tests in the dedicated Python 3.11
+  environment; compilation, dependency consistency, and Git whitespace checks pass.
+
+---
+
+### 2026-08-17 — Phase 2 PDF acquisition and relevance precision corrections
+
+**Codex / AI-assisted work**
+- Added OpenAlex `has_content`/`content_urls` metadata and credential-safe content-PDF
+  acquisition ahead of best and alternate OA-location URLs.
+- Preserved PDF byte validation, SHA-256 generation, OA eligibility, deterministic
+  backfill, ranking weights, and accessibility scoring.
+- Added deterministic three-axis eligibility requiring renewable context, a physical
+  weather/climate factor, a renewable-energy outcome, and a relationship linking them.
+- Prevented matched queries, climate-mitigation language, resource-only forecasts, and
+  generic efficiency/performance language from independently satisfying eligibility.
+- Added a saved live-metadata regression fixture for the approved 24-retained/8-rejected
+  result and offline tests for priority, fallback, secret safety, and score stability.
+
+**Human decisions / review**
+- Approved the acquisition priority and scientific-precision rule without embeddings,
+  LLM classification, relevance-weight changes, or a lower corpus minimum.
+
+**Validation**
+- The complete offline suite contains 62 passing tests in the dedicated Python 3.11
+  environment.
+- No live OpenAlex or PDF requests were made during implementation.
+
+---
+
+### 2026-08-17 — Bounded Phase 2 discovery expansion
+
+**Codex / AI-assisted work**
+- Added deterministic focused-query expansion when the initial pool yields fewer
+  than eight validated PDFs, in ten-candidate increments up to 90 unique works.
+- Preserved first-admission scientific scores while retaining later duplicate-query
+  retrieval provenance and recomputing only the deterministic final ordering.
+- Recorded expansion triggers, query pages, response checksums, admission IDs,
+  duplicate hits, acquisition outcomes, cumulative counts, and stop reasons in the
+  reproducible corpus manifest.
+- Added offline regression coverage for the 8/9-PDF no-expansion boundary, target
+  completion, unique-budget and search-space exhaustion, deduplication, provenance,
+  acquisition backfill, and unchanged scoring behavior.
+
+**Human decisions / review**
+- Froze the initial/increment/maximum unique-candidate budgets at 50/10/90, retained
+  the 8/10 corpus thresholds, and approved three ordered focused fallback queries.
+- Required scores to remain independent of later PDF-acquisition failures and kept
+  all scientific eligibility, OA, ranking, PDF-validation, and authentication rules
+  unchanged.
+
+**Validation**
+- No live OpenAlex or PDF requests were made during implementation.
+
+---
+
+### 2026-08-17 — Phase 2 base corpus frozen
+
+**Codex / AI-assisted work**
+- Promoted the approved v3 candidate manifest byte-for-byte to the official
+  Git-trackable `data/manifests/base_corpus.json`; no discovery, ranking,
+  selection, download, checksum, or provenance field was changed.
+- Added a narrow ignore rule for candidate manifests while leaving the official
+  base manifest trackable.
+- Recorded the final corpus composition and integrity audit in the repository
+  documentation.
+
+**Human decisions / review**
+- Approved the automatically constructed ten-paper corpus as the frozen base:
+  four solar, four wind, and two cross-modality/general papers.
+- Classified five papers as forecasting-focused and five as climate-impact,
+  variability, performance, or reliability-focused.
+- Recorded `W3126094341` as marginal because its implemented forecasting
+  experiment relies mainly on historical PV output; it must not serve as
+  primary gold evidence for meteorological-effect claims.
+- Kept OpenAlex-hosted content as opportunistic after HTTP 401 responses during
+  development; publisher/repository OA fallback remained necessary.
+
+**Corpus construction record**
+- The initial pool yielded six validated PDFs.
+- Three focused expansion rounds reached 80 unique candidates and ten validated
+  PDFs, stopping with `target_reached`.
+- All ten selected local PDFs existed, were readable, and matched their manifest
+  SHA-256 values.
+- Candidate manifests remain local development artifacts; the official manifest
+  is `data/manifests/base_corpus.json`.

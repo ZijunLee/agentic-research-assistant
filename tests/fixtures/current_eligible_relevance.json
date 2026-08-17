@@ -1,0 +1,1034 @@
+[
+  {
+    "rank": 1,
+    "openalex_id": "W4307479757",
+    "title": "Cost, environmental impact, and resilience of renewable energy under a changing climate: a review",
+    "abstract": "Abstract Energy derived from fossil fuels contributes significantly to global climate change, accounting for more than 75% of global greenhouse gas emissions and approximately 90% of all carbon dioxide emissions. Alternative energy from renewable sources must be utilized to decarbonize the energy sector. However, the adverse effects of climate change, such as increasing temperatures, extreme winds, rising sea levels, and decreased precipitation, may impact renewable energies. Here we review renewable energies with a focus on costs, the impact of climate on renewable energies, the impact of renewable energies on the environment, economy, and on decarbonization in different countries. We focus on solar, wind, biomass, hydropower, and geothermal energy. We observe that the price of solar photovoltaic energy has declined from $0.417 in 2010 to $0.048/kilowatt-hour in 2021. Similarly, prices have declined by 68% for onshore wind, 60% for offshore wind, 68% for concentrated solar power, and 14% for biomass energy. Wind energy and hydropower production could decrease by as much as 40% in some regions due to climate change, whereas solar energy appears the least impacted energy source. Climate change can also modify biomass productivity, growth, chemical composition, and soil microbial communities. Hydroelectric power plants are the most damaging to the environment; and solar photovoltaics must be carefully installed to reduce their impact. Wind turbines and biomass power plants have a minimal environmental impact; therefore, they should be implemented extensively. Renewable energy sources could decarbonize 90% of the electricity industry by 2050, drastically reducing carbon emissions, and contributing to climate change mitigation. By establishing the zero carbon emission decarbonization concept, the future of renewable energy is promising, with the potential to replace fossil fuel-derived energy and limit global temperature rise to 1.5 °C by 2050.",
+    "topics": [
+      "Integrated Energy Systems Optimization",
+      "Hybrid Renewable Energy Systems",
+      "Photovoltaic Systems and Sustainability"
+    ],
+    "keywords": [
+      "Renewable energy",
+      "Environmental science",
+      "Greenhouse gas",
+      "Climate change mitigation",
+      "Energy development",
+      "Climate change",
+      "Wind power",
+      "Hydropower",
+      "Environmental impact of the energy industry",
+      "Fossil fuel",
+      "Natural resource economics",
+      "Environmental protection",
+      "Environmental engineering",
+      "Energy policy",
+      "Waste management",
+      "Engineering",
+      "Ecology",
+      "Economics"
+    ],
+    "queries": [
+      "climate variability renewable energy generation",
+      "weather climate impacts renewable energy generation"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 2,
+    "openalex_id": "W4220773259",
+    "title": "Sustainable Energy Transition for Renewable and Low Carbon Grid Electricity Generation and Supply",
+    "abstract": "The greatest sustainability challenge facing humanity today is the greenhouse gas emissions and the global climate change with fossil fuels led by coal, natural gas and oil contributing 61.3% of global electricity generation in the year 2020. The cumulative effect of the Stockholm, Rio, and Johannesburg conferences identified sustainable energy development (SED) as a very important factor in the sustainable global development. This study reviews energy transition strategies and proposes a roadmap for sustainable energy transition for sustainable electricity generation and supply in line with commitments of the Paris Agreement aimed at reducing greenhouse gas emissions and limiting the rise in global average temperature to 1.5°C above the preindustrial level. The sustainable transition strategies typically consist of three major technological changes namely, energy savings on the demand side, generation efficiency at production level and fossil fuel substitution by various renewable energy sources and low carbon nuclear. For the transition remain technically and economically feasible and beneficial, policy initiatives are necessary to steer the global electricity transition towards a sustainable energy and electricity system. Large-scale renewable energy adoption should include measures to improve efficiency of existing nonrenewable sources which still have an important cost reduction and stabilization role. A resilient grid with advanced energy storage for storage and absorption of variable renewables should also be part of the transition strategies. From this study, it was noted that whereas sustainable development has social, economic, and environmental pillars, energy sustainability is best analysed by five-dimensional approach consisting of environmental, economic, social, technical, and institutional/political sustainability to determine resource sustainability. The energy transition requires new technology for maximum use of the abundant but intermittent renewable sources a sustainable mix with limited nonrenewable sources optimized to minimize cost and environmental impact but maintained quality, stability, and flexibility of an electricity supply system. Technologies needed for the transition are those that use conventional mitigation, negative emissions technologies which capture and sequester carbon emissions and finally technologies which alter the global atmospheric radiative energy budget to stabilize and reduce global average temperature. A sustainable electricity system needs facilitating technology, policy, strategies and infrastructure like smart grids, and models with an appropriate mix of both renewable and low carbon energy sources.",
+    "topics": [
+      "Global Energy and Sustainability Research",
+      "Hybrid Renewable Energy Systems",
+      "Integrated Energy Systems Optimization"
+    ],
+    "keywords": [
+      "Renewable energy",
+      "Greenhouse gas",
+      "Energy transition",
+      "Natural resource economics",
+      "Sustainability",
+      "Fossil fuel",
+      "Electricity generation",
+      "Environmental economics",
+      "Energy development",
+      "Climate change mitigation",
+      "Sustainable development",
+      "Business",
+      "Environmental science",
+      "Economics",
+      "Engineering",
+      "Waste management"
+    ],
+    "queries": [
+      "climate variability renewable energy generation",
+      "extreme weather renewable energy reliability",
+      "weather climate impacts renewable energy generation"
+    ],
+    "expected_eligible": false
+  },
+  {
+    "rank": 3,
+    "openalex_id": "W2153263933",
+    "title": "Wind Power Forecasts Using Gaussian Processes and Numerical Weather Prediction",
+    "abstract": "Since wind at the earth's surface has an intrinsically complex and stochastic nature, accurate wind power forecasts are necessary for the safe and economic use of wind energy. In this paper, we investigated a combination of numeric and probabilistic models: a Gaussian process (GP) combined with a numerical weather prediction (NWP) model was applied to wind-power forecasting up to one day ahead. First, the wind-speed data from NWP was corrected by a GP, then, as there is always a defined limit on power generated in a wind turbine due to the turbine controlling strategy, wind power forecasts were realized by modeling the relationship between the corrected wind speed and power output using a censored GP. To validate the proposed approach, three real-world datasets were used for model training and testing. The empirical results were compared with several classical wind forecast models, and based on the mean absolute error (MAE), the proposed model provides around 9% to 14% improvement in forecasting accuracy compared to an artificial neural network (ANN) model, and nearly 17% improvement on a third dataset which is from a newly-built wind farm for which there is a limited amount of training data.",
+    "topics": [
+      "Energy Load and Power Forecasting",
+      "Wind Energy Research and Development",
+      "Solar Radiation and Photovoltaics"
+    ],
+    "keywords": [
+      "Wind power",
+      "Numerical weather prediction",
+      "Wind power forecasting",
+      "Wind speed",
+      "Turbine",
+      "Probabilistic logic",
+      "Artificial neural network",
+      "Probabilistic forecasting",
+      "Meteorology",
+      "Computer science",
+      "Gaussian process",
+      "Gaussian",
+      "Weather forecasting",
+      "Electric power system",
+      "Power (physics)",
+      "Engineering",
+      "Machine learning",
+      "Artificial intelligence"
+    ],
+    "queries": [
+      "weather wind power generation forecasting"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 4,
+    "openalex_id": "W2067718885",
+    "title": "A Review of Wind Power Forecasting Models",
+    "abstract": "Rapid growth in wind power, as well as increase on wind generation, requires serious research in various fields. Because wind power is weather dependent, it is variable and intermittent over various time-scales. Thus accurate forecasting of wind power is recognized as a major contribution for reliable large-scale wind power integration. Wind power forecasting methods can be used to plan unit commitment, scheduling and dispatch by system operators, and maximize profit by electricity traders. In addition, a number of wind power models have been developed internationally, such as WPMS, WPPT, Prediktor, ARMINES, Previento, WPFS Ver1.0 etc. This paper provides a review on comparative analysis on the foremost forecasting models, associated with wind speed and power, based on physical methods, statistical methods, hybrid methods over different time-scales. Furthermore, this paper gives emphasis on the accuracy of these models and the source of major errors, thus problems and challenges associated with wind power prediction are presented.",
+    "topics": [
+      "Energy Load and Power Forecasting",
+      "Electric Power System Optimization",
+      "Solar Radiation and Photovoltaics"
+    ],
+    "keywords": [
+      "Wind power forecasting",
+      "Wind power",
+      "Electricity",
+      "Electric power system",
+      "Wind speed",
+      "Computer science",
+      "Meteorology",
+      "Engineering",
+      "Power (physics)",
+      "Electrical engineering",
+      "Geography"
+    ],
+    "queries": [
+      "weather wind power generation forecasting"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 5,
+    "openalex_id": "W2933024154",
+    "title": "A review on the complementarity of renewable energy sources: Concept, metrics, application and future research directions",
+    "abstract": "Global and regional trends indicate that energy demand will soon be covered by a widespread deployment of renewable energy sources. However, the weather and climate driven energy sources are characterized by a significant spatial and temporal variability. One of the commonly mentioned solutions to overcome the mismatch between demand and supply provided by renewable generation is a hybridization of two or more energy sources into a single power station (like wind-solar, solar-hydro or solar-wind-hydro). The operation of hybrid energy sources is based on the complementary nature of renewable sources. Considering the growing importance of such systems and increasing number of research activities in this area this paper presents a comprehensive review of studies which investigated, analyzed, quantified and utilized the effect of temporal, spatial and spatiotemporal complementarity between renewable energy sources. The review starts with a brief overview of available research papers, formulates detailed definition of major concepts, summarizes current research directions and ends with prospective future research activities. The review provides a chronological and spatial information with regard to the studies on the complementarity concept.",
+    "topics": [
+      "Hybrid Renewable Energy Systems",
+      "Energy and Environment Impacts",
+      "Integrated Energy Systems Optimization"
+    ],
+    "keywords": [
+      "Renewable energy",
+      "Complementarity (molecular biology)",
+      "Software deployment",
+      "Computer science",
+      "Wind power",
+      "Environmental science",
+      "Solar energy",
+      "Environmental economics",
+      "Engineering",
+      "Electrical engineering",
+      "Economics"
+    ],
+    "queries": [
+      "climate variability renewable energy generation",
+      "extreme weather renewable energy reliability"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 6,
+    "openalex_id": "W3006420689",
+    "title": "Quantifying the impacts of climate change and extreme climate events on energy systems",
+    "abstract": null,
+    "topics": [
+      "Integrated Energy Systems Optimization",
+      "Water-Energy-Food Nexus Studies",
+      "Electric Power System Optimization"
+    ],
+    "keywords": [
+      "Extreme weather",
+      "Climate change",
+      "Environmental science",
+      "Renewable energy",
+      "Meteorology",
+      "Climatology",
+      "Environmental resource management",
+      "Engineering",
+      "Geography"
+    ],
+    "queries": [
+      "extreme weather renewable energy reliability",
+      "weather climate impacts renewable energy generation"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 7,
+    "openalex_id": "W1984703120",
+    "title": "Current methods and advances in forecasting of wind power generation",
+    "abstract": null,
+    "topics": [
+      "Energy Load and Power Forecasting",
+      "Electric Power System Optimization",
+      "Integrated Energy Systems Optimization"
+    ],
+    "keywords": [
+      "Wind power",
+      "Wind power forecasting",
+      "Benchmarking",
+      "Downscaling",
+      "Electricity generation",
+      "Computer science",
+      "Grid",
+      "Electric power system",
+      "Electricity",
+      "Power system simulation",
+      "Power (physics)",
+      "Reliability engineering",
+      "Meteorology",
+      "Engineering",
+      "Electrical engineering",
+      "Economics"
+    ],
+    "queries": [
+      "weather solar power generation forecasting",
+      "weather wind power generation forecasting"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 8,
+    "openalex_id": "W3089230449",
+    "title": "Short-Term Photovoltaic Power Forecasting Using an LSTM Neural Network and Synthetic Weather Forecast",
+    "abstract": "In this paper, a forecasting algorithm is proposed to predict photovoltaic (PV) power generation using a long short term memory (LSTM) neural network (NN). A synthetic weather forecast is created for the targeted PV plant location by integrating the statistical knowledge of historical solar irradiance data with the publicly available type of sky forecast of the host city. To achieve this, a K-means algorithm is used to classify the historical irradiance data into dynamic type of sky groups that vary from hour to hour in the same season. In other words, the types of sky are defined for each hour uniquely using different levels of irradiance based on the hour of the day and the season. This can mitigate the performance limitations of using fixed type of sky categories by translating them into dynamic and numerical irradiance forecast using historical irradiance data. The proposed synthetic weather forecast is proved to embed the statistical features of the historical weather data, which results in a significant improvement in the forecasting accuracy. The performance of the proposed model is investigated using different intraday horizon lengths in different seasons. It is shown that using the synthetic irradiance forecast can achieve up to 33% improvement in accuracy in comparison to that when an hourly categorical type of sky forecast is used, and up to 44.6% in comparison to that when a daily type of sky forecast is used. This highlights the significance of utilizing the proposed synthetic forecast, and promote a more efficient utilization of the publicly available type of sky forecast to achieve a more reliable PV generation prediction. Moreover, the superiority of the LSTM NN with the proposed features is verified by investigating other machine learning engines, namely the recurrent neural network (RNN), the generalized regression neural network (GRNN) and the extreme learning machine (ELM).",
+    "topics": [
+      "Solar Radiation and Photovoltaics",
+      "Photovoltaic System Optimization Techniques",
+      "Solar Thermal and Photovoltaic Systems"
+    ],
+    "keywords": [
+      "Irradiance",
+      "Sky",
+      "Categorical variable",
+      "Computer science",
+      "Photovoltaic system",
+      "Solar irradiance",
+      "Artificial neural network",
+      "Meteorology",
+      "Term (time)",
+      "Artificial intelligence",
+      "Machine learning",
+      "Geography",
+      "Engineering"
+    ],
+    "queries": [
+      "weather solar power generation forecasting"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 9,
+    "openalex_id": "W2949062675",
+    "title": "Short-Term Photovoltaic Power Forecasting Based on Long Short Term Memory Neural Network and Attention Mechanism",
+    "abstract": "Photovoltaic power generation forecasting is an important topic in the field of sustainable power system design, energy conversion management, and smart grid construction. Difficulties arise while the generated PV power is usually unstable due to the variability of solar irradiance, temperature, and other meteorological factors. In this paper, a hybrid ensemble deep learning framework is proposed to forecast short-term photovoltaic power generation in a time series manner. Two LSTM neural networks are employed working on temperature and power outputs forecasting, respectively. The forecasting results are flattened and combined with a fully connected layer to enhance forecasting accuracy. Moreover, we adopted the attention mechanism for the two LSTM neural networks to adaptively focus on input features that are more significant in forecasting. Comprehensive experiments are conducted with recently collected real-world photovoltaic power generation datasets. Three error metrics were adopted to compare the forecasting results produced by attention LSTM model with state-of-art methods, including the persistent model, the auto-regressive integrated moving average model with exogenous variable (ARIMAX), multi-layer perceptron (MLP), and the traditional LSTM model in all four seasons and various forecasting horizons to show the effectiveness and robustness of the proposed method.",
+    "topics": [
+      "Energy Load and Power Forecasting",
+      "Solar Radiation and Photovoltaics",
+      "Power Systems and Renewable Energy"
+    ],
+    "keywords": [
+      "Term (time)",
+      "Computer science",
+      "Artificial neural network",
+      "Photovoltaic system",
+      "Mechanism (biology)",
+      "Artificial intelligence",
+      "Engineering",
+      "Electrical engineering"
+    ],
+    "queries": [
+      "meteorological variables solar photovoltaic power generation"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 10,
+    "openalex_id": "W3001937224",
+    "title": "Role of energy storage systems in energy transition from fossil fuels to renewables",
+    "abstract": "Abstract We present the role of heat and electricity storage systems on the rapid rise of renewable energy resources and the steady fall of fossil fuels. The upsurge in renewable resources and slump in fossil fuel consumptions is attributed to sustainable energy systems, energy transition, climate change, and clean energy initiatives. The fast growth of renewables brings new design and operational challenges to transition towards 100% renewable energy goal. Energy storage systems can help ride‐through energy transition from hydrocarbon fuels to renewable sources. Nuclear fusion and artificial photosynthesis are the ultimate Holy Grails for permanent clean energy solutions. Plants harvest light and store it in chemical energy to regulate the food supply chain that may be a guideline for an energy transition from fossil fuels to renewables. Heat and electricity storage devices can account for the periodic nature of solar and wind energy sources. Solar thermal systems for water and space heating are also a viable solution for subzero temperature areas. This study presents the transition of world's energy prospect from fossil fuels to renewables and new advances in energy storage systems.",
+    "topics": [
+      "Hybrid Renewable Energy Systems",
+      "Integrated Energy Systems Optimization",
+      "Water-Energy-Food Nexus Studies"
+    ],
+    "keywords": [
+      "Renewable energy",
+      "Fossil fuel",
+      "Energy development",
+      "Energy transition",
+      "Energy storage",
+      "Environmental science",
+      "Renewable heat",
+      "Zero-energy building",
+      "Environmental impact of the energy industry",
+      "Waste management",
+      "Natural resource economics",
+      "Engineering",
+      "Energy policy",
+      "Waste heat",
+      "Mechanical engineering",
+      "Heat exchanger",
+      "Electrical engineering",
+      "Economics"
+    ],
+    "queries": [
+      "extreme weather renewable energy reliability",
+      "weather climate impacts renewable energy generation"
+    ],
+    "expected_eligible": false
+  },
+  {
+    "rank": 11,
+    "openalex_id": "W3108854659",
+    "title": "Extensive comparison of physical models for photovoltaic power forecasting",
+    "abstract": "Forecasting the power production of grid-connected photovoltaic (PV) power plants is essential for both the profitability and the prospects of the technology. Physically inspired modelling represents a common approach in calculating the expected power output from numerical weather prediction data. The model selection has a high effect on physical PV power forecasting accuracy, as the difference between the most and least accurate model chains is 13% in mean absolute error (MAE), 12% in root mean square error (RMSE), and 23–33% in skill scores for a PV plant on average. The power forecast performance analysis performed and verified for one-year 15-min resolution production data of 16 PV plants in Hungary for day-ahead and intraday time horizons on all possible combinations of nine direct and diffuse irradiance separation, ten tilted irradiance transposition, three reflection loss, five cell temperature, four PV module performance, two shading loss, and three inverter models. The two most critical calculation steps are identified as irradiance separation and transposition modelling, while the inverter models are the least important. Absolute and squared errors are two conflicting metrics, as the more detailed models result in the lowest MAE, while the simplest ones have the lowest RMSE. Wind speed forecasts have only a marginal effect on the PV power prediction. The results of this study contribute to a deeper understanding of the physical forecasting approach in the research community, while the main conclusions are also beneficial for PV plant owners in preparing their generation forecasts.",
+    "topics": [
+      "Solar Radiation and Photovoltaics",
+      "Photovoltaic System Optimization Techniques",
+      "Solar Thermal and Photovoltaic Systems"
+    ],
+    "keywords": [
+      "Photovoltaic system",
+      "Mean squared error",
+      "Irradiance",
+      "Mean absolute percentage error",
+      "Power (physics)",
+      "Meteorology",
+      "Statistics",
+      "Environmental science",
+      "Computer science",
+      "Mathematics",
+      "Engineering",
+      "Electrical engineering",
+      "Geography"
+    ],
+    "queries": [
+      "meteorological variables solar photovoltaic power generation"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 12,
+    "openalex_id": "W2900416547",
+    "title": "Solar photovoltaic modeling and simulation: As a renewable energy solution",
+    "abstract": "In renewable power generation, solar photovoltaic as clean and green energy technology plays a vital role to fulfill the power shortage of any country. Modeling, simulation and analysis of solar photovoltaic (PV) generator is a vital phase prior to mount PV system at any location, which helps to understand the behavior and characteristics in real climatic conditions of that location. In this context, a single diode equivalent circuit model with the stepwise detailed simulation of a solar PV module under Matlab/Simulink ambience is presented. I–V and P–V graph of solar PV module provide a broad understanding to researchers, manufacturers and social communities. The simulated result of the PV module is verified by the manufacturer data-sheet of JAP6-72-320/4BB module and maximum relative error percentage is found 1.65% which shows a good agreement between manufacturer values and simulated values. Moreover, the performance of PV module for real metrological data (irradiance and temperature) shows good results. In addition to this, it is presumed as a sturdy tool to evaluate the performance of any solar PV modules.",
+    "topics": [
+      "Photovoltaic System Optimization Techniques",
+      "Solar Radiation and Photovoltaics",
+      "solar cell performance optimization"
+    ],
+    "keywords": [
+      "Photovoltaic system",
+      "Renewable energy",
+      "Solar irradiance",
+      "Solar energy",
+      "Context (archaeology)",
+      "MATLAB",
+      "Rooftop photovoltaic power station",
+      "Irradiance",
+      "Computer science",
+      "Environmental science",
+      "Automotive engineering",
+      "Engineering",
+      "Electrical engineering",
+      "Maximum power point tracking",
+      "Inverter",
+      "Meteorology",
+      "Physics"
+    ],
+    "queries": [
+      "meteorological variables solar photovoltaic power generation"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 13,
+    "openalex_id": "W2038621246",
+    "title": "Review of energy system flexibility measures to enable high levels of variable renewable electricity",
+    "abstract": null,
+    "topics": [
+      "Smart Grid Energy Management",
+      "Microgrid Control and Optimization",
+      "Integrated Energy Systems Optimization"
+    ],
+    "keywords": [
+      "Renewable energy",
+      "Flexibility (engineering)",
+      "Variable renewable energy",
+      "Environmental economics",
+      "Electricity",
+      "Energy storage",
+      "Pumped-storage hydroelectricity",
+      "Wind power",
+      "Power to gas",
+      "Context (archaeology)",
+      "Electric power system",
+      "Electricity market",
+      "Intermittent energy source",
+      "Grid",
+      "Computer science",
+      "Distributed generation",
+      "Engineering",
+      "Economics",
+      "Power (physics)",
+      "Electrical engineering"
+    ],
+    "queries": [
+      "climate variability renewable energy generation",
+      "extreme weather renewable energy reliability",
+      "weather climate impacts renewable energy generation"
+    ],
+    "expected_eligible": false
+  },
+  {
+    "rank": 14,
+    "openalex_id": "W2976758854",
+    "title": "Climate change impacts on renewable energy generation. A review of quantitative projections",
+    "abstract": "Research on climate change impacts on renewable energy is becoming increasingly relevant due to the vulnerability of the sector and to the continual development of methodologies and availability of data. Public and private decision-making needs specific research. However, many gaps still exist in certain geographical regions and technologies. Providing economic estimates with a value chain perspective are also missing from most papers. This paper addresses the most relevant studies that project quantitative estimates of climate change impacts on solar, wind, hydro and other renewable generation technologies. Summary tables of impacts and projections are provided so that researchers, governments and the private sector may have an accurate view of the state-of-the-art on this topic.",
+    "topics": [
+      "Wind Energy Research and Development",
+      "Water-Energy-Food Nexus Studies",
+      "Solar Radiation and Photovoltaics"
+    ],
+    "keywords": [
+      "Renewable energy",
+      "Climate change",
+      "Vulnerability (computing)",
+      "Environmental resource management",
+      "Environmental economics",
+      "Energy sector",
+      "Private sector",
+      "Environmental planning",
+      "Natural resource economics",
+      "Economic impact analysis",
+      "Business",
+      "Environmental science",
+      "Engineering",
+      "Economics",
+      "Computer science",
+      "Civil engineering",
+      "Economic growth"
+    ],
+    "queries": [
+      "weather climate impacts renewable energy generation"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 15,
+    "openalex_id": "W3011829128",
+    "title": "Probabilistic solar power forecasting based on weather scenario generation",
+    "abstract": null,
+    "topics": [
+      "Solar Radiation and Photovoltaics",
+      "Energy Load and Power Forecasting",
+      "Photovoltaic System Optimization Techniques"
+    ],
+    "keywords": [
+      "Probabilistic forecasting",
+      "Probabilistic logic",
+      "Numerical weather prediction",
+      "Solar power",
+      "Meteorology",
+      "Metric (unit)",
+      "Computer science",
+      "Benchmark (surveying)",
+      "Engineering",
+      "Power (physics)",
+      "Artificial intelligence",
+      "Geography"
+    ],
+    "queries": [
+      "weather solar power generation forecasting"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 16,
+    "openalex_id": "W2132895429",
+    "title": "Maximum Power Point Tracking of Multiple Photovoltaic Arrays: A PSO Approach",
+    "abstract": "Multiple photovoltaic (PV) modules feeding a common load is the most common form of power distribution used in solar PV systems. In such systems, providing individual maximum power point tracking (MPPT) schemes for each of the PV modules increases the cost. Furthermore, its v-i characteristic exhibits multiple local maximum power points (MPPs) during partial shading, making it difficult to find the global MPP using conventional single-stage (CSS) tracking. To overcome this difficulty, the authors propose a novel MPPT algorithm by introducing a particle swarm optimization (PSO) technique. The proposed algorithm uses only one pair of sensors to control multiple PV arrays, thereby resulting in lower cost, higher overall efficiency, and simplicity with respect to its implementation. The validity of the proposed algorithm is demonstrated through experimental studies. In addition, a detailed performance comparison with conventional fixed voltage, hill climbing, and Fibonacci search MPPT schemes are presented. Algorithm robustness was verified for several complicated partial shading conditions, and in all cases this method took about 2 s to find the global MPP.",
+    "topics": [
+      "Photovoltaic System Optimization Techniques",
+      "solar cell performance optimization",
+      "Solar Thermal and Photovoltaic Systems"
+    ],
+    "keywords": [
+      "Maximum power point tracking",
+      "Photovoltaic system",
+      "Robustness (evolution)",
+      "Maximum power principle",
+      "Hill climbing",
+      "Particle swarm optimization",
+      "Control theory (sociology)",
+      "Computer science",
+      "Shading",
+      "Voltage",
+      "Mathematical optimization",
+      "Electronic engineering",
+      "Mathematics",
+      "Algorithm",
+      "Engineering",
+      "Electrical engineering",
+      "Control (management)",
+      "Artificial intelligence"
+    ],
+    "queries": [
+      "meteorological variables solar photovoltaic power generation"
+    ],
+    "expected_eligible": false
+  },
+  {
+    "rank": 17,
+    "openalex_id": "W2792326773",
+    "title": "Hourly day-ahead solar irradiance prediction using weather forecasts by LSTM",
+    "abstract": null,
+    "topics": [
+      "Solar Radiation and Photovoltaics",
+      "Energy Load and Power Forecasting",
+      "Photovoltaic System Optimization Techniques"
+    ],
+    "keywords": [
+      "Solar irradiance",
+      "Irradiance",
+      "Photovoltaic system",
+      "Overfitting",
+      "Mean squared error",
+      "Artificial neural network",
+      "Computer science",
+      "Meteorology",
+      "Environmental science",
+      "Machine learning",
+      "Engineering",
+      "Statistics",
+      "Mathematics",
+      "Geography"
+    ],
+    "queries": [
+      "weather solar power generation forecasting",
+      "weather wind power generation forecasting"
+    ],
+    "expected_eligible": false
+  },
+  {
+    "rank": 18,
+    "openalex_id": "W3118977708",
+    "title": "Climate change impacts on renewable energy supply",
+    "abstract": null,
+    "topics": [
+      "Water-Energy-Food Nexus Studies",
+      "Energy and Environment Impacts",
+      "Integrated Energy Systems Optimization"
+    ],
+    "keywords": [
+      "Renewable energy",
+      "Environmental science",
+      "Hydropower",
+      "Climate change",
+      "Bioenergy",
+      "Climate change mitigation",
+      "Baseline (sea)",
+      "Global warming",
+      "Wind power",
+      "Natural resource economics",
+      "Energy development",
+      "Energy supply",
+      "Offshore wind power",
+      "Environmental resource management",
+      "Energy (signal processing)",
+      "Ecology",
+      "Economics"
+    ],
+    "queries": [
+      "climate variability renewable energy generation"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 19,
+    "openalex_id": "W4392504717",
+    "title": "Day-ahead regional solar power forecasting with hierarchical temporal convolutional neural networks using historical power generation and weather data",
+    "abstract": "Regional solar power forecasting, which involves predicting the total power generation from all rooftop photovoltaic (PV) systems in a region holds significant importance for various stakeholders in the energy sector to ensure a stable electricity supply. However, the vast amount of solar power generation and weather time series from geographically dispersed locations that need to be considered in the forecasting process makes accurate regional forecasting challenging. Therefore, previous studies have limited the focus to either forecasting a single time series (i.e., aggregated time series) which is the addition of all solar generation time series in a region, disregarding the location-specific weather effects or forecasting solar generation time series of each PV site (i.e., individual time series) independently using location-specific weather data, resulting in a large number of forecasting models. In this work, we propose two new deep-learning-based regional forecasting methods that can effectively leverage both types of time series (aggregated and individual) with weather data in a region. We propose two hierarchical temporal convolutional neural network architectures (HTCNN A1 and A2) and two new strategies to adapt HTCNNs for regional solar power forecasting. In the first strategy, we explore generating a regional forecast using a single HTCNN. In the second, we divide the region into multiple sub-regions based on weather information and train separate HTCNNs for each sub-region; the forecasts of each sub-region are then added to generate a regional forecast. The proposed work is evaluated using a large dataset collected over a year from 101 locations across Western Australia to provide a day ahead forecast at an hourly time resolution which involves forecasting a horizon of 18 h. We compare our approaches with well-known alternative methods, including long short-term memory networks and convolution neural networks, and show that proposed HTCNN-based approaches require fewer individually trained networks. Furthermore, the sub-region-based HTCNN-based approach achieves a forecast skill score of 40.2% and reduces a statistically significant forecast error by 6.5% compared to the best-performing counterpart. Our results indicate that the proposed approaches are well-suited for forecasting applications covering large regions containing many individual solar PV systems in different locations.",
+    "topics": [
+      "Solar Radiation and Photovoltaics",
+      "Energy Load and Power Forecasting",
+      "Photovoltaic System Optimization Techniques"
+    ],
+    "keywords": [
+      "Leverage (statistics)",
+      "Time series",
+      "Computer science",
+      "Solar power",
+      "Photovoltaic system",
+      "Meteorology",
+      "Artificial neural network",
+      "Electricity generation",
+      "Environmental science",
+      "Power (physics)",
+      "Artificial intelligence",
+      "Machine learning",
+      "Geography",
+      "Engineering"
+    ],
+    "queries": [
+      "weather solar power generation forecasting"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 20,
+    "openalex_id": "W4224246016",
+    "title": "A Global Assessment: Can Renewable Energy Replace Fossil Fuels by 2050?",
+    "abstract": "Our study evaluated the effectiveness of using eight pathways in combination for a complete to transition from fossil fuels to renewable energy by 2050. These pathways included renewable energy development; improving energy efficiency; increasing energy conservation; carbon taxes; more equitable balancing of human wellbeing and per capita energy use; cap and trade systems; carbon capture, utilization, and storage; and nuclear power development. We used the annual ‘British Petroleum statistical review of world energy 2021’ report as our primary database. Globally, fossil fuels, renewable (primarily hydro, wind and solar), nuclear energy accounted for 83%, 12.6%, and 6.3% of the total energy consumption in 2020. To achieve zero fossil fuel use by 2050, we found that renewable energy production will need to be increased by up to 6-fold or 8-fold if energy demand is held constant at, or increased 50% from, the 2020 energy demand level. Constraining 2050 world energy demand to a 25% increase over the 2020 level, improves the probability of achieving independence from fossil fuels. Improvements in energy efficiency need to accelerate beyond the current rate of ~1.5% per year. Aggressive application of energy conservation policies involving land use and taxation could potentially reduce world energy use by 10% or more by 2050. Our meta-analysis shows that the minimum level of per capita energy consumption that would allow 8 billion people to have a ‘Decent Living Standard’ is on average ~70 GJ per capita per year, which is 93% of the 2020 global average. Developed countries in temperate climates with high vehicle-dependency needed ~120 GJ per capita year−1, whereas equatorial countries with low vehicle-dependency needed 30 GJ per capita year−1. Our meta-analyses indicated replacement of fossil fuels with renewable energy by 2050 may be possible but will require aggressive application of all eight pathways, major lifestyle changes in developed countries, and close cooperation among all countries.",
+    "topics": [
+      "Global Energy and Sustainability Research",
+      "Climate Change Policy and Economics",
+      "Energy and Environment Impacts"
+    ],
+    "keywords": [
+      "Renewable energy",
+      "Fossil fuel",
+      "Environmental science",
+      "Renewable fuels",
+      "Natural resource economics",
+      "Waste management",
+      "Biochemical engineering",
+      "Environmental economics",
+      "Engineering",
+      "Economics"
+    ],
+    "queries": [
+      "weather climate impacts renewable energy generation"
+    ],
+    "expected_eligible": false
+  },
+  {
+    "rank": 21,
+    "openalex_id": "W2767559196",
+    "title": "Short-term photovoltaic solar power forecasting using a hybrid Wavelet-PSO-SVM model based on SCADA and Meteorological information",
+    "abstract": null,
+    "topics": [
+      "Energy Load and Power Forecasting",
+      "Solar Radiation and Photovoltaics",
+      "Photovoltaic System Optimization Techniques"
+    ],
+    "keywords": [
+      "Photovoltaic system",
+      "SCADA",
+      "Support vector machine",
+      "Microgrid",
+      "Particle swarm optimization",
+      "Computer science",
+      "Solar irradiance",
+      "Wavelet",
+      "Meteorology",
+      "Engineering",
+      "Artificial intelligence",
+      "Machine learning",
+      "Geography",
+      "Control (management)"
+    ],
+    "queries": [
+      "meteorological variables solar photovoltaic power generation"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 22,
+    "openalex_id": "W2584729650",
+    "title": "Daily prediction of solar power generation based on weather forecast information in Korea",
+    "abstract": "Solar panel photovoltaic (PV) systems are widely used in Korea to generate solar energy, which is one of the most promising renewable energy sources. With regard to solar electricity providers and a grid operator, it is critical to accurately predict solar power generation for supply–demand planning in an electrical grid, which directly affects their profit. This prediction is, however, a challenging task because solar power generation is weather dependent and uncontrollable. In this study, a daily prediction model based on the weather forecast information for solar power generation is proposed. In the case of the proposed model, the cloud and temperature data available from the weather forecast information is used to predict the amount of solar radiation as well as a loss adjustment factor to reflect the possible loss of power generation due to the degradation or failure of the PV module. Using the proposed model, solar power generation for the following day can be predicted. The proposed model is embedded into a solar PV monitoring system that is commercially used in Korea, and it is shown to perform better than the existing prediction models.",
+    "topics": [
+      "Solar Radiation and Photovoltaics",
+      "Energy Load and Power Forecasting",
+      "Photovoltaic System Optimization Techniques"
+    ],
+    "keywords": [
+      "Photovoltaic system",
+      "Renewable energy",
+      "Grid parity",
+      "Meteorology",
+      "Electricity generation",
+      "Solar power",
+      "Environmental science",
+      "Solar energy",
+      "Numerical weather prediction",
+      "Electric power system",
+      "Computer science",
+      "Reliability engineering",
+      "Distributed generation",
+      "Power (physics)",
+      "Engineering",
+      "Electrical engineering"
+    ],
+    "queries": [
+      "weather solar power generation forecasting"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 23,
+    "openalex_id": "W2966305977",
+    "title": "Day-ahead power forecasting in a large-scale photovoltaic plant based on weather classification using LSTM",
+    "abstract": null,
+    "topics": [
+      "Solar Radiation and Photovoltaics",
+      "Energy Load and Power Forecasting",
+      "Photovoltaic System Optimization Techniques"
+    ],
+    "keywords": [
+      "Photovoltaic system",
+      "Ideal (ethics)",
+      "Computer science",
+      "Electric power system",
+      "Meteorology",
+      "Time series",
+      "Solar power",
+      "Numerical weather prediction",
+      "Weather forecasting",
+      "Power (physics)",
+      "Engineering",
+      "Machine learning",
+      "Geography",
+      "Electrical engineering"
+    ],
+    "queries": [
+      "meteorological variables solar photovoltaic power generation"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 24,
+    "openalex_id": "W2013120098",
+    "title": "Predicting solar generation from weather forecasts using machine learning",
+    "abstract": "A key goal of smart grid initiatives is significantly increasing the fraction of grid energy contributed by renewables. One challenge with integrating renewables into the grid is that their power generation is intermittent and uncontrollable. Thus, predicting future renewable generation is important, since the grid must dispatch generators to satisfy demand as generation varies. While manually developing sophisticated prediction models may be feasible for large-scale solar farms, developing them for distributed generation at millions of homes throughout the grid is a challenging problem. To address the problem, in this paper, we explore automatically creating site-specific prediction models for solar power generation from National Weather Service (NWS) weather forecasts using machine learning techniques. We compare multiple regression techniques for generating prediction models, including linear least squares and support vector machines using multiple kernel functions. We evaluate the accuracy of each model using historical NWS forecasts and solar intensity readings from a weather station deployment for nearly a year. Our results show that SVM-based prediction models built using seven distinct weather forecast metrics are 27% more accurate for our site than existing forecast-based models.",
+    "topics": [
+      "Solar Radiation and Photovoltaics",
+      "Energy Harvesting in Wireless Networks",
+      "Smart Grid Energy Management"
+    ],
+    "keywords": [
+      "Computer science",
+      "Software deployment",
+      "Renewable energy",
+      "Support vector machine",
+      "Grid",
+      "Smart grid",
+      "Solar power",
+      "Distributed generation",
+      "Electricity generation",
+      "Numerical weather prediction",
+      "Machine learning",
+      "Meteorology",
+      "Power (physics)",
+      "Engineering"
+    ],
+    "queries": [
+      "weather solar power generation forecasting"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 25,
+    "openalex_id": "W2888598463",
+    "title": "A review of modelling tools for energy and electricity systems with large shares of variable renewables",
+    "abstract": "This paper presents a thorough review of 75 modelling tools currently used for analysing energy and electricity systems. Increased activity within model development in recent years has led to several new models and modelling capabilities, partly motivated by the need to better represent the integration of variable renewables. The purpose of this paper is to give an updated overview of currently available modelling tools, their capabilities and to serve as an aid for modellers in their process of identifying and choosing an appropriate model. A broad spectrum of modelling tools, ranging from small-scale power system analysis tools to global long-term energy models, has been assessed. Key information regarding the general logic, spatiotemporal resolution as well as the technological and economic features of the models is presented in three comprehensive tables. This information has been validated and updated by model developers or affiliated contact persons, and is state-of-the-art as of the submission date. With the available suite of modelling tools, most challenges of today's electricity system can be assessed. For a future with an increasing share of variable renewables and increasing electrification of the energy system, there are some challenges such as how to represent short-term variability in long-term studies, incorporate the effect of climate change and ensure openness and transparency in modelling studies.",
+    "topics": [
+      "Integrated Energy Systems Optimization",
+      "Smart Grid Energy Management",
+      "Microgrid Control and Optimization"
+    ],
+    "keywords": [
+      "Variable renewable energy",
+      "Renewable energy",
+      "Computer science",
+      "Variable (mathematics)",
+      "Electrification",
+      "Electricity",
+      "Process (computing)",
+      "Electric power system",
+      "Risk analysis (engineering)",
+      "Systems engineering",
+      "Data science",
+      "Operations research",
+      "Engineering",
+      "Business",
+      "Power (physics)"
+    ],
+    "queries": [
+      "extreme weather renewable energy reliability"
+    ],
+    "expected_eligible": false
+  },
+  {
+    "rank": 26,
+    "openalex_id": "W2165799067",
+    "title": "Wind Power Density Forecasting Using Ensemble Predictions and Time Series Models",
+    "abstract": "Wind power is an increasingly used form of renewable energy. The uncertainty in wind generation is very large due to the inherent variability in wind speed, and this needs to be understood by operators of power systems and wind farms. To assist with the management of this risk, this paper investigates methods for predicting the probability density function of generated wind power from one to ten days ahead at five U.K. wind farm locations. These density forecasts provide a description of the expected future value and the associated uncertainty. We construct density forecasts from weather ensemble predictions, which are a relatively new type of weather forecast generated from atmospheric models. We also consider density forecasting from statistical time series models. The best results for wind power density prediction and point forecasting were produced by an approach that involves calibration and smoothing of the ensemble-based wind power density.",
+    "topics": [
+      "Energy Load and Power Forecasting",
+      "Meteorological Phenomena and Simulations",
+      "Wind Energy Research and Development"
+    ],
+    "keywords": [
+      "Wind power",
+      "Probability density function",
+      "Wind speed",
+      "Meteorology",
+      "Wind power forecasting",
+      "Density of air",
+      "Probabilistic forecasting",
+      "Time series",
+      "Smoothing",
+      "Series (stratigraphy)",
+      "Renewable energy",
+      "Environmental science",
+      "Electric power system",
+      "Computer science",
+      "Power (physics)",
+      "Mathematics",
+      "Statistics",
+      "Engineering",
+      "Geography",
+      "Physics",
+      "Machine learning",
+      "Geology"
+    ],
+    "queries": [
+      "weather wind power generation forecasting"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 27,
+    "openalex_id": "W4251651833",
+    "title": "Probabilistic Forecast of Wind Power Generation With Data Processing and Numerical Weather Predictions",
+    "abstract": "With the increasing proportion of renewable energy, some problems have gradually emerged. To reduce the operating cost and improve system reliability, renewable power forecasting is an indispensable part. Compared with the deterministic prediction, the probabilistic forecast considers the uncertainty, which helps manage the power system operations. This study proposes a novel hour-ahead probabilistic forecasting method for wind power generation. It includes data preprocessing, adaptive neuro fuzzy inference system training model with fuzzy C-means clustering algorithm, and postprocessing of predicted interval (PI). The input data of the proposed forecasting model include the numerical weather prediction (NWP) ensemble wind speeds, NWP spot wind speeds, and historical wind power measurements. The research results demonstrate that the proposed model supports better performance and prediction stability. Furthermore, this work reveals that the data preprocessing and postprocessing of PI are essential for wind power forecasting. These processes greatly improve the performance of the probabilistic wind power forecasts.",
+    "topics": [
+      "Energy Load and Power Forecasting",
+      "Electric Power System Optimization",
+      "Solar Radiation and Photovoltaics"
+    ],
+    "keywords": [
+      "Numerical weather prediction",
+      "Probabilistic forecasting",
+      "Probabilistic logic",
+      "Wind power forecasting",
+      "Wind power",
+      "Computer science",
+      "Data pre-processing",
+      "Global Forecast System",
+      "Cluster analysis",
+      "Renewable energy",
+      "Electric power system",
+      "Wind speed",
+      "Preprocessor",
+      "Reliability (semiconductor)",
+      "Data mining",
+      "Meteorology",
+      "Power (physics)",
+      "Machine learning",
+      "Engineering",
+      "Artificial intelligence"
+    ],
+    "queries": [
+      "weather wind power generation forecasting"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 28,
+    "openalex_id": "W2115294291",
+    "title": "A Weather-Based Hybrid Method for 1-Day Ahead Hourly Forecasting of PV Power Output",
+    "abstract": "To improve real-time control performance and reduce possible negative impacts of photovoltaic (PV) systems, an accurate forecasting of PV output is required, which is an important function in the operation of an energy management system (EMS) for distributed energy resources. In this paper, a weather-based hybrid method for 1-day ahead hourly forecasting of PV power output is presented. The proposed approach comprises classification, training, and forecasting stages. In the classification stage, the self-organizing map (SOM) and learning vector quantization (LVQ) networks are used to classify the collected historical data of PV power output. The training stage employs the support vector regression (SVR) to train the input/output data sets for temperature, probability of precipitation, and solar irradiance of defined similar hours. In the forecasting stage, the fuzzy inference method is used to select an adequate trained model for accurate forecast, according to the weather information collected from Taiwan Central Weather Bureau (TCWB). The proposed approach is applied to a practical PV power generation system. Numerical results show that the proposed approach achieves better prediction accuracy than the simple SVR and traditional ANN methods.",
+    "topics": [
+      "Solar Radiation and Photovoltaics",
+      "Energy Load and Power Forecasting",
+      "Photovoltaic System Optimization Techniques"
+    ],
+    "keywords": [
+      "Photovoltaic system",
+      "Learning vector quantization",
+      "Computer science",
+      "Weather forecasting",
+      "Solar irradiance",
+      "Support vector machine",
+      "Numerical weather prediction",
+      "Fuzzy logic",
+      "Artificial neural network",
+      "Artificial intelligence",
+      "Meteorology",
+      "Engineering"
+    ],
+    "queries": [
+      "weather solar power generation forecasting"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 29,
+    "openalex_id": "W2600292797",
+    "title": "Hour-ahead wind power forecast based on random forests",
+    "abstract": null,
+    "topics": [
+      "Energy Load and Power Forecasting",
+      "Electric Power System Optimization",
+      "Solar Radiation and Photovoltaics"
+    ],
+    "keywords": [
+      "Random forest",
+      "Wind speed",
+      "Wind power",
+      "Probabilistic logic",
+      "Renewable energy",
+      "Probabilistic forecasting",
+      "Meteorology",
+      "Artificial neural network",
+      "Computer science",
+      "Environmental science",
+      "Machine learning",
+      "Engineering",
+      "Artificial intelligence",
+      "Geography"
+    ],
+    "queries": [
+      "weather wind power generation forecasting"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 30,
+    "openalex_id": "W2051086873",
+    "title": "AWNN-Assisted Wind Power Forecasting Using Feed-Forward Neural Network",
+    "abstract": "With the growing wind power penetration in the emerging power system, an accurate wind power forecasting method is very much essential, to help the system operators, to include wind generation into economic scheduling, unit commitment, and reserve allocation problems. It also assists the wind power producers to maximize their benefits by bidding in the electricity markets. A statistical-based wind power forecasting without using numerical weather prediction (NWP) inputs is carried out in this work. The proposed approach consists of two stages. In stage-I, wavelet decomposition of wind series is carried out and adaptive wavelet neural network (AWNN) is used to regress upon each decomposed signal, to predict wind speed up to 30 h ahead. In stage-II, a feed-forward neural network (FFNN) is used for nonlinear mapping between wind speed and wind power output, which transforms the forecasted wind speed into wind power prediction. The effectiveness of the proposed method is compared with persistence (PER) and new-reference (NR) benchmark models and the results show that the proposed model outperforms the benchmark models.",
+    "topics": [
+      "Energy Load and Power Forecasting",
+      "Electric Power System Optimization",
+      "Image and Signal Denoising Methods"
+    ],
+    "keywords": [
+      "Wind power",
+      "Wind power forecasting",
+      "Bidding",
+      "Artificial neural network",
+      "Computer science",
+      "Wind speed",
+      "Benchmark (surveying)",
+      "Numerical weather prediction",
+      "Electric power system",
+      "Wavelet transform",
+      "Control theory (sociology)",
+      "Engineering",
+      "Power (physics)",
+      "Wavelet",
+      "Meteorology",
+      "Artificial intelligence",
+      "Electrical engineering"
+    ],
+    "queries": [
+      "weather wind power generation forecasting"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 31,
+    "openalex_id": "W2162331448",
+    "title": "A literature review of wind forecasting technology in the world",
+    "abstract": "Large intermittent generations have grown the influence on the grid security, system operation, and market economics. Although wind energy may not be dispatched, the cost impacts of wind can be substantially reduced if the wind energy can be scheduled using accurate wind forecasting. In other words, the improvement of the performance of wind power forecasting tool has significant technology and economic impact on the system operation with increased wind power penetration. Forecasting has been a vital part of business planning in today's competitive environment, especially in areas characterized by a high concentration of wind generation and a limited capacity of network. The target of this paper is to present a critical literature review and an up-to-date bibliography on wind forecasting technologies over the world. Various forecasting aspects concerning the wind speed and power have been highlighted. These technologies based on numeric weather prediction (NWP) methods, statistical methods, methods based upon artificial neural networks (ANNs), and hybrid forecasting approaches will be discussed. Furthermore, the difference between wind speed and power forecasting, the lead time of forecasting, and the further research will also be discussed in this paper.",
+    "topics": [
+      "Energy Load and Power Forecasting",
+      "Electric Power System Optimization",
+      "Wind Energy Research and Development"
+    ],
+    "keywords": [
+      "Wind power",
+      "Wind power forecasting",
+      "Wind speed",
+      "Computer science",
+      "Artificial neural network",
+      "Meteorology",
+      "Electric power system",
+      "Renewable energy",
+      "Environmental science",
+      "Operations research",
+      "Power (physics)",
+      "Engineering",
+      "Artificial intelligence",
+      "Electrical engineering",
+      "Geography"
+    ],
+    "queries": [
+      "weather wind power generation forecasting"
+    ],
+    "expected_eligible": true
+  },
+  {
+    "rank": 32,
+    "openalex_id": "W2042511026",
+    "title": "Predicting solar radiation at high resolutions: A comparison of time series forecasts",
+    "abstract": null,
+    "topics": [
+      "Solar Radiation and Photovoltaics",
+      "Energy Load and Power Forecasting",
+      "Grey System Theory Applications"
+    ],
+    "keywords": [
+      "Autoregressive integrated moving average",
+      "Cloud cover",
+      "Computer science",
+      "Time series",
+      "Autoregressive model",
+      "Artificial neural network",
+      "Environmental science",
+      "Range (aeronautics)",
+      "Meteorology",
+      "Econometrics",
+      "Cloud computing",
+      "Mathematics",
+      "Engineering",
+      "Machine learning",
+      "Geography"
+    ],
+    "queries": [
+      "weather solar power generation forecasting"
+    ],
+    "expected_eligible": false
+  }
+]

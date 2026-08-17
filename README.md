@@ -6,12 +6,13 @@ The goal is to build an agentic scientific-research assistant that can automatic
 
 ## Status
 
-**Phase 1 contracts and package scaffolding implemented.**
+**Phase 1 contracts and Phase 2 literature-corpus builder implemented, with the
+official ten-paper base corpus frozen.**
 
-The repository currently contains the frozen design plus typed configuration,
-schemas, provider/tool interfaces, trace/failure contracts, and unit tests. It
-does not yet contain literature, PDF, retrieval, LLM, orchestration, or ML
-implementations.
+The repository contains typed contracts plus deterministic OpenAlex discovery,
+rule-based relevance ranking, deduplication, OA PDF download/validation, and a
+reproducible corpus manifest. PDF parsing, retrieval, LLM calls, orchestration,
+and ML analysis are not implemented yet.
 
 ## Core design
 
@@ -99,15 +100,14 @@ A reproducible environment definition is stored in:
 environment.yml
 ```
 
-Create or update the dedicated environment, then run the Phase 1 tests:
+Create or update the dedicated environment, then run the offline tests:
 
 ```bash
 conda env update -n l3s_agent_311 -f environment.yml
 conda run -n l3s_agent_311 python -m pytest
 ```
 
-Phase 1 adds only `pytest`; all package code otherwise uses the Python standard
-library.
+Phase 2 adds `httpx` for bounded HTTP calls and offline mock-transport tests.
 
 ## Phase 1 configuration
 
@@ -138,6 +138,77 @@ the provider method is not exposed to the Research Agent as a separate tool.
 The configured limits of two search rounds and twelve tool calls are provisional
 MVP safety limits for bounded execution, not scientifically justified values.
 
+## Phase 2 literature corpus
+
+The frozen scientific topic is **Weather and climate impacts on renewable
+energy**, with solar and wind as the main modalities. Phase 2:
+
+1. runs six deterministic OpenAlex queries or accepts explicit queries;
+2. collects 30–50 unique candidates using one bounded fallback page;
+3. evaluates relevance across title, abstract, OpenAlex topics/keywords, and
+   matched-query provenance;
+4. deduplicates by OpenAlex ID, DOI, normalized title, and a conservative
+   title/author/year fallback;
+5. ranks candidates using the approved 35/35/20/5/5 score;
+6. downloads and byte-validates only automatically selected OA PDFs;
+7. backfills failed downloads until the target of ten is reached; and
+8. writes a Git-trackable manifest with decisions, provenance, failures, and
+   SHA-256 checksums.
+
+Raw API caches and PDFs remain outside Git. The corpus builder never silently
+overwrites an existing frozen manifest and imposes no solar/wind, conflict,
+regional, or evaluation-answer quotas.
+
+### Frozen base corpus
+
+The official, Git-trackable base-corpus manifest is:
+
+```text
+data/manifests/base_corpus.json
+```
+
+It records ten automatically selected papers: four solar-focused, four
+wind-focused, and two cross-modality/general-renewable papers. Five primarily
+address forecasting; five address climate impacts, weather-driven variability,
+performance, or reliability.
+
+The initial 50-candidate pool yielded six validated PDFs. Three focused
+discovery-expansion rounds increased the accumulated pool to 80 unique
+candidates and reached ten validated PDFs, with stop reason `target_reached`.
+All ten local PDFs passed SHA-256 verification against the frozen manifest.
+
+During development, OpenAlex-hosted content downloads returned HTTP 401 with
+the available API credentials. OpenAlex content therefore remains an
+opportunistic first source, while publisher and repository OA fallbacks were
+necessary to construct the complete corpus.
+
+Paper `W3126094341` is retained as an automatically selected but scientifically
+marginal corpus item: its implemented PV forecasting experiment relies mainly
+on historical PV power rather than explicit meteorological predictors. It must
+not be used as primary gold evidence for meteorological-effect claims.
+
+Candidate manifests such as `base_corpus_candidate_v3.json` are local
+development artifacts and are excluded from Git. Freezing the v3 result did
+not change its selected papers, scores, rankings, download records, checksums,
+or discovery provenance.
+
+Live OpenAlex access requires an uncommitted environment variable:
+
+```bash
+export OPENALEX_API_KEY="..."
+```
+
+Build a new candidate corpus with:
+
+```bash
+conda run -n l3s_agent_311 python -m l3s_agent.literature.cli \
+  --output data/manifests/base_corpus_candidate.json
+```
+
+The command exits with status 2 if fewer than eight validated PDFs can be
+collected after the bounded fallback procedure. It does not parse, chunk,
+render, inspect, or index PDFs.
+
 ## Secrets
 
 API keys and local secrets should be stored in:
@@ -154,8 +225,8 @@ Use `.env.example` as the template for required environment variables.
 
 The implementation is expected to include:
 
-- automated literature discovery
-- OA paper collection
+- automated literature discovery (implemented)
+- OA paper collection and checksums (implemented)
 - PDF ingestion and page rendering
 - provenance-aware evidence objects
 - hybrid retrieval
@@ -177,5 +248,6 @@ The implementation is expected to include:
 
 ## Running the project
 
-There is no runtime CLI yet. It will be added after the approved implementation
-phases introduce working tools and the lightweight custom orchestration loop.
+The Phase 2 corpus-building CLI is available as documented above. There is no
+runtime research-agent CLI yet; that will be added only after later approved
+phases implement retrieval and the lightweight custom orchestration loop.

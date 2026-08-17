@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "count": 1,
+    "page": 1,
+    "per_page": 10
+  },
+  "results": [
+    {
+      "id": "https://openalex.org/W123",
+      "doi": "https://doi.org/10.1000/SOLAR",
+      "title": "Weather Effects on Solar Power Generation",
+      "display_name": "Weather Effects on Solar Power Generation",
+      "publication_year": 2022,
+      "publication_date": "2022-05-01",
+      "type": "article",
+      "language": "en",
+      "authorships": [
+        {
+          "author": {
+            "id": "https://openalex.org/A1",
+            "display_name": "Ada Example",
+            "orcid": "https://orcid.org/0000-0000-0000-0001"
+          }
+        }
+      ],
+      "primary_location": {
+        "is_oa": false,
+        "landing_page_url": "https://publisher.example/solar",
+        "pdf_url": null,
+        "license": "cc-by",
+        "version": "publishedVersion"
+      },
+      "best_oa_location": {
+        "is_oa": true,
+        "landing_page_url": "https://repository.example/solar",
+        "pdf_url": "https://repository.example/solar.pdf",
+        "license": "cc-by",
+        "version": "acceptedVersion"
+      },
+      "locations": [
+        {
+          "is_oa": true,
+          "landing_page_url": "https://alternate.example/solar",
+          "pdf_url": "https://alternate.example/solar.pdf",
+          "license": "cc-by",
+          "version": "submittedVersion"
+        },
+        {
+          "is_oa": false,
+          "landing_page_url": "https://closed.example/solar",
+          "pdf_url": "https://closed.example/solar.pdf"
+        }
+      ],
+      "open_access": {
+        "is_oa": true,
+        "oa_status": "green"
+      },
+      "has_content": {
+        "pdf": true,
+        "grobid_xml": false
+      },
+      "content_urls": {
+        "pdf": "https://content.openalex.org/works/W123.pdf"
+      },
+      "cited_by_count": 12,
+      "primary_topic": {
+        "display_name": "Solar Energy Meteorology"
+      },
+      "topics": [
+        {"display_name": "Renewable Energy Forecasting"}
+      ],
+      "keywords": [
+        {"display_name": "solar irradiance"}
+      ],
+      "abstract_inverted_index": {
+        "Solar": [0],
+        "generation": [1],
+        "varies": [2],
+        "with": [3],
+        "weather": [4]
+      },
+      "is_retracted": false,
+      "relevance_score": 19.5
+    }
+  ]
+}

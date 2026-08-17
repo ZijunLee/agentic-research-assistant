@@ -80,6 +80,76 @@ class PathConfig:
 
 
 @dataclass(frozen=True)
+class LiteratureRankingConfig:
+    query_relevance: int
+    domain_relevance: int
+    accessibility: int
+    metadata_completeness: int
+    recency: int
+
+    def __post_init__(self) -> None:
+        if sum(
+            (
+                self.query_relevance,
+                self.domain_relevance,
+                self.accessibility,
+                self.metadata_completeness,
+                self.recency,
+            )
+        ) != 100:
+            raise ValueError("literature ranking weights must sum to 100")
+
+
+@dataclass(frozen=True)
+class LiteratureConfig:
+    topic: str
+    modalities: tuple[str, ...]
+    queries: tuple[str, ...]
+    expansion_queries: tuple[str, ...]
+    openalex_api_url: str
+    per_query: int
+    candidate_min: int
+    candidate_max: int
+    expansion_increment: int
+    expansion_candidate_max: int
+    expansion_max_pages: int
+    selection_min: int
+    selection_target: int
+    selection_max: int
+    request_timeout_seconds: float
+    max_http_attempts: int
+    recency_reference_year: int
+    allowed_work_types: tuple[str, ...]
+    pdf_dir: Path
+    openalex_cache_dir: Path
+    max_pdf_bytes: int
+    min_pdf_bytes: int
+    ranking: LiteratureRankingConfig
+
+    def __post_init__(self) -> None:
+        if not self.topic.strip() or not self.queries or not self.expansion_queries:
+            raise ValueError("literature topic and at least one query are required")
+        if not 1 <= self.per_query <= 100:
+            raise ValueError("OpenAlex per_query must be between 1 and 100")
+        if not 1 <= self.candidate_min <= self.candidate_max:
+            raise ValueError("invalid literature candidate bounds")
+        if self.expansion_increment <= 0:
+            raise ValueError("literature expansion increment must be positive")
+        if self.expansion_candidate_max < self.candidate_max:
+            raise ValueError("expansion candidate maximum cannot be below initial maximum")
+        if self.expansion_max_pages <= 0:
+            raise ValueError("literature expansion page limit must be positive")
+        if not 1 <= self.selection_min <= self.selection_target <= self.selection_max:
+            raise ValueError("invalid literature selection bounds")
+        if self.selection_max > self.candidate_max:
+            raise ValueError("selection maximum cannot exceed candidate maximum")
+        if self.request_timeout_seconds <= 0 or self.max_http_attempts <= 0:
+            raise ValueError("invalid OpenAlex HTTP settings")
+        if self.min_pdf_bytes <= 0 or self.max_pdf_bytes < self.min_pdf_bytes:
+            raise ValueError("invalid PDF size bounds")
+
+
+@dataclass(frozen=True)
 class MLDatasetConfig:
     approved: bool
     adapter: str | None
@@ -100,6 +170,7 @@ class AppConfig:
     chunking: ChunkingConfig
     budgets: BudgetConfig
     paths: PathConfig
+    literature: LiteratureConfig
     ml_dataset: MLDatasetConfig
 
 
@@ -141,6 +212,8 @@ def load_config(
     chunking = raw["chunking"]
     budgets = raw["budgets"]
     paths = raw["paths"]
+    literature = raw["literature"]
+    literature_ranking = literature["ranking"]
     ml_dataset = raw["ml_dataset"]
 
     approved = _as_bool(_env_value(env, "L3S_ML_DATASET_APPROVED", ml_dataset["approved"]))
@@ -186,10 +259,42 @@ def load_config(
             trace_dir=Path(paths["trace_dir"]),
             result_dir=Path(paths["result_dir"]),
         ),
+        literature=LiteratureConfig(
+            topic=str(literature["topic"]),
+            modalities=tuple(str(value) for value in literature["modalities"]),
+            queries=tuple(str(value) for value in literature["queries"] if str(value).strip()),
+            expansion_queries=tuple(
+                str(value) for value in literature["expansion_queries"] if str(value).strip()
+            ),
+            openalex_api_url=str(literature["openalex_api_url"]),
+            per_query=int(literature["per_query"]),
+            candidate_min=int(literature["candidate_min"]),
+            candidate_max=int(literature["candidate_max"]),
+            expansion_increment=int(literature["expansion_increment"]),
+            expansion_candidate_max=int(literature["expansion_candidate_max"]),
+            expansion_max_pages=int(literature["expansion_max_pages"]),
+            selection_min=int(literature["selection_min"]),
+            selection_target=int(literature["selection_target"]),
+            selection_max=int(literature["selection_max"]),
+            request_timeout_seconds=float(literature["request_timeout_seconds"]),
+            max_http_attempts=int(literature["max_http_attempts"]),
+            recency_reference_year=int(literature["recency_reference_year"]),
+            allowed_work_types=tuple(str(value) for value in literature["allowed_work_types"]),
+            pdf_dir=Path(literature["pdf_dir"]),
+            openalex_cache_dir=Path(literature["openalex_cache_dir"]),
+            max_pdf_bytes=int(literature["max_pdf_bytes"]),
+            min_pdf_bytes=int(literature["min_pdf_bytes"]),
+            ranking=LiteratureRankingConfig(
+                query_relevance=int(literature_ranking["query_relevance"]),
+                domain_relevance=int(literature_ranking["domain_relevance"]),
+                accessibility=int(literature_ranking["accessibility"]),
+                metadata_completeness=int(literature_ranking["metadata_completeness"]),
+                recency=int(literature_ranking["recency"]),
+            ),
+        ),
         ml_dataset=MLDatasetConfig(
             approved=approved,
             adapter=adapter,
             path=Path(dataset_path) if dataset_path is not None else None,
         ),
     )
-

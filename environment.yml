@@ -7,5 +7,6 @@ dependencies:
   - python=3.11
   - pip
   - pip:
-      # Phase 1 uses only pytest beyond the Python standard library.
+      # Minimal test dependency plus this package and its declared runtime deps.
       - pytest>=8,<9
+      - -e .

@@ -36,6 +36,48 @@ session_evidence_dir = "data/cache/sessions"
 trace_dir = "results/traces"
 result_dir = "results"
 
+[literature]
+topic = "Weather and climate impacts on renewable energy"
+modalities = ["solar", "wind"]
+queries = [
+  "weather climate impacts renewable energy generation",
+  "meteorological variables solar photovoltaic power generation",
+  "weather solar power generation forecasting",
+  "weather wind power generation forecasting",
+  "climate variability renewable energy generation",
+  "extreme weather renewable energy reliability",
+]
+expansion_queries = [
+  "climate weather impacts renewable electricity generation solar wind reliability",
+  "meteorological variables solar photovoltaic power generation output irradiance temperature cloud cover",
+  "weather wind power generation wind speed numerical weather prediction",
+]
+openalex_api_url = "https://api.openalex.org/works"
+per_query = 10
+candidate_min = 30
+candidate_max = 50
+expansion_increment = 10
+expansion_candidate_max = 90
+expansion_max_pages = 4
+selection_min = 8
+selection_target = 10
+selection_max = 12
+request_timeout_seconds = 30.0
+max_http_attempts = 3
+recency_reference_year = 2026
+allowed_work_types = ["article", "review", "preprint", "proceedings-article", "conference-paper"]
+pdf_dir = "data/papers/base"
+openalex_cache_dir = "data/cache/openalex"
+max_pdf_bytes = 52428800
+min_pdf_bytes = 1024
+
+[literature.ranking]
+query_relevance = 35
+domain_relevance = 35
+accessibility = 20
+metadata_completeness = 5
+recency = 5
+
 [ml_dataset]
 # Dataset selection is intentionally blocked pending separate scientific approval.
 approved = false

@@ -21,6 +21,18 @@ def test_defaults_keep_models_unset_and_freeze_core_decisions() -> None:
     assert config.budgets.max_verifier_calls == 2
     assert config.chunking.cross_page_boundaries is False
     assert config.ml_dataset == MLDatasetConfig(approved=False, adapter=None, path=None)
+    assert config.literature.topic == "Weather and climate impacts on renewable energy"
+    assert config.literature.modalities == ("solar", "wind")
+    assert config.literature.selection_target == 10
+    assert config.literature.selection_min == 8
+    assert config.literature.selection_max == 12
+    assert config.literature.candidate_max == 50
+    assert config.literature.expansion_increment == 10
+    assert config.literature.expansion_candidate_max == 90
+    assert len(config.literature.expansion_queries) == 3
+    assert config.literature.ranking.query_relevance == 35
+    assert config.literature.ranking.domain_relevance == 35
+    assert config.literature.ranking.accessibility == 20
 
 
 def test_environment_overrides_provider_models_without_hard_coding() -> None:
@@ -54,4 +66,3 @@ def test_base_and_session_paths_must_be_distinct() -> None:
 def test_unapproved_ml_dataset_rejects_implementation_details() -> None:
     with pytest.raises(ValueError, match="unapproved"):
         MLDatasetConfig(approved=False, adapter="csv", path=Path("dataset.csv"))
-
