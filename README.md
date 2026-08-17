@@ -10,9 +10,9 @@ The goal is to build an agentic scientific-research assistant that can automatic
 retrieval evaluation, with the official ten-paper base corpus frozen.**
 
 The repository contains typed contracts, reproducible literature discovery,
-page-aware PDF ingestion, and BM25, dense, and rank-fused hybrid retrieval.
-LLM calls, agent orchestration, page-vision reasoning, and ML analysis are not
-implemented yet.
+page-aware PDF ingestion, BM25/dense/hybrid retrieval, and a bounded two-role
+agent runtime validated with deterministic offline providers. Production LLM
+calls, page-vision reasoning, and ML analysis are not implemented yet.
 
 ## Core design
 
@@ -136,8 +136,10 @@ The Python contracts live under `src/l3s_agent/`:
 It uses `LLMProvider.inspect_page` as the lower-level multimodal provider call;
 the provider method is not exposed to the Research Agent as a separate tool.
 
-The configured limits of two search rounds and twelve tool calls are provisional
-MVP safety limits for bounded execution, not scientifically justified values.
+The configured Phase 5A limits—six total tool calls, ten Research Agent
+decisions, one literature search, two page inspections, one Python call, and
+three follow-up tool calls—are provisional MVP safety limits, not scientifically
+justified values. The maximum of two verifier calls is architecturally frozen.
 
 ## Phase 2 literature corpus
 
@@ -301,6 +303,39 @@ conda run -n l3s_agent_311 python -m l3s_agent.retrieval.cli evaluate
 Evaluation requires a built retrieval index. No retrieval metrics are claimed
 yet.
 
+## Phase 5A bounded agent runtime
+
+Phase 5A adds a lightweight custom runtime under `src/l3s_agent/runtime/` with
+exactly two reasoning roles: a Research Agent/orchestrator and a tool-free
+Evidence Verifier. It uses typed actions for retrieval, literature discovery,
+page inspection, Python analysis, drafting, and stopping; no prose parsing or
+agent framework is involved.
+
+The state machine is bounded:
+
+```text
+gather evidence -> draft -> verify #1
+  PASS -> complete
+  otherwise -> bounded follow-up/revision -> verify #2 -> complete
+```
+
+Structural draft errors such as unknown Evidence IDs are rejected before
+verification and do not consume the two-call scientific-verification budget.
+After a final non-PASS result, the runtime returns the draft together with the
+unresolved verifier status, findings, and explicit uncertainty.
+
+Base and session Evidence remain separate. Literature search returns discovery
+metadata only and cannot become citable Evidence without a future ingestion
+step. Fake page inspection produces session-scoped figure/table Evidence, while
+Python analysis remains a non-Evidence `AnalysisResult` pending Phase 6.
+
+Every typed decision—including rejected decisions—is traced alongside tool
+calls, tool results, Evidence IDs, sanitized failures, and complete verifier
+results. Tests inject a fixed clock and scripted providers, require no network,
+and include an offline integration with the existing Phase 4 retrieval adapter.
+Phase 5A does not initialize a production LLM, multimodal model, runtime
+literature ingestion pipeline, or real Python/ML analysis tool.
+
 ## Secrets
 
 API keys and local secrets should be stored in:
@@ -322,8 +357,8 @@ The implementation is expected to include:
 - PDF ingestion and page rendering (implemented and finalized for the frozen corpus)
 - provenance-aware evidence objects
 - hybrid retrieval (implemented; real dense index not yet built)
-- Research Agent orchestration
-- Evidence Verifier
+- bounded Research Agent orchestration (offline contracts/state machine implemented)
+- Evidence Verifier (offline isolated-call contract implemented)
 - multimodal page inspection
 - small solar-generation ML experiment
 - small page-level retrieval evaluator (implemented); final agent evaluation harness
@@ -341,5 +376,5 @@ The implementation is expected to include:
 ## Running the project
 
 The corpus-building, ingestion, and retrieval CLIs are available as documented
-above. There is no runtime Research Agent CLI yet; that will be added only in a
-later approved lightweight custom-orchestration phase.
+above. Phase 5A exposes the bounded runtime as a Python package; a Research
+Agent CLI awaits a separately approved production-provider integration.

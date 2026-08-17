@@ -71,12 +71,33 @@ class BudgetConfig:
     max_verifier_calls: int
     max_search_rounds: int
     max_tool_calls: int
+    max_agent_decisions: int
+    max_literature_searches: int
+    max_page_inspections: int
+    max_python_calls: int
+    max_follow_up_tool_calls: int
+    default_retrieval_k: int
+    max_base_evidence: int
+    max_session_evidence: int
 
     def __post_init__(self) -> None:
         if self.max_verifier_calls != 2:
             raise ValueError("the frozen verification budget is exactly two calls")
-        if self.max_search_rounds < 0 or self.max_tool_calls <= 0:
+        positive = (
+            self.max_tool_calls,
+            self.max_agent_decisions,
+            self.max_literature_searches,
+            self.max_page_inspections,
+            self.max_python_calls,
+            self.max_follow_up_tool_calls,
+            self.default_retrieval_k,
+            self.max_base_evidence,
+            self.max_session_evidence,
+        )
+        if self.max_search_rounds < 0 or any(value <= 0 for value in positive):
             raise ValueError("invalid execution budget")
+        if self.max_follow_up_tool_calls > self.max_tool_calls:
+            raise ValueError("follow-up tool budget cannot exceed total tool budget")
 
 
 @dataclass(frozen=True)
@@ -291,6 +312,14 @@ def load_config(
             max_verifier_calls=int(budgets["max_verifier_calls"]),
             max_search_rounds=int(budgets["max_search_rounds"]),
             max_tool_calls=int(budgets["max_tool_calls"]),
+            max_agent_decisions=int(budgets["max_agent_decisions"]),
+            max_literature_searches=int(budgets["max_literature_searches"]),
+            max_page_inspections=int(budgets["max_page_inspections"]),
+            max_python_calls=int(budgets["max_python_calls"]),
+            max_follow_up_tool_calls=int(budgets["max_follow_up_tool_calls"]),
+            default_retrieval_k=int(budgets["default_retrieval_k"]),
+            max_base_evidence=int(budgets["max_base_evidence"]),
+            max_session_evidence=int(budgets["max_session_evidence"]),
         ),
         paths=PathConfig(
             base_corpus_manifest=Path(paths["base_corpus_manifest"]),

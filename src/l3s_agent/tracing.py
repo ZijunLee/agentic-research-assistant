@@ -23,6 +23,12 @@ class FailureCode(str, Enum):
     INTERNAL = "internal"
 
 
+class AgentActionOutcome(str, Enum):
+    DISPATCHED = "dispatched"
+    TRANSITION = "transition"
+    REJECTED = "rejected"
+
+
 @dataclass(frozen=True)
 class FailureDetail:
     code: FailureCode
@@ -79,15 +85,38 @@ class VerifierCallTrace:
             raise ValueError("verifier call number must be 1 or 2")
 
 
+@dataclass(frozen=True)
+class AgentActionTrace:
+    sequence: int
+    action_type: str
+    reason: str | None
+    sanitized_arguments: Mapping[str, Any]
+    outcome: AgentActionOutcome
+    recorded_at: datetime
+
+    def __post_init__(self) -> None:
+        if self.sequence < 1 or not self.action_type.strip():
+            raise ValueError("agent action sequence and type are required")
+        if self.reason is not None and not self.reason.strip():
+            raise ValueError("agent action reason cannot be blank")
+
+
 @dataclass
 class ExecutionTrace:
     trace_id: str
     question: str
     session_id: str
+    agent_actions: list[AgentActionTrace] = field(default_factory=list)
     tool_calls: list[ToolCall] = field(default_factory=list)
     tool_results: list[ToolResult[Any]] = field(default_factory=list)
     verifier_calls: list[VerifierCallTrace] = field(default_factory=list)
     failures: list[FailureDetail] = field(default_factory=list)
+
+    def add_agent_action(self, action: AgentActionTrace) -> None:
+        expected = len(self.agent_actions) + 1
+        if action.sequence != expected:
+            raise ValueError(f"expected agent-action sequence {expected}, got {action.sequence}")
+        self.agent_actions.append(action)
 
     def add_tool_call(self, call: ToolCall) -> None:
         expected = len(self.tool_calls) + 1

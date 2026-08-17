@@ -479,3 +479,42 @@ Date: 2026-08-16
 - No retrieval algorithm, gold annotation, chunk, corpus content, or embedding
   model choice changed. No real retrieval index was built and no retrieval
   evaluation was run.
+
+---
+
+### 2026-08-17 — Phase 5A bounded two-role runtime
+
+**Codex / AI-assisted work**
+- Added a lightweight custom Research Agent state machine and a separate,
+  tool-free Evidence Verifier wrapper without introducing an agent framework or
+  third runtime role.
+- Reused `ResearchDraft`, `Claim`, `VerifierInput`, `VerificationResult`, all
+  Phase 1 tool Protocols, and the complete `ExecutionTrace` tool/verifier
+  contracts.
+- Added typed Research Agent actions and arguments, compact base/session state,
+  deterministic tool dispatch, structural draft validation, evidence caps, and
+  explicit unresolved final outcomes.
+- Extended execution traces to retain accepted/rejected actions and safe
+  rationales while excluding provider messages, credentials, raw exceptions,
+  and hidden reasoning.
+- Added deterministic scripted-provider tests for retrieval, two-stage
+  verification, all frozen verifier statuses, failures, budgets, routing,
+  provenance separation, corpus immutability, and the real Phase 4 adapter over
+  a synthetic offline index.
+
+**Human decisions / review**
+- Froze the exact flow `GATHERING -> DRAFT -> VERIFY #1 -> optional FOLLOW_UP ->
+  VERIFY #2 -> COMPLETE`, with no path to a third verifier call.
+- Reserved verifier calls for structurally valid drafts; unknown Evidence IDs
+  are rejected before scientific verification.
+- Froze Phase 5A defaults of six tool calls, ten Research Agent decisions, one
+  literature search, two page inspections, one Python call, three follow-up
+  tool calls, retrieval `k=5`, and base/session caps of 40/20.
+- Kept `PaperRecord` and `AnalysisResult` distinct from citable Evidence and
+  required page-inspection Evidence to retain physical page provenance in the
+  active session scope.
+
+**Scope boundary**
+- No production LLM, multimodal model, runtime literature ingestion, real
+  Python/ML analysis, retrieval change, chunking change, or network access was
+  introduced.

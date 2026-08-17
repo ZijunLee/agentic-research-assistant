@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
+from datetime import datetime
 from enum import Enum
 from typing import Any, Mapping, Sequence
 
@@ -169,6 +170,8 @@ def to_primitive(value: Any) -> Any:
 
     if isinstance(value, Enum):
         return value.value
+    if isinstance(value, datetime):
+        return value.isoformat()
     if hasattr(value, "__dataclass_fields__"):
         return {key: to_primitive(item) for key, item in asdict(value).items()}
     if isinstance(value, Mapping):

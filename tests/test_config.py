@@ -17,6 +17,15 @@ def test_defaults_keep_llms_unset_and_freeze_core_decisions() -> None:
     assert config.llm.multimodal_model is None
     assert config.retrieval.fusion == "rrf"
     assert config.budgets.max_verifier_calls == 2
+    assert config.budgets.max_tool_calls == 6
+    assert config.budgets.max_agent_decisions == 10
+    assert config.budgets.max_literature_searches == 1
+    assert config.budgets.max_page_inspections == 2
+    assert config.budgets.max_python_calls == 1
+    assert config.budgets.max_follow_up_tool_calls == 3
+    assert config.budgets.default_retrieval_k == 5
+    assert config.budgets.max_base_evidence == 40
+    assert config.budgets.max_session_evidence == 20
     assert config.chunking.cross_page_boundaries is False
     assert config.embedding.model == "Alibaba-NLP/gte-modernbert-base"
     assert config.embedding.revision == "e7f32e3c00f91d699e8c43b53106206bcc72bb22"
