@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import Enum
+import json
 from typing import Any, Mapping, Sequence
 
 
@@ -64,6 +65,39 @@ class Evidence:
             raise ValueError("base evidence cannot have a session_id")
         if self.corpus_scope is CorpusScope.SESSION and not self.session_id:
             raise ValueError("session evidence requires a session_id")
+
+
+@dataclass(frozen=True)
+class PageInspectionResult:
+    """Bounded interpretation of one canonical rendered PDF page."""
+
+    paper_id: str
+    page: int
+    question: str
+    modality: EvidenceModality
+    observation: str
+    relevant_visual_elements: tuple[str, ...]
+    answer: str
+    limitations: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if not self.paper_id.strip():
+            raise ValueError("page inspection requires a paper_id")
+        if self.page < 1:
+            raise ValueError("page inspection uses 1-based physical PDF pages")
+        if not self.question.strip() or len(self.question) > 500:
+            raise ValueError("page inspection question must contain at most 500 characters")
+        if self.modality not in {EvidenceModality.FIGURE, EvidenceModality.TABLE}:
+            raise ValueError("page inspection modality must be figure or table")
+        if not self.observation.strip() or not self.answer.strip():
+            raise ValueError("page inspection observation and answer are required")
+        if len(self.relevant_visual_elements) > 8 or len(self.limitations) > 8:
+            raise ValueError("page inspection lists contain at most eight items")
+        if any(not item.strip() for item in (*self.relevant_visual_elements, *self.limitations)):
+            raise ValueError("page inspection list items cannot be blank")
+        serialized = json.dumps(to_primitive(self), ensure_ascii=False, separators=(",", ":"))
+        if len(serialized) > 4_000:
+            raise ValueError("serialized page inspection result exceeds 4,000 characters")
 
 
 @dataclass(frozen=True)

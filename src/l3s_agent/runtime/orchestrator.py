@@ -546,6 +546,7 @@ class ResearchOrchestrator:
                 "evidence_id": item.evidence_id,
                 "paper_id": item.paper_id,
                 "page": item.page,
+                "corpus_scope": item.corpus_scope.value,
             }
             for item in returned_items
             if item.evidence_id in returned_ids
@@ -567,6 +568,7 @@ class ResearchOrchestrator:
                 0, self.budgets.max_tool_calls - state.tool_step_count
             ),
             total_base_evidence_count=len(state.base_evidence),
+            total_session_evidence_count=len(state.session_evidence),
         )
 
     @staticmethod
@@ -623,7 +625,13 @@ class ResearchOrchestrator:
             },
             "inspect_page": {
                 "available": self.tools.page_inspection is not None,
-                "description": "Inspect a cited physical PDF page for figure/table Evidence.",
+                "description": (
+                    "Inspect one canonical rendered physical PDF page from an already known "
+                    "paper and 1-based page number. Use this after text retrieval identifies "
+                    "a page where a figure, table, diagram, or visual layout may provide "
+                    "relevant Evidence. This tool does not search papers, accept file paths, "
+                    "inspect arbitrary files, perform OCR, or digitize charts."
+                ),
             },
             "run_python": {
                 "available": self.tools.python_analysis is not None,

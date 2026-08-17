@@ -6,7 +6,14 @@ from pathlib import Path
 from typing import Any, Mapping, Protocol, Sequence, TypeVar, runtime_checkable
 
 from .config import MLDatasetConfig
-from .models import AnalysisResult, Evidence, PaperRecord, VerificationResult, VerifierInput
+from .models import (
+    AnalysisResult,
+    Evidence,
+    PageInspectionResult,
+    PaperRecord,
+    VerificationResult,
+    VerifierInput,
+)
 
 
 StructuredT = TypeVar("StructuredT")
@@ -33,7 +40,7 @@ class LLMProvider(Protocol):
         paper_id: str,
         page: int,
         question: str,
-    ) -> Evidence:
+    ) -> PageInspectionResult:
         """Make the lower-level multimodal call used by PageInspectionTool."""
         ...
 

@@ -62,7 +62,12 @@ class InspectPageArguments:
     question: str
 
     def __post_init__(self) -> None:
-        if not self.paper_id.strip() or not self.question.strip() or self.page < 1:
+        if (
+            not self.paper_id.strip()
+            or not self.question.strip()
+            or len(self.question) > 500
+            or self.page < 1
+        ):
             raise ValueError("page inspection requires paper, 1-based page, and question")
 
 

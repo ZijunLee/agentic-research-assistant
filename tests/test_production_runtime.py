@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from types import SimpleNamespace
 
+import l3s_agent.runtime.factory as factory_module
 from l3s_agent.config import load_config
 from l3s_agent.models import CorpusScope, Evidence, EvidenceModality, VerifierStatus
 from l3s_agent.providers import OpenAIResponsesProvider
@@ -47,6 +48,16 @@ class SyntheticRetrieval:
     def retrieve(self, **kwargs):
         self.calls.append(kwargs)
         return (self.item,)
+
+
+class SyntheticPageInspection:
+    def __init__(self, item):
+        self.item = item
+        self.calls = []
+
+    def inspect(self, **kwargs):
+        self.calls.append(kwargs)
+        return self.item
 
 
 def action_wire(action_type: str, **values):
@@ -189,6 +200,158 @@ def test_existing_runtime_rejects_invented_ids_before_verifier_call() -> None:
     )
     assert not outcome.trace.verifier_calls
     assert all(call["model"] != "gpt-4.1-2025-04-14" for call in client.responses.calls)
+
+
+def test_production_page_tool_is_available_and_verifier_gets_only_derived_evidence() -> None:
+    visual = Evidence(
+        evidence_id="session:page_inspection:abc",
+        paper_id="paper-1",
+        title="NWP workflow",
+        page=4,
+        modality=EvidenceModality.FIGURE,
+        source_id="page_inspection:W1:p0004",
+        content='{"answer":"NWP wind speed is corrected before power prediction."}',
+        corpus_scope=CorpusScope.SESSION,
+        section="page inspection",
+        session_id="session-1",
+    )
+    client = FakeClient(
+        [
+            action_wire(
+                "inspect_page",
+                inspect_paper_id="paper-1",
+                inspect_page=4,
+                inspect_question="How is NWP wind speed processed?",
+                reason="Inspect the relevant workflow",
+            ),
+            action_wire("draft_answer", reason="Visual evidence is available"),
+            {
+                "question": "Question?",
+                "draft_answer": "NWP wind speed is corrected before power prediction.",
+                "claims": [
+                    {
+                        "claim_id": "c1",
+                        "text": "NWP wind speed is corrected before power prediction.",
+                        "evidence_ids": [visual.evidence_id],
+                    }
+                ],
+                "uncertainty": [],
+                "tool_trace": ["trace-1:tool:001"],
+            },
+            {
+                "status": "PASS",
+                "findings": [
+                    {
+                        "status": "PASS",
+                        "claim_id": "c1",
+                        "reason": "The derived visual Evidence supports the claim.",
+                        "requested_evidence": None,
+                    }
+                ],
+            },
+        ]
+    )
+    events = []
+    config = load_config(CONFIG, environ={})
+    provider = OpenAIResponsesProvider(config.llm, client=client, event_sink=events.append)
+    page_tool = SyntheticPageInspection(visual)
+    runtime = assemble_runtime(
+        config=config,
+        provider=provider,
+        retrieval=SyntheticRetrieval(visual),
+        page_inspection=page_tool,
+        event_sink=events.append,
+    )
+    outcome = runtime.run(question="Question?", session_id="session-1", trace_id="trace-1")
+    assert outcome.terminal_status is TerminalStatus.PASS
+    assert outcome.state.session_evidence == {visual.evidence_id: visual}
+    assert page_tool.calls == [
+        {
+            "paper_id": "paper-1",
+            "page": 4,
+            "question": "How is NWP wind speed processed?",
+            "session_id": "session-1",
+        }
+    ]
+    action_context = client.responses.calls[0]["input"][1]["content"]
+    assert '"inspect_page":{"available":true' in action_context
+    for phrase in (
+        "canonical rendered physical PDF page",
+        "1-based page number",
+        "does not search papers",
+        "accept file paths",
+        "perform OCR",
+        "digitize charts",
+    ):
+        assert phrase in action_context
+    verifier_context = client.responses.calls[-1]["input"][1]["content"]
+    assert visual.evidence_id in verifier_context
+    assert "corrected before power prediction" in verifier_context
+    assert "data:image" not in verifier_context
+    tool_event = next(item for item in events if item["marker"] == "SAFE_TOOL_RESULT")
+    assert tool_event["evidence_provenance"] == [
+        {
+            "evidence_id": visual.evidence_id,
+            "paper_id": "paper-1",
+            "page": 4,
+            "corpus_scope": "session",
+        }
+    ]
+    assert tool_event["total_session_evidence_count"] == 1
+    assert visual.content not in repr(events)
+
+
+def test_build_production_runtime_registers_canonical_page_tool(monkeypatch) -> None:
+    config = load_config(CONFIG, environ={})
+    index = SimpleNamespace(
+        manifest={
+            "bm25": {"k1": config.retrieval.bm25_k1, "b": config.retrieval.bm25_b},
+            "fusion": {
+                "rrf_k": config.retrieval.rrf_k,
+                "candidate_depth": config.retrieval.candidate_depth,
+            },
+        }
+    )
+    resolver = object()
+    provider = object()
+    page_tool = object()
+    captured = {}
+    monkeypatch.setattr(
+        factory_module, "SentenceTransformersEmbeddingProvider", lambda **kwargs: object()
+    )
+    monkeypatch.setattr(
+        factory_module.RetrievalIndex,
+        "load",
+        staticmethod(lambda **kwargs: index),
+    )
+    monkeypatch.setattr(factory_module, "RetrievalEngine", lambda value: object())
+    monkeypatch.setattr(
+        factory_module, "BaseEvidenceRetrievalTool", lambda *args, **kwargs: object()
+    )
+    monkeypatch.setattr(
+        factory_module, "OpenAIResponsesProvider", lambda *args, **kwargs: provider
+    )
+    monkeypatch.setattr(factory_module, "CanonicalPageResolver", lambda path: resolver)
+    monkeypatch.setattr(
+        factory_module,
+        "CanonicalPageInspectionTool",
+        lambda **kwargs: page_tool,
+    )
+
+    def capture(**kwargs):
+        captured.update(kwargs)
+        return "runtime"
+
+    monkeypatch.setattr(factory_module, "assemble_runtime", capture)
+    result = factory_module.build_production_runtime(
+        config=config,
+        evidence_path=Path("artifact/evidence.jsonl"),
+        index_dir=Path("retrieval"),
+        client=object(),
+    )
+    assert result == "runtime"
+    assert captured["provider"] is provider
+    assert captured["page_inspection"] is page_tool
 
 
 def test_second_non_pass_verifier_result_terminates_without_third_call() -> None:

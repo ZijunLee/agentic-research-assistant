@@ -467,6 +467,122 @@ def test_page_and_python_routing_preserve_separate_state() -> None:
     assert len(page_tool.calls) == len(python_tool.calls) == 1
 
 
+def test_page_inspection_budget_and_session_evidence_limit_remain_enforced() -> None:
+    first = evidence(
+        "session-visual-1",
+        scope=CorpusScope.SESSION,
+        modality=EvidenceModality.FIGURE,
+        session_id="session-1",
+        page=2,
+    )
+    second = evidence(
+        "session-visual-2",
+        scope=CorpusScope.SESSION,
+        modality=EvidenceModality.TABLE,
+        session_id="session-1",
+        page=3,
+    )
+
+    class QueuePageInspection:
+        def __init__(self):
+            self.values = deque((first, second))
+            self.calls = []
+
+        def inspect(self, **kwargs):
+            self.calls.append(kwargs)
+            return self.values.popleft()
+
+    page_tool = QueuePageInspection()
+    budgets = replace(load_config(CONFIG, environ={}).budgets, max_session_evidence=1)
+    research = ScriptedResearchProvider(
+        [
+            action(
+                AgentActionType.INSPECT_PAGE,
+                InspectPageArguments("paper-1", 2, "First visual"),
+            ),
+            action(
+                AgentActionType.INSPECT_PAGE,
+                InspectPageArguments("paper-1", 3, "Second visual"),
+            ),
+            action(AgentActionType.DRAFT_ANSWER, DraftAnswerArguments()),
+            draft(ids=("session-visual-1",)),
+        ]
+    )
+    outcome = run(
+        orchestrator(
+            research,
+            [verification(VerifierStatus.PASS)],
+            ToolRegistry(page_inspection=page_tool),
+            budgets=budgets,
+        )
+    )
+    assert set(outcome.state.session_evidence) == {"session-visual-1"}
+    assert outcome.trace.tool_results[1].failure.code is FailureCode.BUDGET_EXHAUSTED
+
+    repeated = RecordingPageInspection(first)
+    research = ScriptedResearchProvider(
+        [
+            action(
+                AgentActionType.INSPECT_PAGE,
+                InspectPageArguments("paper-1", 2, "Visual one"),
+            ),
+            action(
+                AgentActionType.INSPECT_PAGE,
+                InspectPageArguments("paper-1", 2, "Visual two"),
+            ),
+            action(
+                AgentActionType.INSPECT_PAGE,
+                InspectPageArguments("paper-1", 2, "Visual three"),
+            ),
+            action(AgentActionType.DRAFT_ANSWER, DraftAnswerArguments()),
+            draft(ids=("session-visual-1",)),
+        ]
+    )
+    outcome = run(
+        orchestrator(
+            research,
+            [verification(VerifierStatus.PASS)],
+            ToolRegistry(page_inspection=repeated),
+        )
+    )
+    assert len(repeated.calls) == 2
+    assert outcome.trace.agent_actions[2].outcome is AgentActionOutcome.REJECTED
+
+
+def test_page_inspection_failure_trace_omits_local_path_and_visual_payload() -> None:
+    secret_path = "/private/secret/page.png"
+
+    class FailingPageInspection:
+        def inspect(self, **kwargs):
+            raise RuntimeError(f"failed to read {secret_path}; data:image/png;base64,SECRET")
+
+    events = []
+    research = ScriptedResearchProvider(
+        [
+            action(
+                AgentActionType.INSPECT_PAGE,
+                InspectPageArguments("paper-1", 2, "Inspect the visual"),
+            ),
+            action(AgentActionType.DRAFT_ANSWER, DraftAnswerArguments()),
+            draft(ids=(), uncertainty=("Visual evidence was unavailable",)),
+        ]
+    )
+    outcome = run(
+        orchestrator(
+            research,
+            [verification(VerifierStatus.PASS, claim_id=None)],
+            ToolRegistry(page_inspection=FailingPageInspection()),
+            event_sink=events.append,
+        )
+    )
+    rendered = repr(events) + repr(to_primitive(outcome.trace))
+    assert secret_path not in rendered
+    assert "data:image" not in rendered
+    tool_event = next(item for item in events if item["marker"] == "SAFE_TOOL_RESULT")
+    assert tool_event["success"] is False
+    assert tool_event["failure_code"] == FailureCode.UNREADABLE_VISUAL.value
+
+
 def test_search_results_are_not_evidence_and_invalid_citation_precedes_verifier() -> None:
     paper = PaperRecord("paper-new", "Discovered paper", "W-new")
     search = RecordingSearch((paper,))
@@ -673,10 +789,16 @@ def test_incremental_events_distinguish_new_and_duplicate_evidence_without_chang
     assert tool_events[1]["admitted_new_evidence_count"] == 0
     assert tool_events[1]["duplicate_evidence_ids"] == ["ev-1"]
     assert tool_events[1]["evidence_provenance"] == [
-        {"evidence_id": "ev-1", "paper_id": "paper-1", "page": 1}
+        {
+            "evidence_id": "ev-1",
+            "paper_id": "paper-1",
+            "page": 1,
+            "corpus_scope": "base",
+        }
     ]
     assert tool_events[1]["remaining_tool_budget"] == 4
     assert tool_events[1]["total_base_evidence_count"] == 1
+    assert tool_events[1]["total_session_evidence_count"] == 0
     assert to_primitive(observed.trace) == to_primitive(control.trace)
     assert to_primitive(observed.state) == to_primitive(control.state)
 

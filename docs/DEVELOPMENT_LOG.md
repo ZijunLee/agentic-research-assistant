@@ -666,3 +666,74 @@ Date: 2026-08-16
 **Interpretation boundary**
 - This is one production smoke-test observation, not a benchmark or an
   efficiency result.
+
+---
+
+### 2026-08-17 — Phase 5C offline canonical page inspection
+
+**Codex / AI-assisted work**
+- Added a checksummed resolver over the completed Phase 3 `pages.jsonl` map;
+  page inspection accepts only a known paper ID and 1-based physical page and
+  rejects missing, escaping, altered, or unknown image records before provider
+  use.
+- Added a bounded typed `PageInspectionResult` and one-image Structured Outputs
+  path in the existing stateless OpenAI provider. The configured multimodal
+  model is used when present, otherwise the configured Research model is used;
+  there is no hard-coded additional model.
+- Added `CanonicalPageInspectionTool`, which conservatively normalizes the
+  question, validates provider provenance, and converts one result into exactly
+  one deterministic session-scoped figure/table Evidence record. Frozen base
+  Evidence and retrieval artifacts remain unchanged.
+- Registered page inspection in the production factory and documented its
+  canonical-page, no-path, no-OCR, and no-digitization capability bounds.
+- Extended safe tool-result metadata with Evidence corpus scope and session
+  admission counts while excluding paths, images, data URLs, prompts, and
+  complete inspection content.
+
+**Verifier boundary**
+- Existing citation selection can pass cited derived visual Evidence text to
+  the independent verifier. The verifier does not receive or independently
+  inspect the raw page image, provider history, inspection prompt, or full
+  Research state.
+
+**Validation and scope**
+- Offline tests use only fake Responses clients and synthetic tiny PNGs and
+  cover canonical resolution, checksums, path containment, schema/result
+  bounds, deterministic identity, production registration, budgets, duplicate
+  admission, verifier isolation, and safe tracing.
+- No API/network call or real multimodal smoke test was made. The frozen later
+  primary page remains `paper_W2153263933`, physical page 4.
+
+---
+
+### 2026-08-17 — Phase 5C real multimodal smoke observations
+
+**Provider boundary**
+- The approved provider-only call resolved `paper_W2153263933`, physical page
+  4, through the canonical checksummed page map and successfully completed one
+  image-input Structured Output call with the configured Research model.
+- The returned page interpretation passed the frozen paper/page/question and
+  result-bound validation. This is a provider smoke observation, not a model
+  benchmark.
+
+**Distinct routing observations**
+- Text-sufficient case: the NWP-processing question followed retrieval-only
+  tool use, then drafting and verifier `PASS`; `inspect_page` was not selected
+  because retrieved text directly described the GP correction pipeline.
+- Visually dependent case: the Romania/Dubai clearness-index comparison followed
+  `retrieve -> retrieve -> inspect_page(paper_W3003290234, physical page 3) ->
+  draft -> verifier PASS`. The runtime admitted 10 unique base Evidence records
+  and one session visual Evidence record, and the draft used mixed base-text and
+  visual citations.
+- Claim `c2` directly cited the session visual Evidence describing the relative
+  distribution shapes, and the independent verifier returned `PASS` for that
+  claim. No unavailable tool was selected and no provider or tool failure
+  occurred.
+- Checks of the frozen base-corpus manifest, Phase 3 ingestion manifest and
+  Evidence artifact, and Phase 4 retrieval-index manifest were unchanged across
+  the visually dependent run.
+
+**Interpretation boundary**
+- These are smoke/evaluation observations, not accuracy, performance, cost, or
+  efficiency benchmarks. The verifier checked the derived visual Evidence text;
+  it did not independently re-read the raw page image.

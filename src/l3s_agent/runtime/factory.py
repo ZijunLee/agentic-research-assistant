@@ -7,7 +7,8 @@ from typing import Any
 
 from ..config import AppConfig
 from ..events import SafeEventSink
-from ..interfaces import EvidenceRetrievalTool, LLMProvider
+from ..interfaces import EvidenceRetrievalTool, LLMProvider, PageInspectionTool
+from ..page_inspection import CanonicalPageInspectionTool, CanonicalPageResolver
 from ..providers import OpenAIResponsesProvider
 from ..retrieval.embeddings import SentenceTransformersEmbeddingProvider
 from ..retrieval.engine import BaseEvidenceRetrievalTool, RetrievalEngine
@@ -23,14 +24,15 @@ def assemble_runtime(
     config: AppConfig,
     provider: LLMProvider,
     retrieval: EvidenceRetrievalTool,
+    page_inspection: PageInspectionTool | None = None,
     event_sink: SafeEventSink | None = None,
 ) -> ResearchOrchestrator:
-    """Assemble Phase 5A with retrieval as the only available production tool."""
+    """Assemble the bounded runtime with explicitly supplied production tools."""
 
     return ResearchOrchestrator(
         research_provider=provider,
         verifier=EvidenceVerifier(provider),
-        tools=ToolRegistry(retrieval=retrieval),
+        tools=ToolRegistry(retrieval=retrieval, page_inspection=page_inspection),
         budgets=config.budgets,
         event_sink=event_sink,
     )
@@ -63,7 +65,7 @@ def build_production_runtime(
     client: Any | None = None,
     event_sink: SafeEventSink | None = None,
 ) -> ResearchOrchestrator:
-    """Load the checksummed local index and construct the real Phase 5B runtime."""
+    """Load checksummed local artifacts and construct the production runtime."""
 
     if config.embedding.model is None or config.embedding.revision is None:
         raise RetrievalError("production retrieval requires the frozen embedding revision")
@@ -84,6 +86,14 @@ def build_production_runtime(
         RetrievalEngine(index), mode=RetrievalMode.HYBRID
     )
     provider = OpenAIResponsesProvider(config.llm, client=client, event_sink=event_sink)
+    page_inspection = CanonicalPageInspectionTool(
+        resolver=CanonicalPageResolver(evidence_path.parent),
+        provider=provider,
+    )
     return assemble_runtime(
-        config=config, provider=provider, retrieval=retrieval, event_sink=event_sink
+        config=config,
+        provider=provider,
+        retrieval=retrieval,
+        page_inspection=page_inspection,
+        event_sink=event_sink,
     )

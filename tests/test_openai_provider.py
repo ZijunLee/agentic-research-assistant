@@ -15,6 +15,7 @@ from l3s_agent.models import (
     CorpusScope,
     Evidence,
     EvidenceModality,
+    PageInspectionResult,
     ResearchDraft,
     VerifierInput,
     VerifierStatus,
@@ -23,6 +24,7 @@ from l3s_agent.providers.openai import (
     OpenAIProviderError,
     OpenAIResponsesProvider,
     _AgentActionWire,
+    _PageInspectionResultWire,
     _ResearchDraftWire,
     _VerificationResultWire,
 )
@@ -434,12 +436,120 @@ def test_context_bound_and_optional_controls_are_explicit() -> None:
     assert "reasoning" not in client.responses.calls[0]
 
 
-def test_page_inspection_is_explicitly_unavailable() -> None:
-    model, _ = provider([])
-    with pytest.raises(OpenAIProviderError, match="UnavailableInPhase5B"):
+def test_page_inspection_uses_one_image_and_converts_strict_wire_result(
+    tmp_path: Path,
+) -> None:
+    image = tmp_path / "page.png"
+    image.write_bytes(b"\x89PNG\r\n\x1a\nsynthetic")
+    payload = {
+        "paper_id": "paper-1",
+        "page": 1,
+        "question": "What does the figure show?",
+        "modality": "figure",
+        "observation": "A workflow connects NWP inputs to wind power.",
+        "relevant_visual_elements": ["Figure 1 workflow"],
+        "answer": "Corrected wind speed enters the power model.",
+        "limitations": [],
+    }
+    model, client = provider([payload])
+    value = model.inspect_page(
+        image_path=image,
+        paper_id="paper-1",
+        page=1,
+        question="What does the figure show?",
+    )
+    assert isinstance(value, PageInspectionResult)
+    assert value.modality is EvidenceModality.FIGURE
+    call = client.responses.calls[0]
+    assert call["model"] == "gpt-5.6-terra"
+    assert "tools" not in call
+    assert "previous_response_id" not in call
+    user_content = call["input"][1]["content"]
+    images = [item for item in user_content if item["type"] == "input_image"]
+    assert len(images) == 1
+    assert images[0]["image_url"].startswith("data:image/png;base64,")
+    assert images[0]["detail"] == "high"
+    assert str(image) not in repr(call)
+
+
+def test_page_inspection_rejects_wire_provenance_mismatch_without_repair(
+    tmp_path: Path,
+) -> None:
+    image = tmp_path / "page.png"
+    image.write_bytes(b"\x89PNG\r\n\x1a\nsynthetic")
+    payload = {
+        "paper_id": "other-paper",
+        "page": 1,
+        "question": "What?",
+        "modality": "table",
+        "observation": "A table is visible.",
+        "relevant_visual_elements": [],
+        "answer": "Insufficient visual evidence.",
+        "limitations": ["Values are unreadable."],
+    }
+    model, _ = provider([payload])
+    with pytest.raises(OpenAIProviderError, match="ValueError"):
         model.inspect_page(
-            image_path=Path("page.png"), paper_id="paper-1", page=1, question="What?"
+            image_path=image, paper_id="paper-1", page=1, question="What?"
         )
+
+
+def test_page_inspection_wire_schema_is_flat_and_bounded() -> None:
+    schema = to_strict_json_schema(_PageInspectionResultWire)
+    assert schema["type"] == "object"
+    assert schema["additionalProperties"] is False
+    assert set(schema["required"]) == set(schema["properties"])
+    assert not _schema_paths(schema, "oneOf")
+    assert schema["properties"]["question"]["maxLength"] == 500
+    assert schema["properties"]["relevant_visual_elements"]["maxItems"] == 8
+    assert schema["properties"]["limitations"]["maxItems"] == 8
+
+
+def test_page_inspection_safe_events_never_contain_image_or_prompt(tmp_path: Path) -> None:
+    image = tmp_path / "page.png"
+    image.write_bytes(b"\x89PNG\r\n\x1a\nsecret-image-sentinel")
+    payload = {
+        "paper_id": "paper-1",
+        "page": 1,
+        "question": "What?",
+        "modality": "figure",
+        "observation": "A figure is visible.",
+        "relevant_visual_elements": [],
+        "answer": "The figure is relevant.",
+        "limitations": [],
+    }
+    events = []
+    model, _ = provider([payload], event_sink=events.append)
+    model.inspect_page(image_path=image, paper_id="paper-1", page=1, question="What?")
+    rendered = repr(events)
+    assert "data:image" not in rendered
+    assert "secret-image-sentinel" not in rendered
+    assert str(image) not in rendered
+    assert "Interpret exactly one" not in rendered
+    assert events[-1]["operation"] == "inspect_page"
+
+
+def test_page_inspection_failure_drops_provider_message_that_may_echo_image_or_prompt(
+    tmp_path: Path,
+) -> None:
+    image = tmp_path / "page.png"
+    image.write_bytes(b"\x89PNG\r\n\x1a\nsecret-image-sentinel")
+    encoded = "data:image/png;base64,c2VjcmV0LWltYWdlLXNlbnRpbmVs"
+
+    class ImageEchoError(RuntimeError):
+        body = {"message": f"Invalid image {encoded}"}
+
+    events = []
+    model, _ = provider([ImageEchoError("unsafe provider object")], event_sink=events.append)
+    with pytest.raises(OpenAIProviderError) as caught:
+        model.inspect_page(image_path=image, paper_id="paper-1", page=1, question="What?")
+    error = caught.value
+    rendered = repr(events) + str(error) + repr(error)
+    assert "data:image" not in rendered
+    assert "c2VjcmV0" not in rendered
+    assert error.provider_message is None
+    assert error.__cause__ is None
+    assert error.__context__ is None
 
 
 def test_provider_events_are_incremental_allowlisted_and_secret_safe() -> None:

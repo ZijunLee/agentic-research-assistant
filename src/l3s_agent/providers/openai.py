@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 from dataclasses import dataclass
 import json
 import os
@@ -15,7 +16,8 @@ from ..config import LLMConfig
 from ..events import SafeEventSink, emit_safe_event
 from ..models import (
     Claim,
-    Evidence,
+    EvidenceModality,
+    PageInspectionResult,
     ResearchDraft,
     VerificationFinding,
     VerificationResult,
@@ -33,7 +35,12 @@ from ..runtime.models import (
     SearchLiteratureArguments,
     StopArguments,
 )
-from .prompts import ACTION_SELECTION_PROMPT, DRAFT_GENERATION_PROMPT, VERIFICATION_PROMPT
+from .prompts import (
+    ACTION_SELECTION_PROMPT,
+    DRAFT_GENERATION_PROMPT,
+    PAGE_INSPECTION_PROMPT,
+    VERIFICATION_PROMPT,
+)
 
 
 _SAFE_METADATA = re.compile(r"^[A-Za-z0-9._:/-]{1,200}$")
@@ -110,7 +117,7 @@ class _AgentActionWire(_WireModel):
     search_query: str | None
     inspect_paper_id: str | None
     inspect_page: int | None = Field(ge=1)
-    inspect_question: str | None
+    inspect_question: str | None = Field(max_length=500)
     python_request_json: str | None
     python_evidence_ids: tuple[str, ...]
     revision_instruction: str | None
@@ -147,6 +154,17 @@ class _VerificationResultWire(_WireModel):
     findings: tuple[_VerificationFindingWire, ...] = Field(min_length=1)
 
 
+class _PageInspectionResultWire(_WireModel):
+    paper_id: str = Field(min_length=1)
+    page: int = Field(ge=1)
+    question: str = Field(min_length=1, max_length=500)
+    modality: Literal["figure", "table"]
+    observation: str = Field(min_length=1)
+    relevant_visual_elements: tuple[str, ...] = Field(max_length=8)
+    answer: str = Field(min_length=1)
+    limitations: tuple[str, ...] = Field(max_length=8)
+
+
 def _safe_string(value: object) -> str | None:
     text = str(value) if value is not None else ""
     return text if _SAFE_METADATA.fullmatch(text) else None
@@ -164,6 +182,12 @@ def _sanitized_provider_message(value: object) -> str | None:
         text,
         flags=re.IGNORECASE,
     )
+    text = re.sub(
+        r"data:image/[A-Za-z0-9.+-]+;base64,[A-Za-z0-9+/=_-]+",
+        "[REDACTED_IMAGE]",
+        text,
+        flags=re.IGNORECASE,
+    )
     lowered = text.lower()
     if any(
         marker in lowered
@@ -178,7 +202,12 @@ def _sanitized_provider_message(value: object) -> str | None:
     return text or None
 
 
-def _safe_failure(operation: str, exc: BaseException) -> OpenAIProviderError:
+def _safe_failure(
+    operation: str,
+    exc: BaseException,
+    *,
+    include_provider_message: bool = True,
+) -> OpenAIProviderError:
     status = getattr(exc, "status_code", None)
     status_code = status if isinstance(status, int) else None
     request_id = _safe_string(getattr(exc, "request_id", None))
@@ -202,7 +231,11 @@ def _safe_failure(operation: str, exc: BaseException) -> OpenAIProviderError:
         ),
         error_code=_safe_string(error_data.get("code") or getattr(exc, "code", None)),
         parameter=_safe_string(error_data.get("param") or getattr(exc, "param", None)),
-        provider_message=_sanitized_provider_message(error_data.get("message")),
+        provider_message=(
+            _sanitized_provider_message(error_data.get("message"))
+            if include_provider_message
+            else None
+        ),
     )
 
 
@@ -347,6 +380,27 @@ def _verification_from_wire(value: _VerificationResultWire) -> VerificationResul
     )
 
 
+def _page_inspection_from_wire(
+    value: _PageInspectionResultWire,
+    *,
+    paper_id: str,
+    page: int,
+    question: str,
+) -> PageInspectionResult:
+    if value.paper_id != paper_id or value.page != page or value.question != question:
+        raise ValueError("page inspection result does not match the submitted provenance")
+    return PageInspectionResult(
+        paper_id=value.paper_id,
+        page=value.page,
+        question=value.question,
+        modality=EvidenceModality(value.modality),
+        observation=value.observation,
+        relevant_visual_elements=value.relevant_visual_elements,
+        answer=value.answer,
+        limitations=value.limitations,
+    )
+
+
 class OpenAIResponsesProvider:
     """Native Structured Outputs provider with no conversation state or retries."""
 
@@ -455,10 +509,38 @@ class OpenAIResponsesProvider:
         paper_id: str,
         page: int,
         question: str,
-    ) -> Evidence:
-        raise OpenAIProviderError(
-            operation="inspect_page", error_type="UnavailableInPhase5B"
-        ) from None
+    ) -> PageInspectionResult:
+        if page < 1 or not paper_id.strip() or not question.strip() or len(question) > 500:
+            raise OpenAIProviderError(
+                operation="inspect_page", error_type="InvalidPageInspectionRequest"
+            ) from None
+        try:
+            image_bytes = image_path.read_bytes()
+            image_data_url = "data:image/png;base64," + base64.b64encode(image_bytes).decode(
+                "ascii"
+            )
+        except Exception as exc:
+            raise _safe_failure("inspect_page", exc) from None
+        model = self.config.multimodal_model or self.config.text_model
+        if not model:
+            raise OpenAIProviderError(
+                operation="inspect_page", error_type="MissingMultimodalModel"
+            ) from None
+        wire = self._parse(
+            operation="inspect_page",
+            model=model,
+            instructions=PAGE_INSPECTION_PROMPT,
+            task="Inspect the supplied canonical scientific PDF page for the question.",
+            context={"paper_id": paper_id, "page": page, "question": question},
+            response_type=_PageInspectionResultWire,
+            image_data_url=image_data_url,
+        )
+        return self._convert(
+            "inspect_page",
+            lambda: _page_inspection_from_wire(
+                wire, paper_id=paper_id, page=page, question=question
+            ),
+        )
 
     def _parse(
         self,
@@ -469,6 +551,7 @@ class OpenAIResponsesProvider:
         task: str,
         context: Mapping[str, Any],
         response_type: type[_WireModel],
+        image_data_url: str | None = None,
     ) -> Any:
         self._provider_call_sequence += 1
         call_sequence = self._provider_call_sequence
@@ -496,11 +579,19 @@ class OpenAIResponsesProvider:
             )
             self._emit_provider_failure(call_sequence, failure)
             raise failure from None
+        user_input: str | list[dict[str, Any]]
+        if image_data_url is None:
+            user_input = user_content
+        else:
+            user_input = [
+                {"type": "input_text", "text": user_content},
+                {"type": "input_image", "image_url": image_data_url, "detail": "high"},
+            ]
         request: dict[str, Any] = {
             "model": model,
             "input": [
                 {"role": "system", "content": instructions},
-                {"role": "user", "content": user_content},
+                {"role": "user", "content": user_input},
             ],
             "text_format": response_type,
         }
@@ -521,7 +612,11 @@ class OpenAIResponsesProvider:
             failure = None
         except Exception as exc:
             response = None
-            failure = _safe_failure(operation, exc)
+            failure = _safe_failure(
+                operation,
+                exc,
+                include_provider_message=operation != "inspect_page",
+            )
         if failure is not None:
             self._emit_provider_failure(call_sequence, failure)
             raise failure from None
@@ -572,16 +667,17 @@ class OpenAIResponsesProvider:
     def _emit_provider_failure(
         self, call_sequence: int, failure: OpenAIProviderError
     ) -> None:
+        configured_model = self.config.text_model
+        if failure.operation == "verify":
+            configured_model = self.config.verifier_model
+        elif failure.operation == "inspect_page":
+            configured_model = self.config.multimodal_model or self.config.text_model
         emit_safe_event(
             self._event_sink,
             "SAFE_PROVIDER_CALL_FAILED",
             sequence=call_sequence,
             operation=failure.operation,
-            configured_model=(
-                self.config.verifier_model
-                if failure.operation == "verify"
-                else self.config.text_model
-            ),
+            configured_model=configured_model,
             error_type=failure.error_type,
             status_code=failure.status_code,
             openai_error_type=failure.openai_error_type,

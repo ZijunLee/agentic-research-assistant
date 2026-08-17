@@ -43,3 +43,15 @@ wrong or what evidence is requested. Do not infer support from the draft's confi
 
 {UNTRUSTED_EVIDENCE}
 """.strip()
+
+PAGE_INSPECTION_PROMPT = f"""
+Interpret exactly one supplied scientific PDF page image for the bounded question.
+Describe only visible page evidence, identify the relevant figure, table, diagram, or
+visual-layout elements, and give a concise supported answer. Use limitations when labels,
+values, relationships, or the requested evidence are unreadable or absent. Do not perform
+OCR, chart digitization, causal extrapolation, or hidden reasoning. Return the submitted
+paper ID, 1-based physical page, and question exactly. Select figure or table as the
+primary Evidence modality; mixed visual content may still be described in the elements.
+
+{UNTRUSTED_EVIDENCE}
+""".strip()

@@ -6,6 +6,7 @@ from .models import (
     CorpusScope,
     Evidence,
     EvidenceModality,
+    PageInspectionResult,
     PaperRecord,
     ResearchDraft,
     VerificationResult,
@@ -19,6 +20,7 @@ __all__ = [
     "CorpusScope",
     "Evidence",
     "EvidenceModality",
+    "PageInspectionResult",
     "PaperRecord",
     "ResearchDraft",
     "VerificationResult",
@@ -26,4 +28,3 @@ __all__ = [
     "VerifierStatus",
     "load_config",
 ]
-

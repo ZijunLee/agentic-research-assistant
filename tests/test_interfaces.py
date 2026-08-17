@@ -13,6 +13,7 @@ from l3s_agent.interfaces import (
 )
 from l3s_agent.models import (
     Evidence,
+    PageInspectionResult,
     PaperRecord,
     VerificationFinding,
     VerificationResult,
@@ -35,7 +36,7 @@ class FakeProvider:
 
     def inspect_page(
         self, *, image_path: Path, paper_id: str, page: int, question: str
-    ) -> Evidence:
+    ) -> PageInspectionResult:
         raise NotImplementedError
 
 

@@ -358,12 +358,11 @@ actions, budgets, Evidence IDs, tool-call IDs, and the exact two-verifier limit.
 The runtime verifier is a reliability mechanism, not the later independent
 system-evaluation judge.
 
-The initial production registry exposes only hybrid base-corpus retrieval.
-Literature search, page inspection, and Python analysis remain explicitly
-unavailable and retain the existing bounded failure behavior. The production
-factory validates and loads the existing retrieval index, initializes the
-frozen GTE revision locally with remote model code disabled, and uses MPS for
-query embeddings.
+The Phase 5B production smoke test used only hybrid base-corpus retrieval;
+literature search, page inspection, and Python analysis were unavailable for
+that frozen run. The production factory validates and loads the existing
+retrieval index, initializes the frozen GTE revision locally with remote model
+code disabled, and uses MPS for query embeddings.
 
 Real LLM calls require an uncommitted environment variable:
 
@@ -388,6 +387,26 @@ retrieve (3 new, 2 duplicate) -> retrieve (0 new, 4 duplicate) -> draft ->
 verifier PASS`. The runtime admitted 8 unique Evidence records, structurally
 grounded 6 claims with valid cited Evidence IDs, received verifier `PASS`, and
 selected no unavailable tool. This is a smoke-test observation, not a benchmark.
+
+## Phase 5C canonical page inspection
+
+Phase 5C adds `inspect_page` as a bounded Research Agent tool following the
+principle “text retrieves the page; vision interprets the page.” It resolves
+only `(paper_id, 1-based page)` entries from the completed Phase 3 artifact,
+checks `pages.jsonl` and the selected PNG SHA-256, and never accepts a model- or
+user-supplied filesystem path. One image and one bounded question are sent to
+the existing stateless provider, and the typed interpretation becomes exactly
+one session-scoped figure/table Evidence record with deterministic provenance.
+
+The independent verifier may check cited derived visual Evidence as bounded
+text, but it does not independently re-read the page image. Images, data URLs,
+prompts, raw provider objects, and inspection content are excluded from safe
+runtime events. Phase 5C passed a provider-level multimodal smoke test. In one
+visually dependent evaluation, the Research Agent naturally retrieved the
+relevant paper, inspected its canonical physical page, admitted one
+session-scoped visual Evidence record with paper/page provenance, drafted with
+mixed text and visual citations, and received verifier `PASS`. This is a smoke
+test observation, not a benchmark or a claim that vision is always necessary.
 
 ## Secrets
 
