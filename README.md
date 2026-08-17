@@ -67,15 +67,11 @@ The evaluation is organized around three questions:
 2. Did it retrieve the right scientific evidence?
 3. Did the final claim actually follow from that evidence?
 
-The planned evaluation set contains approximately 12 questions spanning:
-
-- text RAG
-- literature expansion
-- multimodal figure/table inspection
-- ML/data analysis
-- mixed literature + ML reasoning
-- missing evidence
-- conflicting evidence
+Gate 4A uses a frozen 10-case diagnostic suite: three offline retrieval cases,
+three historical production observations, and four new-live observations. The
+classes retain separate denominators and are not presented as a statistically
+representative benchmark. Full case definitions and results are in
+`docs/EVALUATION_PLAN.md` and `evaluation/system_results_summary.json`.
 
 ## Repository documentation
 
@@ -309,8 +305,35 @@ MRR, and first relevant rank for BM25, dense, and hybrid modes:
 conda run -n l3s_agent_311 python -m l3s_agent.retrieval.cli evaluate
 ```
 
-Evaluation requires a built retrieval index. No retrieval metrics are claimed
-yet.
+The final deterministic six-query measurements were:
+
+| Mode | Hit@3 | Hit@5 | Page Recall@3 | Page Recall@5 | MRR |
+|---|---:|---:|---:|---:|---:|
+| BM25 | 0.833 | 0.833 | 0.264 | 0.375 | 0.611 |
+| Dense | 0.500 | 0.500 | 0.222 | 0.222 | 0.417 |
+| Hybrid RRF | 0.667 | 0.667 | 0.208 | 0.264 | 0.583 |
+
+BM25 outperformed hybrid on this small frozen gold set; no parameters or gold
+labels were changed after measurement.
+
+## Gate 4A system observations
+
+| Case | Type | Expected → actual tools | Support | Verifier | Manual reliability | Outcome |
+|---|---|---|---|---|---|---|
+| M01 | historical | retrieve → retrieve | text | PASS | — | text-sufficient route |
+| M02 | historical | retrieve + inspect → retrieve + inspect | text + visual | PASS | — | visual route |
+| A01 | historical | Python → Python | computed | PASS | — | terminal pass |
+| X01 | new live | retrieve + Python → retrieve + Python | text + computed | PASS | SUPPORTED | scoped mixed-provenance answer |
+| O01 | new live | cautious/retrieve → retrieve | none cited | PASS | INSUFFICIENT_EVIDENCE | safe refusal; six retrievals |
+| S01 | new live | retrieve → retrieve | text | PASS | PARTIALLY_SUPPORTED | grounded but incomplete wind coverage |
+| I01 | new live | retrieve → retrieve | text | PASS | SUPPORTED | rejected universal winner |
+
+All seven documented verifier outcomes were PASS. Among the four new-live
+cases, routing and structural provenance passed in 4/4, no unavailable tool was
+selected, and the manual-label distribution was 2 SUPPORTED, 1
+PARTIALLY_SUPPORTED, and 1 INSUFFICIENT_EVIDENCE. Historical manual labels
+remain unassigned. These are small diagnostic observations—not a benchmark—and
+verifier PASS is not treated as a human reliability judgment.
 
 ## Phase 5A bounded agent runtime
 
@@ -494,8 +517,8 @@ The implementation is expected to include:
 - Evidence Verifier (separate production model/context wired and smoke-tested)
 - multimodal page inspection (implemented and smoke-tested)
 - small solar-generation ML experiment (implemented as a bounded local tool)
-- small page-level retrieval evaluator (implemented); final agent evaluation harness
-- saved execution traces and evaluation results
+- page-level retrieval evaluator and bounded Gate 4A system-evaluation harness (implemented)
+- safe ignored live records plus a tracked aggregate evaluation summary
 
 ## Important constraints
 

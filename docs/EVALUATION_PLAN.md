@@ -1,669 +1,326 @@
 # Evaluation Plan
 
-This document defines how the system will be evaluated.
-
-The evaluation design is intentionally separated from implementation so that retrieval quality, tool selection, and scientific reliability can be tested independently.
-
-The exact evaluation questions and gold evidence must be finalized only after the automatically collected paper corpus has been inspected.
-
----
-
-## Evaluation goals
-
-The evaluation should answer three core questions:
-
-1. Did the agent choose the right research action?
-2. Did the system retrieve the right scientific evidence?
-3. Did the final claim actually follow from that evidence?
-
-These correspond to:
-
-- agentic behavior
-- retrieval / RAG quality
-- scientific reliability
-
----
-
-## Evaluation question taxonomy
-
-The evaluation harness should contain approximately 12 questions.
-
-The taxonomy is frozen as follows:
-
-- 4 text-RAG questions
-- 1 literature-expansion question
-- 2 multimodal figure/table questions
-- 1 ML/data-analysis question
-- 1 mixed literature + ML question
-- 1 missing-evidence question
-- 2 conflicting-evidence questions
-
-Total:
-
-12 questions
-
-The exact wording may change after corpus inspection, but the category distribution should remain approximately stable.
-
----
-
-## Gold-label creation
-
-Gold labels must be created after the automatic literature collection step.
-
-Do not manually curate the paper corpus first and then claim that collection was automated.
-
-Recommended process:
-
-1. run automated literature search
-2. automatically collect approximately 8-12 papers
-3. inspect the resulting corpus manually
-4. identify scientifically meaningful test questions
-5. identify the correct supporting paper(s)
-6. identify supporting page(s)
-7. identify figure/table references where relevant
-8. write concise expected-answer notes
-9. define expected tool behavior
-10. save gold labels in machine-readable form
-
-The purpose of manual inspection is evaluation annotation, not replacement of automated discovery.
-
----
-
-## Avoid circular evaluation
-
-Do not rely on one LLM to:
-
-- generate all questions
-- generate the gold answers
-- answer the questions
-- judge its own answers
-
-LLMs may assist with candidate question generation, but gold evidence must be manually verified against the source papers.
-
-LLM-as-judge may be used only as a supplementary evaluation signal.
-
-Primary evidence correctness should remain grounded in manually verified paper/page labels.
-
----
-
-## Suggested question schema
-
-Suggested file:
-
-`evaluation/questions.json`
-
-Each question may contain fields such as:
-
-```json
-{
-  "id": "q01",
-  "question": "How does cloud cover affect photovoltaic forecasting accuracy?",
-  "category": "text_rag",
-  "gold_papers": ["paper_03"],
-  "gold_pages": [5, 6],
-  "gold_sources": ["Section 4.2"],
-  "expected_tools": ["retrieve_evidence"],
-  "expected_answer_notes": "The paper reports lower forecasting accuracy under higher cloud variability.",
-  "requires_uncertainty": false
-}
-```
-
-For multimodal questions:
-
-```json
-{
-  "id": "q06",
-  "question": "Which weather condition shows the largest forecasting error in the reported figure?",
-  "category": "multimodal",
-  "gold_papers": ["paper_07"],
-  "gold_pages": [8],
-  "gold_sources": ["Figure 4"],
-  "expected_tools": ["retrieve_evidence", "inspect_page"],
-  "expected_answer_notes": "Answer should identify the condition shown as highest in Figure 4.",
-  "requires_uncertainty": false
-}
-```
-
-For missing-evidence questions:
-
-```json
-{
-  "id": "q10",
-  "question": "Does the literature prove that cloud cover always reduces solar generation by at least 30%?",
-  "category": "missing_evidence",
-  "gold_papers": [],
-  "gold_pages": [],
-  "gold_sources": [],
-  "expected_tools": ["retrieve_evidence"],
-  "expected_answer_notes": "The corpus does not justify this universal quantitative claim.",
-  "requires_uncertainty": true
-}
-```
-
----
-
-# Layer 1: Agent behavior evaluation
-
-## Goal
-
-Evaluate whether the Research Agent chooses appropriate tools rather than following a fixed sequence.
-
-## What to record
-
-For every evaluation question, record:
-
-- question ID
-- expected tool categories
-- actual tool calls
-- tool-call order
-- number of calls
-- whether unnecessary tools were used
-- whether required tools were omitted
-
-Suggested execution trace:
-
-```json
-{
-  "question_id": "q06",
-  "tool_trace": [
-    "retrieve_evidence",
-    "inspect_page"
-  ]
-}
-```
-
-## Example routing expectations
-
-### Text-RAG question
-
-Expected:
-
-`retrieve_evidence`
-
-Usually not expected:
-
-- `inspect_page`
-- `run_ml_analysis`
-- new literature search
-
-### Literature-expansion question
-
-Expected:
-
-- initial retrieval or evidence assessment
-- `search_literature`
-- retrieval from newly available evidence
-
-### Multimodal question
-
-Expected:
-
-- retrieval / page localization
-- `inspect_page`
-
-### ML question
-
-Expected:
-
-`run_ml_analysis`
-
-### Mixed question
-
-Expected:
-
-- literature retrieval
-- ML analysis
-- synthesis
-
-### Missing evidence
-
-Expected:
-
-- retrieval
-- possibly search
-- explicit insufficiency
-
-### Conflicting evidence
-
-Expected:
-
-- retrieval from multiple papers
-- verifier conflict detection
-- possibly additional search
-
----
-
-## Routing metrics
-
-A simple MVP metric can use expected tool categories versus actual tool categories.
-
-Possible metrics:
-
-- required-tool recall
-- unnecessary-tool rate
-- exact routing match
-
-These do not need to be overly sophisticated.
-
-The main goal is to demonstrate that tool choice is measurable.
-
----
-
-# Layer 2: Evidence retrieval evaluation
-
-## Goal
-
-Test whether relevant evidence is retrieved.
-
-## Primary metrics
-
-Use:
-
-- Recall@3
-- Recall@5
-
-For each question with gold textual evidence:
-
-Recall@k = 1 if at least one gold evidence item appears in the top-k results, otherwise 0.
-
-Average across eligible questions.
-
-Depending on annotation quality, evaluation may be done at:
-
-- paper level
-- page level
-- chunk level
-
-Page-level evaluation is preferable where practical because the system preserves page provenance.
-
----
-
-## Citation validity
-
-For every citation used in a final answer, check:
-
-- paper ID exists
-- page exists
-- evidence object exists
-- cited content is relevant to the associated claim
-
-Citation formatting alone does not count as citation correctness.
-
----
-
-## Optional retrieval ablation
-
-If time permits, compare:
-
-1. dense-only retrieval
-2. hybrid BM25 + dense retrieval
-
-Use the same gold questions.
-
-Report actual measured differences only.
-
-Do not assume hybrid retrieval is better before running the evaluation.
-
----
-
-## Retrieval error analysis
-
-For failed questions, classify the likely cause where possible:
-
-- relevant paper was never collected
-- relevant content was not extracted
-- chunk boundary problem
-- lexical mismatch
-- semantic retrieval ranking error
-- figure/table evidence not represented textually
-- metadata/provenance mismatch
-
-A small error-analysis table is more informative than a single aggregate metric.
-
----
-
-# Layer 3: Scientific reliability evaluation
-
-## Goal
-
-Determine whether final claims are justified by the evidence.
-
-This is the main role of the Evidence Verifier.
-
-## Reliability dimensions
-
-Evaluate:
-
-- claim support
-- citation support
-- missing-evidence handling
-- conflicting-evidence handling
-- uncertainty expression
-- overclaim prevention
-- unsupported numerical precision
-
----
-
-## Suggested claim-level annotation
-
-For each final answer, important claims may be marked as:
+This document defines the frozen Gate 4A system-evaluation design. Evaluation
+asks three separate questions:
+
+1. Did the Research Agent choose a scientifically useful action?
+2. Did retrieval find manually verified paper/page evidence?
+3. Did each final claim resolve to the Evidence or AnalysisResult it cites?
+
+The suite is deliberately small and diagnostic. It is not a benchmark, and its
+execution classes must not be pooled into one success rate.
+
+## Corpus and annotation boundary
+
+The cases were defined only after inspecting the automatically discovered
+10-paper frozen base corpus. Gold literature relevance is primarily annotated
+as paper_id plus 1-based physical PDF page. More than one page may be valid.
+The Berlin computed case instead uses the frozen deterministic AnalysisResult
+ID.
+
+Manual annotation is used for evaluation, not corpus selection. The suite does
+not manufacture scientific disagreement, balance, or answer coverage. In
+particular, contextual heterogeneity is not automatically conflicting evidence.
+
+The versioned source of truth is evaluation/system_cases.json. It records the
+source Evidence artifact checksum and contains scientific expectations, not
+generated answers, request IDs, provider payloads, or credentials.
+
+## Frozen Gate 4A cases
+
+| ID | Execution class | Scientific purpose | Expected useful tools |
+|---|---|---|---|
+| T01 | offline | Solar irradiance/cloud forecasting retrieval | retrieve_evidence |
+| T02 | offline | Wind atmospheric variability, turbulence, and wakes retrieval | retrieve_evidence |
+| T03 | offline | Wind-solar complementarity retrieval | retrieve_evidence |
+| M01 | historical | Text-sufficient NWP processing control | retrieve_evidence |
+| M02 | historical | Visually dependent Romania/Dubai comparison | retrieve_evidence, inspect_page |
+| A01 | historical | Berlin computed analysis grounding | run_python |
+| S01 | new_live | Broad multi-paper reliability synthesis | retrieve_evidence |
+| O01 | new_live | Out-of-corpus insufficiency | direct cautious response or retrieve_evidence |
+| I01 | new_live | Unsupported universal-method claim | retrieve_evidence |
+| X01 | new_live | Mixed literature and Berlin computation | retrieve_evidence, run_python |
+
+This 10-case design replaces the earlier provisional 12-question taxonomy.
+There is no mandatory literature-expansion case because live expansion is
+unavailable in the frozen production runtime. There is no conflict quota:
+real conflicts must not be fabricated merely to satisfy a category count.
+
+### Important case semantics
+
+- O01 permits either a direct cautious zero-claim answer or retrieval followed
+  by a cautious insufficiency answer. Unrelated renewable Evidence must not be
+  used to make coral-science claims, and corpus silence is not negative
+  scientific evidence.
+- I01 evaluates insufficiency for a universal forecasting-method claim.
+  Variation across datasets, horizons, locations, seasons, and metrics is not
+  itself CONFLICTING_EVIDENCE.
+- M02 requires retrieval before page inspection so that the page is selected
+  through corpus evidence rather than supplied as an answer hint.
+- X01 is the highest-value adaptive case: it should keep published Evidence and
+  the local Berlin AnalysisResult distinct while comparing them cautiously.
+
+## Execution classes and denominators
+
+### Offline: T01–T03
+
+These cases exercise deterministic Phase 4 retrieval only. They do not invoke
+an LLM, Research Agent, verifier, vision model, or Berlin analysis and do not
+make live answer-quality claims.
+
+Report page-level metrics for these three cases as their own denominator:
+
+- Hit@3
+- Hit@5
+- Page Recall@3
+- Page Recall@5
+- reciprocal rank of the first relevant page (MRR when aggregated)
+
+### Historical: M01, M02, A01
+
+These cases preserve already documented production observations:
+
+- M01: retrieval-only text-sufficient route, verifier PASS.
+- M02: retrieval then page inspection, mixed base and visual support,
+  verifier PASS.
+- A01: bounded Berlin analysis, first-class computed support, verifier PASS.
+
+Historical records may contain only facts already documented at the time of
+the original run. Unrecorded call, token, time, or retrieval metrics remain
+null; they must not be reconstructed from memory or inferred from present
+code. These three cases form a separate historical denominator and are not
+rerun by Gate 4A implementation work.
+
+### New live: S01, O01, I01, X01
+
+Each new live case must be explicitly selected by case_id. There is no implicit
+run-all operation. Running one can use the frozen production runtime and
+consume API calls, so live execution requires separate approval.
+
+The harness must never silently execute all new-live cases, rerun historical
+cases, or run the Berlin analysis as part of validation.
+
+## Layer 1: routing evaluation
+
+Compare attempted tool categories with each case's expected, optional, and
+unavailable tools. Report one deterministic label:
+
+- appropriate
+- missed_useful_tool
+- unnecessary_tool_use
+- unavailable_tool_attempt
+
+Unavailable-tool attempts take precedence. Missing expected tools and violated
+prerequisites are next, followed by unnecessary tools. Repeated calls to an
+otherwise allowed tool are not automatically wrong; duplicate Evidence and
+bounded tool-use metadata should be inspected separately.
+
+For O01, both no tool call and a retrieval call are appropriate. For M02,
+inspect_page before retrieve_evidence is a missed-useful-tool/prerequisite
+failure even if both tools eventually appear.
+
+## Layer 2: retrieval evaluation
+
+Gold relevance is page-level: paper_id plus 1-based physical PDF page.
+Multiple chunks from one page count as one relevant page. Primary retrieval
+metrics are:
+
+- Hit@3 and Hit@5: whether any gold page occurs within the cutoff;
+- Page Recall@3 and Page Recall@5: unique retrieved gold pages divided by all
+  annotated gold pages;
+- MRR: reciprocal rank of the first relevant page.
+
+T01–T03 are evaluated with the frozen hybrid retrieval settings. No answer is
+generated and no verifier status is imputed. The approved final aggregation
+regenerated the six-query Phase 4 BM25/dense/hybrid measurements once and ran
+T01–T03 deterministically without a Research Agent. The safe measured summary
+is tracked in `evaluation/system_results_summary.json`; retrieval parameters,
+gold labels, and the canonical index were unchanged.
+
+## Layer 3: structural provenance and scientific reliability
+
+For a completed live outcome, validate at least:
+
+- every affirmative claim has an Evidence ID, AnalysisResult ID, or both;
+- every cited Evidence ID resolves to admitted Evidence;
+- every cited AnalysisResult ID resolves to an admitted AnalysisResult;
+- cited Evidence retains paper, title, source, and 1-based page provenance;
+- cited visual Evidence is session-scoped and distinct from base Evidence;
+- AnalysisResult objects remain distinct from literature/page Evidence;
+- every cited computed result has a producing Python ToolCall;
+- the producing call appears in ResearchDraft.tool_trace;
+- every draft tool-trace ID and stored ToolResult call ID resolves;
+- no unavailable tool was dispatched;
+- no support ID was invented.
+
+These checks establish structural grounding. They do not by themselves prove
+that a scientific interpretation is correct.
+
+The independent verifier status remains one of PASS, NEED_MORE_EVIDENCE,
+UNSUPPORTED_CLAIM, or CONFLICTING_EVIDENCE. Verifier behavior and manual
+scientific review are not interchangeable. Verifier PASS must not be described
+as model reproduction, raw-image reinspection, or a human reliability label.
+
+## Manual reliability review
+
+After a new live case has a safe persisted record, a human reviewer may assign
+exactly one of:
 
 - SUPPORTED
 - PARTIALLY_SUPPORTED
 - UNSUPPORTED
 - CONFLICTING
-- NOT_ENOUGH_EVIDENCE
+- INSUFFICIENT_EVIDENCE
+
+The field defaults to null. It is never automatically derived from verifier
+status, routing, citations, or retrieval metrics.
 
-The verifier runtime statuses remain:
+Review should assess:
 
-- PASS
-- NEED_MORE_EVIDENCE
-- UNSUPPORTED_CLAIM
-- CONFLICTING_EVIDENCE
+- whether cited material actually supports the associated claim;
+- whether qualifications, scope, and uncertainty are preserved;
+- whether predictive associations are incorrectly presented as causal;
+- whether exact values or cross-study equivalence are overstated;
+- whether an insufficiency response is appropriate rather than evasive.
 
----
+## Multimodal evaluation
 
-## Missing-evidence evaluation
+M01 and M02 form a paired routing observation:
 
-Include at least 1 question where the requested conclusion cannot be justified from the corpus.
+- M01 tests that page inspection is not used when text is sufficient.
+- M02 tests natural selection of page inspection for a visual comparison.
 
-Success criteria:
-
-- no fabricated paper
-- no fabricated citation
-- no unsupported exact number
-- explicit statement that evidence is insufficient
-- appropriate verifier status
-
-Failure examples:
-
-- confidently answering anyway
-- inventing universal claims from limited studies
-- extrapolating beyond the available evidence
-
----
-
-## Conflicting-evidence evaluation
-
-Include 2 questions where papers disagree if suitable cases can be found in the automatically collected corpus.
-
-Success criteria:
-
-- identify that studies disagree
-- preserve separate evidence sources
-- avoid collapsing disagreement into one definitive conclusion
-- mention methodological/context differences only when evidence supports them
-- express residual uncertainty
-
-Possible conflict sources:
-
-- different geographic regions
-- different forecast horizons
-- different datasets
-- different model classes
-- different weather regimes
-- different evaluation metrics
-
-Do not manufacture a conflict if the corpus does not contain a real one.
-
-If necessary, adapt the exact questions while preserving the conflict category.
-
----
-
-# Multimodal evaluation
-
-## Goal
-
-Evaluate both visual evidence extraction and correct visual-tool routing.
-
-Include approximately 2 multimodal questions.
-
-Possible types:
-
-- interpret a figure trend
-- identify the highest/lowest value in a table
-- compare conditions shown visually
-- read a qualitative result that is not fully stated in surrounding text
-
-## Gold labels
-
-For each multimodal question, record:
-
-- paper
-- page
-- figure/table identifier
-- expected qualitative conclusion
-- expected numerical conclusion only if clearly readable
-
-## Success criteria
-
-- correct page selected
-- `inspect_page` called when needed
-- answer consistent with visual evidence
-- no invented precision when the image is unclear
-
-Also test some text-only questions to confirm that vision is not always invoked.
-
----
-
-# ML / scientific analysis evaluation
-
-## Goal
-
-Evaluate whether the system can perform a small scientifically valid ML analysis.
-
-## Required checks
-
-Verify:
-
-- correct feature/target definition
-- chronological split
-- no test-set leakage
-- preprocessing fitted only on training data
-- baseline included
-- linear model included
-- nonlinear model included
-- MAE reported
-- RMSE reported
-- R2 reported
-- permutation feature importance reported
-- interpretation avoids causal overstatement
-
-## Result interpretation
-
-A successful answer should use wording such as:
-
-"In this dataset..."
-
-or:
-
-"The model suggests predictive importance..."
-
-Avoid:
-
-"This proves that variable X causes..."
-
-The ML component is empirical and dataset-specific.
-
----
-
-# Mixed literature + ML evaluation
-
-Include at least 1 question that requires both literature evidence and empirical ML analysis.
-
-Example pattern:
-
-"Which weather variables are emphasized in the literature, and does the small empirical model show a similar predictive pattern?"
-
-Expected behavior:
-
-1. retrieve literature evidence
-2. run ML analysis
-3. compare findings
-4. distinguish literature-wide evidence from dataset-specific empirical evidence
-5. avoid claiming agreement if results differ
-
-This question is especially useful for demonstrating adaptive multi-tool reasoning.
-
----
-
-# Verifier evaluation
-
-## Goal
-
-Demonstrate that the second agent performs an independent reasoning responsibility.
-
-Include at least one example where:
-
-1. Research Agent creates a draft
-2. Verifier rejects or requests more evidence
-3. Research Agent gathers additional evidence
-4. Verifier checks again
-5. final answer is revised
-
-Maximum verifier rounds:
-
-2
-
-The verifier should inspect claim-evidence alignment rather than simply produce another answer.
-
----
-
-# Tool failure evaluation
-
-Include at least one simple failure scenario if practical.
-
-Possible cases:
-
-- PDF unavailable
-- malformed PDF
-- unreadable visual
-- missing dataset field
-- weak search results
-
-Success means:
-
-- system does not crash
-- failure is logged
-- fallback is attempted where reasonable
-- final answer exposes limitations when unresolved
-
----
-
-# Execution metrics
-
-For each example, optionally record:
-
-- number of LLM calls
-- number of tool calls
-- number of retrieval calls
-- number of vision calls
-- verifier rounds
-- latency
-
-These are secondary metrics.
-
-They are useful to show that adaptive reasoning does not result in uncontrolled tool usage.
-
----
-
-# Evaluation result storage
-
-Suggested output:
-
-`results/evaluation.json`
-
-Possible structure:
-
-```json
-{
-  "retrieval": {
-    "recall_at_3": 0.0,
-    "recall_at_5": 0.0
-  },
-  "routing": {
-    "required_tool_recall": 0.0,
-    "unnecessary_tool_rate": 0.0
-  },
-  "reliability": {
-    "supported_claim_rate": 0.0,
-    "missing_evidence_success": false,
-    "conflict_detection_success": false
-  }
-}
-```
-
-These values are placeholders only.
-
-Do not commit fabricated final evaluation numbers.
-
-Populate metrics only after actual evaluation runs.
-
----
-
-# Human review
-
-Before reporting final results:
-
-1. inspect all 12 questions
-2. verify gold paper/page labels
-3. inspect multimodal gold evidence
-4. review missing-evidence cases
-5. review conflicting-evidence cases
-6. inspect suspicious metric results
-7. manually review example final answers
-
-The final presentation should report only results that were actually measured.
-
----
-
-# Presentation-oriented evaluation summary
-
-The full evaluation can be summarized in the interview through three questions:
-
-1. Did the agent choose the right tool?
-2. Did it retrieve the right evidence?
-3. Did its conclusion follow from that evidence?
-
-Example presentation metrics may include:
-
-- tool-routing correctness
-- Recall@3 / Recall@5
-- citation validity
-- multimodal question success
-- missing-evidence behavior
-- conflicting-evidence behavior
-
-Use actual measured values only.
-
----
-
-# Evaluation limitations
-
-The evaluation itself has limitations.
-
-Examples:
-
-- only approximately 12 questions
-- manually annotated gold evidence
-- small automatically collected corpus
-- domain-limited questions
-- LLM stochasticity
-- multimodal interpretation uncertainty
-- incomplete coverage of systematic-review behavior
-
-These limitations should be stated explicitly rather than hidden.
-
----
-
-# Final evaluation principle
-
-The goal is not to maximize one benchmark score.
-
-The goal is to demonstrate that the system behaves like a trustworthy scientific research assistant:
-
-- it chooses useful research actions
-- it retrieves traceable evidence
-- it checks whether claims are supported
-- it identifies missing or conflicting evidence
-- it exposes uncertainty instead of fabricating certainty
+For visual support, record the canonical paper and physical page, derived
+session Evidence ID, modality, and session scope. The verifier checks the
+derived visual Evidence text; it does not independently re-read the raw image.
+Do not claim that one successful page inspection proves vision is generally
+necessary or accurate.
+
+## Computed and mixed evaluation
+
+A01 checks that the Berlin task is contemporaneous prediction with a
+chronological 2018/2019 split, bounded fixed models, predictive/noncausal
+interpretation, and first-class computed-result provenance.
+
+X01 requires literature retrieval and the frozen Berlin analysis. Literature
+claims must cite Evidence; local computed claims must cite the AnalysisResult
+and its producing tool call. Similarity between the literature and local
+feature rankings must be described cautiously, without claiming causal
+confirmation, future forecasting, or exact equivalence.
+
+## Safe result storage
+
+Generated Gate 4A records may be written only beneath
+data/cache/system_evaluation/. That directory is an ignored derived cache. The
+writer refuses silent overwrite and rejects output paths outside the cache
+root.
+
+Safe persisted records may include:
+
+- case ID, question, and execution class;
+- typed action category, user-safe reason, and sanitized arguments;
+- tool names and call IDs;
+- final answer, claim text, and cited support IDs;
+- cited Evidence provenance without Evidence content;
+- AnalysisResult IDs without full result blobs;
+- verifier status and bounded findings;
+- structural provenance booleans;
+- model identifiers, safe token counts, call counts, and wall time.
+
+They must exclude:
+
+- API keys and Authorization headers;
+- prompts and raw request/response bodies;
+- request IDs;
+- complete Evidence content;
+- complete AnalysisResult values;
+- image bytes or data URLs;
+- hidden reasoning;
+- unsafe exception chains.
+
+## Reporting rules
+
+Always report offline, historical, and new-live outcomes separately. Never
+combine them into a single accuracy denominator.
+
+Report only measured or directly documented values. Missing historical metrics
+remain null; unexecuted live cases have no outcome. Do not interpret the small
+suite as a benchmark, optimize prompts or retrieval against it, or edit gold
+pages after observing outcomes.
+
+## Limitations
+
+- The frozen corpus contains only 10 automatically selected papers.
+- Gold pages and live-answer reliability require manual judgment.
+- Three offline retrieval cases cannot estimate broad-domain retrieval quality.
+- Historical observations were not captured by the Gate 4A harness and have
+  intentionally incomplete metadata.
+- Four new-live cases are stochastic and potentially costly.
+- The suite contains an insufficiency case but no manufactured conflict case.
+- Visual verification operates on derived page-inspection text.
+- Computed-result verification checks consistency, not reproduction.
+
+The goal is a transparent diagnostic of action choice, evidence recovery, and
+claim grounding—not maximization of one aggregate score.
+
+## Final Gate 4A observations
+
+### Frozen six-query Phase 4 retrieval
+
+| Mode | Hit@3 | Hit@5 | Page Recall@3 | Page Recall@5 | MRR | First relevant ranks (q01–q06) |
+|---|---:|---:|---:|---:|---:|---|
+| BM25 | 0.833 | 0.833 | 0.264 | 0.375 | 0.611 | —, 3, 1, 1, 3, 1 |
+| Dense | 0.500 | 0.500 | 0.222 | 0.222 | 0.417 | —, 2, 1, —, 1, — |
+| Hybrid RRF | 0.667 | 0.667 | 0.208 | 0.264 | 0.583 | —, 2, 1, —, 1, 1 |
+
+BM25 outperformed hybrid on this small frozen gold set. This is reported as a
+diagnostic result; no retrieval setting was tuned after measurement.
+
+### Offline Gate 4A retrieval cases
+
+| Case | Gold pages | Top-five retrieved physical pages | Hit@3 / Hit@5 | Recall@3 / Recall@5 | First relevant rank | Provenance |
+|---|---|---|---|---|---:|---|
+| T01 | W3089230449:4,5,6 | W3089230449:3,1; W3126094341:7; W3089230449:3; W3126094341:5 | 0 / 0 | 0 / 0 | — | valid |
+| T02 | W2974473399:16,19,25 | W2974473399:31,45,53,44,54 | 0 / 0 | 0 / 0 | — | valid |
+| T03 | W2933024154:3,13,14,18 | W2933024154:13,17,30,15,19 | 1 / 1 | 0.25 / 0.25 | 1 | valid |
+
+T01 and T02 retrieved the correct papers but missed the annotated pages within
+the top five. T03 retrieved a gold page at rank 1. These are retrieval-layer
+diagnostics, not live answer evaluations.
+
+### Seven real end-to-end observations
+
+| Case | Type | Expected → actual tools | Support | Verifier | Manual reliability | Outcome |
+|---|---|---|---|---|---|---|
+| M01 | historical | retrieve → retrieve | text | PASS | — | text-sufficient routing observed; terminal unrecorded |
+| M02 | historical | retrieve + inspect → retrieve + inspect | text + visual | PASS | — | visual routing observed; terminal unrecorded |
+| A01 | historical | Python → Python | computed | PASS | — | terminal pass |
+| X01 | new live | retrieve + Python → retrieve + Python | text + computed | PASS | SUPPORTED | scoped mixed-provenance answer |
+| O01 | new live | cautious/retrieve → retrieve | none cited | PASS | INSUFFICIENT_EVIDENCE | safe refusal after six retrievals |
+| S01 | new live | retrieve → retrieve | text | PASS | PARTIALLY_SUPPORTED | grounded claims, incomplete wind coverage |
+| I01 | new live | retrieve → retrieve | text | PASS | SUPPORTED | rejected a universal best method |
+
+Documented verifier outcomes were PASS in 7/7 observations. Terminal outcome
+was recorded for five cases and was `pass` in 5/5; M01 and M02 are excluded
+from that denominator because their historical terminal status was not
+recorded. The four new-live cases were 4/4 routing-appropriate and 4/4 passed
+automatic structural-provenance checks; none required verifier #2 or attempted
+an unavailable tool. Historical manual labels remain null because verifier
+PASS alone is not a defensible human annotation.
+
+The new-live manual-label distribution is 2 SUPPORTED, 1 PARTIALLY_SUPPORTED,
+and 1 INSUFFICIENT_EVIDENCE. O01 is a successful robustness observation: the
+system refused to turn unrelated renewable-energy evidence into a coral-science
+answer, although it used six retrieval calls before stopping. S01 preserves the
+distinction between verifier PASS and partial human reliability: its claims
+were grounded, but wind-specific coverage was weak, only two papers supported
+the synthesis, and retrieval calls 3–5 did not add final cited support. X01
+kept literature Evidence and the local AnalysisResult distinct and retained
+regional, contemporaneous, and noncausal scope; it did not explicitly enumerate
+every underlying AnalysisResult limitation. I01 rejected a universal winner
+and treated its within-study result without cross-context overgeneralization.
+
+Across X01, O01, S01, and I01, the single-run operational totals were 30 API
+calls, 18 tool calls, 135,263 input tokens, 10,018 output tokens, 145,281 total
+tokens, and 168.152 seconds of runtime wall time. These are observations from
+one run per case, not latency, cost, or efficiency benchmarks.

@@ -1,0 +1,186 @@
+{
+  "schema_version": "1.0",
+  "generated_on": "2026-08-17",
+  "phase4_retrieval": {
+    "query_count": 6,
+    "bm25": {
+      "hit_at_3": 0.8333333333333334,
+      "hit_at_5": 0.8333333333333334,
+      "page_recall_at_3": 0.2638888888888889,
+      "page_recall_at_5": 0.375,
+      "mrr": 0.611111111111111,
+      "first_relevant_ranks": [null, 3, 1, 1, 3, 1]
+    },
+    "dense": {
+      "hit_at_3": 0.5,
+      "hit_at_5": 0.5,
+      "page_recall_at_3": 0.2222222222222222,
+      "page_recall_at_5": 0.2222222222222222,
+      "mrr": 0.4166666666666667,
+      "first_relevant_ranks": [null, 2, 1, null, 1, null]
+    },
+    "hybrid": {
+      "hit_at_3": 0.6666666666666666,
+      "hit_at_5": 0.6666666666666666,
+      "page_recall_at_3": 0.20833333333333334,
+      "page_recall_at_5": 0.2638888888888889,
+      "mrr": 0.5833333333333334,
+      "first_relevant_ranks": [null, 2, 1, null, 1, 1]
+    }
+  },
+  "offline_cases": [
+    {
+      "case_id": "T01",
+      "execution_class": "offline",
+      "tool_set": ["retrieve_evidence"],
+      "structural_provenance": true,
+      "retrieval_metrics": {
+        "hit_at_3": false,
+        "hit_at_5": false,
+        "page_recall_at_3": 0.0,
+        "page_recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "first_relevant_rank": null
+      }
+    },
+    {
+      "case_id": "T02",
+      "execution_class": "offline",
+      "tool_set": ["retrieve_evidence"],
+      "structural_provenance": true,
+      "retrieval_metrics": {
+        "hit_at_3": false,
+        "hit_at_5": false,
+        "page_recall_at_3": 0.0,
+        "page_recall_at_5": 0.0,
+        "reciprocal_rank": 0.0,
+        "first_relevant_rank": null
+      }
+    },
+    {
+      "case_id": "T03",
+      "execution_class": "offline",
+      "tool_set": ["retrieve_evidence"],
+      "structural_provenance": true,
+      "retrieval_metrics": {
+        "hit_at_3": true,
+        "hit_at_5": true,
+        "page_recall_at_3": 0.25,
+        "page_recall_at_5": 0.25,
+        "reciprocal_rank": 1.0,
+        "first_relevant_rank": 1
+      }
+    }
+  ],
+  "real_observations": [
+    {
+      "case_id": "M01",
+      "execution_class": "historical",
+      "expected_tool_set": ["retrieve_evidence"],
+      "actual_tool_set": ["retrieve_evidence"],
+      "support_types": ["text"],
+      "verifier_status": "PASS",
+      "manual_reliability": null,
+      "terminal_outcome": null,
+      "structural_provenance": null
+    },
+    {
+      "case_id": "M02",
+      "execution_class": "historical",
+      "expected_tool_set": ["retrieve_evidence", "inspect_page"],
+      "actual_tool_set": ["retrieve_evidence", "inspect_page"],
+      "support_types": ["text", "visual"],
+      "verifier_status": "PASS",
+      "manual_reliability": null,
+      "terminal_outcome": null,
+      "structural_provenance": null
+    },
+    {
+      "case_id": "A01",
+      "execution_class": "historical",
+      "expected_tool_set": ["run_python"],
+      "actual_tool_set": ["run_python"],
+      "support_types": ["analysis_result"],
+      "verifier_status": "PASS",
+      "manual_reliability": null,
+      "terminal_outcome": "pass",
+      "structural_provenance": null
+    },
+    {
+      "case_id": "X01",
+      "execution_class": "new_live",
+      "expected_tool_set": ["retrieve_evidence", "run_python"],
+      "actual_tool_set": ["retrieve_evidence", "run_python"],
+      "support_types": ["text", "analysis_result"],
+      "verifier_status": "PASS",
+      "manual_reliability": "SUPPORTED",
+      "terminal_outcome": "pass",
+      "structural_provenance": true
+    },
+    {
+      "case_id": "O01",
+      "execution_class": "new_live",
+      "expected_tool_set": ["retrieve_evidence"],
+      "actual_tool_set": ["retrieve_evidence"],
+      "support_types": [],
+      "verifier_status": "PASS",
+      "manual_reliability": "INSUFFICIENT_EVIDENCE",
+      "terminal_outcome": "pass",
+      "structural_provenance": true
+    },
+    {
+      "case_id": "S01",
+      "execution_class": "new_live",
+      "expected_tool_set": ["retrieve_evidence"],
+      "actual_tool_set": ["retrieve_evidence"],
+      "support_types": ["text"],
+      "verifier_status": "PASS",
+      "manual_reliability": "PARTIALLY_SUPPORTED",
+      "terminal_outcome": "pass",
+      "structural_provenance": true
+    },
+    {
+      "case_id": "I01",
+      "execution_class": "new_live",
+      "expected_tool_set": ["retrieve_evidence"],
+      "actual_tool_set": ["retrieve_evidence"],
+      "support_types": ["text"],
+      "verifier_status": "PASS",
+      "manual_reliability": "SUPPORTED",
+      "terminal_outcome": "pass",
+      "structural_provenance": true
+    }
+  ],
+  "aggregates": {
+    "documented_terminal_outcomes": {
+      "pass": 5,
+      "evaluated": 5
+    },
+    "documented_verifier_outcomes": {
+      "pass": 7,
+      "evaluated": 7
+    },
+    "new_live": {
+      "cases": 4,
+      "routing_appropriate": 4,
+      "structural_provenance_pass": 4,
+      "verifier_second_call_cases": 0,
+      "unavailable_tool_attempts": 0,
+      "manual_reliability_distribution": {
+        "SUPPORTED": 2,
+        "PARTIALLY_SUPPORTED": 1,
+        "UNSUPPORTED": 0,
+        "CONFLICTING": 0,
+        "INSUFFICIENT_EVIDENCE": 1
+      },
+      "single_run_operational_totals": {
+        "api_calls": 30,
+        "tool_calls": 18,
+        "input_tokens": 135263,
+        "output_tokens": 10018,
+        "total_tokens": 145281,
+        "runtime_wall_time_seconds": 168.15193370799534
+      }
+    }
+  }
+}

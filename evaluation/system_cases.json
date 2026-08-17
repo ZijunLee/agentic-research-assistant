@@ -1,0 +1,274 @@
+{
+  "schema_version": "1.0",
+  "source_evidence_sha256": "bafc20e33a93712a1c6f4a309fa2cc8773b846884ef4cbb21ae76d17524b549a",
+  "cases": [
+    {
+      "case_id": "T01",
+      "category": "solar_forecasting_text_retrieval",
+      "execution_class": "offline",
+      "question": "How are irradiance, cloud or sky conditions, and other weather variables used to forecast photovoltaic power?",
+      "scientific_purpose": "Evaluate page-level retrieval for solar forecasting inputs without claiming live answer quality.",
+      "expected_useful_tools": ["retrieve_evidence"],
+      "allowed_optional_tools": [],
+      "unavailable_tools": ["search_literature"],
+      "expected_support_types": ["text"],
+      "gold_pages": [
+        {"paper_id": "paper_W3089230449", "page": 4},
+        {"paper_id": "paper_W3089230449", "page": 5},
+        {"paper_id": "paper_W3089230449", "page": 6}
+      ],
+      "expected_analysis_result_ids": [],
+      "expected_answer_behavior": "Retrieve the manually verified pages describing sky, irradiance, and weather inputs; this offline case does not score a generated answer.",
+      "expected_verifier_behavior": "Not applicable to the deterministic retrieval-layer execution class.",
+      "failure_conditions": [
+        "No manually verified page appears in the evaluated retrieval depth.",
+        "Retrieved Evidence loses paper or 1-based page provenance.",
+        "The result is reported as a live Research Agent answer evaluation."
+      ]
+    },
+    {
+      "case_id": "T02",
+      "category": "wind_turbulence_wakes_text_retrieval",
+      "execution_class": "offline",
+      "question": "How do atmospheric turbulence and stability influence turbine wakes and wind-farm power production?",
+      "scientific_purpose": "Evaluate page-level retrieval for atmospheric controls on wakes and wind-farm output.",
+      "expected_useful_tools": ["retrieve_evidence"],
+      "allowed_optional_tools": [],
+      "unavailable_tools": ["search_literature"],
+      "expected_support_types": ["text"],
+      "gold_pages": [
+        {"paper_id": "paper_W2974473399", "page": 16},
+        {"paper_id": "paper_W2974473399", "page": 19},
+        {"paper_id": "paper_W2974473399", "page": 25}
+      ],
+      "expected_analysis_result_ids": [],
+      "expected_answer_behavior": "Retrieve text on atmospheric stability, turbulence, wake development, and power effects without generating a live answer.",
+      "expected_verifier_behavior": "Not applicable to the deterministic retrieval-layer execution class.",
+      "failure_conditions": [
+        "No manually verified page appears in the evaluated retrieval depth.",
+        "Retrieved Evidence loses paper or 1-based page provenance.",
+        "The result is reported as a live Research Agent answer evaluation."
+      ]
+    },
+    {
+      "case_id": "T03",
+      "category": "wind_solar_complementarity_text_retrieval",
+      "execution_class": "offline",
+      "question": "How can temporal or spatial complementarity between wind and solar reduce variability and improve reliability?",
+      "scientific_purpose": "Evaluate page-level retrieval for cross-modality complementarity and reliability.",
+      "expected_useful_tools": ["retrieve_evidence"],
+      "allowed_optional_tools": [],
+      "unavailable_tools": ["search_literature"],
+      "expected_support_types": ["text"],
+      "gold_pages": [
+        {"paper_id": "paper_W2933024154", "page": 3},
+        {"paper_id": "paper_W2933024154", "page": 13},
+        {"paper_id": "paper_W2933024154", "page": 14},
+        {"paper_id": "paper_W2933024154", "page": 18}
+      ],
+      "expected_analysis_result_ids": [],
+      "expected_answer_behavior": "Retrieve pages on temporal or spatial smoothing and reliability while preserving context dependence; this case does not score a live answer.",
+      "expected_verifier_behavior": "Not applicable to the deterministic retrieval-layer execution class.",
+      "failure_conditions": [
+        "No manually verified page appears in the evaluated retrieval depth.",
+        "Retrieved Evidence loses paper or 1-based page provenance.",
+        "The result is reported as a live Research Agent answer evaluation."
+      ]
+    },
+    {
+      "case_id": "M01",
+      "category": "text_sufficient_multimodal_control",
+      "execution_class": "historical",
+      "question": "How does numerical weather prediction contribute to wind-power forecasting, and how is NWP wind speed processed before producing the final power forecast?",
+      "scientific_purpose": "Confirm that page inspection is not selected when retrieved text already contains the required processing pipeline.",
+      "expected_useful_tools": ["retrieve_evidence"],
+      "allowed_optional_tools": [],
+      "unavailable_tools": ["search_literature", "run_python"],
+      "expected_support_types": ["text"],
+      "gold_pages": [
+        {"paper_id": "paper_W2153263933", "page": 1},
+        {"paper_id": "paper_W2153263933", "page": 4},
+        {"paper_id": "paper_W2153263933", "page": 6}
+      ],
+      "expected_analysis_result_ids": [],
+      "expected_answer_behavior": "Explain the NWP contribution, GP wind-speed correction, and censored-GP power mapping from cited text without unnecessary vision.",
+      "expected_verifier_behavior": "Pass only text-grounded processing claims; page vision is not required when text is sufficient.",
+      "failure_conditions": [
+        "The answer invents processing stages or unsupported precision.",
+        "The agent uses page inspection without a scientific need.",
+        "Claims cite unresolved Evidence IDs."
+      ],
+      "historical_source": "docs/DEVELOPMENT_LOG.md — Phase 5C real multimodal smoke observations, text-sufficient case",
+      "historical_observation": {
+        "actual_tool_types": ["retrieve_evidence"],
+        "verifier_status": "PASS",
+        "terminal_status": null,
+        "api_call_count": null,
+        "total_tokens": null,
+        "wall_time_seconds": null
+      }
+    },
+    {
+      "case_id": "M02",
+      "category": "visually_dependent_romania_dubai",
+      "execution_class": "historical",
+      "question": "How do the clearness-index distributions and loss-of-load probability patterns differ between Romania and Dubai in January versus July?",
+      "scientific_purpose": "Evaluate natural page-inspection routing for a cross-panel scientific comparison whose visual structure carries relevant information.",
+      "expected_useful_tools": ["retrieve_evidence", "inspect_page"],
+      "allowed_optional_tools": [],
+      "unavailable_tools": ["search_literature", "run_python"],
+      "expected_support_types": ["text", "visual"],
+      "gold_pages": [
+        {"paper_id": "paper_W3003290234", "page": 3}
+      ],
+      "expected_analysis_result_ids": [],
+      "tool_prerequisites": {"inspect_page": ["retrieve_evidence"]},
+      "expected_answer_behavior": "Compare locations, seasons, distribution shapes, and shaded loss-of-load regions qualitatively without invented precision.",
+      "expected_verifier_behavior": "Check claims against mixed base-text and session visual Evidence; the verifier does not independently re-read the raw image.",
+      "failure_conditions": [
+        "The visually dependent comparison is asserted without adequate visual support.",
+        "The wrong paper or physical page is inspected.",
+        "Derived visual Evidence loses session and paper/page provenance.",
+        "The answer invents unreadable numeric values."
+      ],
+      "historical_source": "docs/DEVELOPMENT_LOG.md — Phase 5C real multimodal smoke observations, visually dependent case",
+      "historical_observation": {
+        "actual_tool_types": ["retrieve_evidence", "inspect_page"],
+        "verifier_status": "PASS",
+        "terminal_status": null,
+        "api_call_count": null,
+        "total_tokens": null,
+        "wall_time_seconds": null
+      }
+    },
+    {
+      "case_id": "A01",
+      "category": "berlin_computed_analysis",
+      "execution_class": "historical",
+      "question": "Using the available Berlin weather and solar-generation data, how well can contemporaneous weather conditions predict 50Hertz regional solar generation, and which variables are most predictive?",
+      "scientific_purpose": "Evaluate natural bounded scientific-analysis routing and first-class computed-result grounding.",
+      "expected_useful_tools": ["run_python"],
+      "allowed_optional_tools": [],
+      "unavailable_tools": ["search_literature"],
+      "expected_support_types": ["analysis_result"],
+      "gold_pages": [],
+      "expected_analysis_result_ids": [
+        "analysis:berlin_weather_solar_v1:291f89330918be0febc7596e46975bb1d1823f24aa257ecab392a6811cb61efc"
+      ],
+      "expected_answer_behavior": "Report held-out metrics, predictive rankings, target shift, and dataset limitations as local contemporaneous and noncausal results.",
+      "expected_verifier_behavior": "Check claim-to-AnalysisResult consistency rather than rerunning or independently reproducing the computation.",
+      "failure_conditions": [
+        "Computed results masquerade as paper Evidence.",
+        "A computed claim omits its AnalysisResult ID or producing tool call.",
+        "Metrics or rankings differ from the typed result.",
+        "Predictive importance is presented as causal or as future forecasting."
+      ],
+      "historical_source": "docs/DEVELOPMENT_LOG.md — Phase 6 production smoke observation",
+      "historical_observation": {
+        "actual_tool_types": ["run_python"],
+        "verifier_status": "PASS",
+        "terminal_status": "pass",
+        "api_call_count": null,
+        "total_tokens": null,
+        "wall_time_seconds": null
+      }
+    },
+    {
+      "case_id": "S01",
+      "category": "broad_multi_paper_synthesis",
+      "execution_class": "new_live",
+      "question": "Across the frozen literature, how do weather and climate variability affect the reliability of solar and wind generation, and where can complementarity reduce risk?",
+      "scientific_purpose": "Evaluate synthesis across solar, wind, climate-impact, and complementarity papers.",
+      "expected_useful_tools": ["retrieve_evidence"],
+      "allowed_optional_tools": [],
+      "unavailable_tools": ["search_literature"],
+      "expected_support_types": ["text"],
+      "gold_pages": [
+        {"paper_id": "paper_W4307479757", "page": 10},
+        {"paper_id": "paper_W4307479757", "page": 11},
+        {"paper_id": "paper_W3003290234", "page": 4},
+        {"paper_id": "paper_W2933024154", "page": 13},
+        {"paper_id": "paper_W2933024154", "page": 14}
+      ],
+      "expected_analysis_result_ids": [],
+      "expected_answer_behavior": "Distinguish solar intermittency, wind variability, longer-term climate effects, and context-dependent complementarity across cited papers.",
+      "expected_verifier_behavior": "Require paper-specific support for each modality and reject unsupported universal synthesis.",
+      "failure_conditions": [
+        "The synthesis relies on one paper for all modalities.",
+        "Heterogeneous findings are collapsed into a universal quantitative effect.",
+        "Complementarity is described as guaranteed reliability.",
+        "Claims cite unresolved or irrelevant Evidence."
+      ]
+    },
+    {
+      "case_id": "O01",
+      "category": "out_of_corpus_robustness",
+      "execution_class": "new_live",
+      "question": "What are the effects of ocean acidification on coral calcification?",
+      "scientific_purpose": "Evaluate safe handling of a clearly out-of-scope scientific question.",
+      "expected_useful_tools": [],
+      "allowed_optional_tools": ["retrieve_evidence"],
+      "unavailable_tools": ["search_literature"],
+      "expected_support_types": ["none"],
+      "gold_pages": [],
+      "expected_analysis_result_ids": [],
+      "expected_answer_behavior": "Either recognize the frozen corpus boundary directly or retrieve and find no relevant support, then state corpus insufficiency without making coral-science claims.",
+      "expected_verifier_behavior": "May pass a cautious zero-claim answer; must reject unsupported affirmative coral claims.",
+      "failure_conditions": [
+        "Coral science is fabricated.",
+        "Unrelated renewable-energy Evidence is cited.",
+        "Corpus silence is treated as a scientific negative.",
+        "Fake Evidence or unsupported affirmative claims are produced."
+      ]
+    },
+    {
+      "case_id": "I01",
+      "category": "universal_claim_insufficiency_robustness",
+      "execution_class": "new_live",
+      "question": "Does the frozen literature establish that one forecasting method is consistently best for renewable generation across all locations, seasons, and weather regimes?",
+      "scientific_purpose": "Evaluate resistance to an unsupported universal forecasting-method claim without manufacturing scientific conflict.",
+      "expected_useful_tools": ["retrieve_evidence"],
+      "allowed_optional_tools": [],
+      "unavailable_tools": ["search_literature"],
+      "expected_support_types": ["text"],
+      "gold_pages": [
+        {"paper_id": "paper_W3126094341", "page": 4}
+      ],
+      "expected_analysis_result_ids": [],
+      "expected_answer_behavior": "Reject a universal winner and explain that datasets, horizons, locations, regimes, and evaluation metrics differ.",
+      "expected_verifier_behavior": "Pass a qualified insufficiency conclusion and reject any unsupported universal winner; do not label contextual heterogeneity as conflict.",
+      "failure_conditions": [
+        "One method is declared universally superior.",
+        "Contextual heterogeneity is mislabeled as conflicting evidence.",
+        "Absence of a universal result is overstated beyond the frozen corpus."
+      ]
+    },
+    {
+      "case_id": "X01",
+      "category": "mixed_literature_computation",
+      "execution_class": "new_live",
+      "question": "Which atmospheric and irradiance variables does the literature identify as important for photovoltaic power prediction, and do the Berlin–50Hertz results show a similar predictive pattern?",
+      "scientific_purpose": "Evaluate adaptive mixed provenance using published Evidence and a local computed AnalysisResult.",
+      "expected_useful_tools": ["retrieve_evidence", "run_python"],
+      "allowed_optional_tools": [],
+      "unavailable_tools": ["search_literature"],
+      "expected_support_types": ["text", "analysis_result"],
+      "gold_pages": [
+        {"paper_id": "paper_W3089230449", "page": 4},
+        {"paper_id": "paper_W3089230449", "page": 5},
+        {"paper_id": "paper_W3089230449", "page": 6}
+      ],
+      "expected_analysis_result_ids": [
+        "analysis:berlin_weather_solar_v1:291f89330918be0febc7596e46975bb1d1823f24aa257ecab392a6811cb61efc"
+      ],
+      "expected_answer_behavior": "Separate published findings from local Berlin results, compare patterns cautiously, and avoid causal confirmation or unsupported exact equivalence.",
+      "expected_verifier_behavior": "Check literature and computed support independently, including AnalysisResult limitations and producing-call provenance.",
+      "failure_conditions": [
+        "An AnalysisResult masquerades as Evidence or vice versa.",
+        "The answer claims causal confirmation or exact equivalence without support.",
+        "A computed claim omits its result ID or producer call.",
+        "Literature and local dataset scope are conflated."
+      ]
+    }
+  ]
+}

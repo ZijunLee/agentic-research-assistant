@@ -872,3 +872,86 @@ Date: 2026-08-16
   tool failure occurred.
 - This is one production smoke/evaluation observation, not a benchmark or an
   independent reproduction of the scientific computation.
+
+---
+
+### 2026-08-17 — Gate 4A system-evaluation harness
+
+**Frozen evaluation design**
+- Replaced the earlier provisional 12-question taxonomy with 10 corpus-grounded
+  cases: three deterministic offline retrieval cases, three documented
+  historical observations, and four explicitly selected new-live cases.
+- Kept execution-class denominators separate. Offline cases do not generate
+  answers; historical cases retain only documented facts and leave unavailable
+  call/token/time/retrieval metrics null; new-live cases require an explicit
+  case ID and have no implicit run-all path.
+- Defined deterministic routing labels for appropriate routing, missed useful
+  tools, unnecessary tool use, and unavailable-tool attempts. The out-of-corpus
+  case accepts either a direct cautious response or retrieval followed by
+  caution, while the visual case requires retrieval before page inspection.
+- Defined page-level Hit@3, Hit@5, Page Recall@3, Page Recall@5, and first
+  relevant-page reciprocal rank for the offline retrieval cases. No recoverable
+  persisted Phase 4 per-case measurements were found, so no metrics were
+  reconstructed or invented.
+- Defined structural checks for Evidence, session visual Evidence,
+  AnalysisResult IDs, producing Python calls, draft tool traces, 1-based page
+  provenance, unavailable tools, and invented support identifiers.
+- Kept manual scientific reliability labels distinct from verifier status.
+  Manual labels remain null until human review and are never inferred from a
+  verifier PASS or other automated field.
+
+**Safety and scope**
+- Added a versioned case file containing questions, gold page/result
+  identifiers, routing expectations, and failure conditions without generated
+  answers, provider request IDs, payloads, or credentials.
+- Safe live projections omit prompts, raw requests/responses, request IDs,
+  Evidence content, AnalysisResult values, image data, and unsafe exception
+  chains. Generated records are restricted to the ignored
+  data/cache/system_evaluation directory and refuse silent overwrite.
+- Gate 4A implementation and validation are offline only. No OpenAI API call,
+  historical smoke rerun, Berlin analysis rerun, corpus/index change, prompt
+  tuning, or new evaluation outcome was produced.
+
+### 2026-08-17 — Gate 4A deterministic aggregation
+
+**Retrieval diagnostics**
+- Regenerated the unchanged six-query Phase 4 evaluation once. BM25 measured
+  Hit@3/5 0.833/0.833, Page Recall@3/5 0.264/0.375, and MRR 0.611; dense
+  measured 0.500/0.500, 0.222/0.222, and 0.417; hybrid RRF measured
+  0.667/0.667, 0.208/0.264, and 0.583. BM25 outperformed hybrid on this small
+  frozen gold set; no setting or label was tuned.
+- Ran only the deterministic T01–T03 retrieval cases. T01 and T02 found the
+  correct papers but no annotated page in the top five. T03 found a gold page
+  at rank 1 (Hit@3/5 1/1, Page Recall@3/5 0.25/0.25). All returned records kept
+  valid paper/page provenance. No Research Agent, verifier, Berlin analysis, or
+  OpenAI API call was used.
+
+**Seven real observations**
+- Aggregated the documented historical M01/M02/A01 observations with the safe
+  X01/O01/S01/I01 live records. Verifier status was PASS in 7/7 documented
+  observations. Terminal status was available for five and was pass in 5/5;
+  M01/M02 remain outside that denominator. Historical manual reliability
+  remains null because PASS alone does not establish a human label.
+- New-live routing was appropriate in 4/4, structural provenance passed in
+  4/4, no case required verifier #2, and no unavailable-tool attempt occurred.
+  Approved manual labels are X01 SUPPORTED, O01 INSUFFICIENT_EVIDENCE, S01
+  PARTIALLY_SUPPORTED, and I01 SUPPORTED.
+- O01 correctly refused unsupported coral claims but used six retrieval calls.
+  S01's claims were grounded, yet wind-specific coverage was weak, only two
+  papers were cited, and retrieval calls 3–5 added no final cited support. X01
+  separated literature Evidence from the local AnalysisResult and preserved
+  regional, contemporaneous, and noncausal scope without claiming it stated
+  every result limitation. I01 rejected a universal best method and avoided
+  generalizing a within-study result across contexts.
+- X01/O01/S01/I01 together used 30 API calls, 18 tool calls, 135,263 input
+  tokens, 10,018 output tokens, 145,281 total tokens, and 168.152 seconds of
+  runtime wall time. These are single-run operational observations, not
+  benchmarks.
+
+**Safe artifact**
+- Added `evaluation/system_results_summary.json` with retrieval summaries,
+  case IDs/classes, tool sets, support classes, verifier/manual/terminal fields,
+  provenance booleans, and aggregate safe counts only. It excludes answers,
+  Evidence content, AnalysisResult values, prompts, request IDs, provider
+  payloads, and credentials. Detailed live records remain ignored beneath
+  `data/cache/system_evaluation/`.
