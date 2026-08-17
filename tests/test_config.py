@@ -8,18 +8,24 @@ from l3s_agent.config import MLDatasetConfig, PathConfig, load_config
 CONFIG_PATH = Path(__file__).parents[1] / "config" / "default.toml"
 
 
-def test_defaults_keep_models_unset_and_freeze_core_decisions() -> None:
+def test_defaults_keep_llms_unset_and_freeze_core_decisions() -> None:
     config = load_config(CONFIG_PATH, environ={})
 
     assert config.llm.provider is None
     assert config.llm.text_model is None
     assert config.llm.verifier_model is None
     assert config.llm.multimodal_model is None
-    assert config.embedding.model is None
-    assert config.embedding.local_only is True
     assert config.retrieval.fusion == "rrf"
     assert config.budgets.max_verifier_calls == 2
     assert config.chunking.cross_page_boundaries is False
+    assert config.embedding.model == "Alibaba-NLP/gte-modernbert-base"
+    assert config.embedding.revision == "e7f32e3c00f91d699e8c43b53106206bcc72bb22"
+    assert config.embedding.local_only is True
+    assert config.embedding.trust_remote_code is False
+    assert config.retrieval.rrf_k == 60
+    assert config.retrieval.candidate_depth == 50
+    assert config.retrieval.bm25_k1 == 1.5
+    assert config.retrieval.bm25_b == 0.75
     assert config.paths.base_corpus_manifest == Path("data/manifests/base_corpus.json")
     assert config.ingestion.page_image_format == "png"
     assert config.ingestion.page_image_dpi == 144

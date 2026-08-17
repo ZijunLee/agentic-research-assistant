@@ -6,15 +6,20 @@ verifier_model = ""
 multimodal_model = ""
 
 [embedding]
-# Must name a local sentence-transformers model before dense retrieval is run.
-model = ""
+# Immutable revision verified by an exact-revision, local-only Phase 4 reload.
+model = "Alibaba-NLP/gte-modernbert-base"
+revision = "e7f32e3c00f91d699e8c43b53106206bcc72bb22"
 local_only = true
+trust_remote_code = false
 
 [retrieval]
 lexical_backend = "bm25"
 dense_enabled = true
 fusion = "rrf"
 rrf_k = 60
+candidate_depth = 50
+bm25_k1 = 1.5
+bm25_b = 0.75
 
 [chunking]
 target_min_tokens = 500

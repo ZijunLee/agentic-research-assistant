@@ -1,0 +1,125 @@
+{
+  "annotation_policy": "Relevant evidence is identified by paper_id and 1-based physical PDF page. No gold answers are included.",
+  "queries": [
+    {
+      "category": "solar_irradiance_cloud_forecasting",
+      "gold_pages": [
+        {
+          "page": 4,
+          "paper_id": "paper_W3089230449"
+        },
+        {
+          "page": 5,
+          "paper_id": "paper_W3089230449"
+        },
+        {
+          "page": 6,
+          "paper_id": "paper_W3089230449"
+        }
+      ],
+      "id": "retrieval_q01",
+      "query": "How are irradiance, cloud or sky conditions, and other weather variables used to forecast photovoltaic power?"
+    },
+    {
+      "category": "solar_intermittency_reliability",
+      "gold_pages": [
+        {
+          "page": 2,
+          "paper_id": "paper_W3003290234"
+        },
+        {
+          "page": 3,
+          "paper_id": "paper_W3003290234"
+        },
+        {
+          "page": 4,
+          "paper_id": "paper_W3003290234"
+        }
+      ],
+      "id": "retrieval_q02",
+      "query": "How is solar-radiation intermittency connected to photovoltaic power reliability?"
+    },
+    {
+      "category": "wind_nwp_forecasting",
+      "gold_pages": [
+        {
+          "page": 1,
+          "paper_id": "paper_W2153263933"
+        },
+        {
+          "page": 4,
+          "paper_id": "paper_W2153263933"
+        },
+        {
+          "page": 6,
+          "paper_id": "paper_W2153263933"
+        }
+      ],
+      "id": "retrieval_q03",
+      "query": "How are numerical weather prediction variables converted into wind-power forecasts?"
+    },
+    {
+      "category": "wind_atmospheric_variability_wakes",
+      "gold_pages": [
+        {
+          "page": 16,
+          "paper_id": "paper_W2974473399"
+        },
+        {
+          "page": 19,
+          "paper_id": "paper_W2974473399"
+        },
+        {
+          "page": 25,
+          "paper_id": "paper_W2974473399"
+        }
+      ],
+      "id": "retrieval_q04",
+      "query": "How do atmospheric turbulence and stability influence turbine wakes and wind-farm power production?"
+    },
+    {
+      "category": "climate_impacts_renewable_generation",
+      "gold_pages": [
+        {
+          "page": 10,
+          "paper_id": "paper_W4307479757"
+        },
+        {
+          "page": 11,
+          "paper_id": "paper_W4307479757"
+        },
+        {
+          "page": 4,
+          "paper_id": "paper_W3003290234"
+        }
+      ],
+      "id": "retrieval_q05",
+      "query": "How can projected climate changes affect wind and solar generation or power reliability?"
+    },
+    {
+      "category": "cross_modality_complementarity",
+      "gold_pages": [
+        {
+          "page": 3,
+          "paper_id": "paper_W2933024154"
+        },
+        {
+          "page": 13,
+          "paper_id": "paper_W2933024154"
+        },
+        {
+          "page": 14,
+          "paper_id": "paper_W2933024154"
+        },
+        {
+          "page": 18,
+          "paper_id": "paper_W2933024154"
+        }
+      ],
+      "id": "retrieval_q06",
+      "query": "How can temporal or spatial complementarity between wind and solar reduce variability and improve reliability?"
+    }
+  ],
+  "schema_version": "1.0",
+  "source_evidence_sha256": "bafc20e33a93712a1c6f4a309fa2cc8773b846884ef4cbb21ae76d17524b549a"
+}

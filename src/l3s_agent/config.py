@@ -20,7 +20,13 @@ class LLMConfig:
 @dataclass(frozen=True)
 class EmbeddingConfig:
     model: str | None
+    revision: str | None
     local_only: bool
+    trust_remote_code: bool
+
+    def __post_init__(self) -> None:
+        if self.trust_remote_code:
+            raise ValueError("the frozen Phase 4 embedding provider forbids remote model code")
 
 
 @dataclass(frozen=True)
@@ -29,12 +35,19 @@ class RetrievalConfig:
     dense_enabled: bool
     fusion: str
     rrf_k: int
+    candidate_depth: int
+    bm25_k1: float
+    bm25_b: float
 
     def __post_init__(self) -> None:
         if self.fusion.lower() != "rrf":
             raise ValueError("Phase 1 retrieval fusion must be RRF")
         if self.rrf_k <= 0:
             raise ValueError("rrf_k must be positive")
+        if self.candidate_depth <= 0:
+            raise ValueError("retrieval candidate depth must be positive")
+        if self.bm25_k1 <= 0 or not 0 <= self.bm25_b <= 1:
+            raise ValueError("invalid BM25 parameters")
 
 
 @dataclass(frozen=True)
@@ -245,8 +258,18 @@ def load_config(
         ),
         embedding=EmbeddingConfig(
             model=_optional(_env_value(env, "L3S_EMBEDDING_MODEL", embedding["model"])),
+            revision=_optional(
+                _env_value(env, "L3S_EMBEDDING_REVISION", embedding["revision"])
+            ),
             local_only=_as_bool(
                 _env_value(env, "L3S_EMBEDDING_LOCAL_ONLY", embedding["local_only"])
+            ),
+            trust_remote_code=_as_bool(
+                _env_value(
+                    env,
+                    "L3S_EMBEDDING_TRUST_REMOTE_CODE",
+                    embedding["trust_remote_code"],
+                )
             ),
         ),
         retrieval=RetrievalConfig(
@@ -254,6 +277,9 @@ def load_config(
             dense_enabled=_as_bool(retrieval["dense_enabled"]),
             fusion=str(retrieval["fusion"]),
             rrf_k=int(retrieval["rrf_k"]),
+            candidate_depth=int(retrieval["candidate_depth"]),
+            bm25_k1=float(retrieval["bm25_k1"]),
+            bm25_b=float(retrieval["bm25_b"]),
         ),
         chunking=ChunkingConfig(
             target_min_tokens=int(chunking["target_min_tokens"]),

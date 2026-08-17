@@ -408,3 +408,74 @@ Date: 2026-08-16
   cross-page chunk was found.
 - The frozen `base_corpus.json` SHA-256 remained
   `51ea0a37783949f3d6da9eefb86a6fb23de7a2d100f1c807a52bbdf4715663c1`.
+
+---
+
+### 2026-08-17 — Phase 4 hybrid retrieval and page-level evaluation
+
+**Codex / AI-assisted work**
+- Added a transparent local BM25 Okapi implementation, configurable dense
+  embedding provider, normalized NumPy search, and deterministic rank-only RRF.
+- Added separate, checksummed index build/load operations that bind indexes to
+  the finalized Phase 3 evidence checksum without duplicating Evidence content.
+- Added rich retrieval diagnostics and a Phase 1 `RetrievalTool` adapter that
+  explicitly rejects session evidence during this base-corpus-only phase.
+- Added an offline evaluator for Hit@3/5, Page Recall@3/5, MRR, and first
+  relevant physical-page rank across BM25, dense, and hybrid modes.
+- Added fully offline tests using synthetic Evidence and a deterministic fake
+  embedding provider; no production model was initialized or downloaded.
+
+**Human decisions / review**
+- Froze content-only BM25 (`k1=1.5`, `b=0.75`) and content-only dense retrieval;
+  title and section metadata do not influence ranking.
+- Froze RRF at `k=60`, component depth 50, with deterministic evidence-ID tie
+  breaking and no tuning against the small gold set.
+- Selected `Alibaba-NLP/gte-modernbert-base` as the default 8192-token local
+  embedding model without `trust_remote_code`; its immutable revision remains
+  intentionally unset pending a separately approved model-download step.
+- Required document/query encoding semantics, float32 normalized vectors, and
+  explicit failure rather than silent truncation beyond model context.
+
+**Retrieval gold set**
+- Manually verified six natural questions against the frozen physical PDFs,
+  covering solar irradiance/cloud forecasting, solar reliability, wind NWP,
+  wind atmospheric variability/wakes, climate impacts, and cross-modality
+  complementarity.
+- Gold relevance consists only of 1-based `(paper_id, page)` labels, allows
+  multiple valid pages, and is checksum-bound to the finalized Phase 3
+  `evidence.jsonl`. It includes no gold answers or manufactured conflicts.
+
+**Scope boundary**
+- No real embedding model initialization/download, real retrieval-index build,
+  metric claim, LLM, agent, verifier, vision reasoning, ML, or literature
+  expansion was performed.
+
+**Validation**
+- The complete offline repository suite contains 127 passing tests. Compilation,
+  installed-package consistency, and Git whitespace checks pass.
+
+---
+
+### 2026-08-17 — Phase 4 production embedding-model setup
+
+**Codex / AI-assisted work**
+- Narrowed the approved NumPy dependency to `>=1.26,<2` after the macOS x86_64
+  Torch 2.2.2 wheel reported that it was compiled against the NumPy 1.x ABI.
+- Installed NumPy 1.26.4 and verified Torch-to-NumPy and NumPy-to-Torch
+  conversion before model setup.
+- Downloaded `Alibaba-NLP/gte-modernbert-base` with remote repository code
+  disabled and safetensors required, then resolved and recorded immutable
+  revision `e7f32e3c00f91d699e8c43b53106206bcc72bb22`.
+- Reloaded that exact revision with `local_files_only=true` and forced offline
+  Hugging Face/Transformers modes. One document and one query encoded as
+  normalized float32 `(1, 768)` arrays.
+
+**Verified runtime metadata**
+- Python 3.11.15; NumPy 1.26.4; Torch 2.2.2; Transformers 4.57.6; Sentence
+  Transformers 5.7.0.
+- Model maximum sequence length 8192; embedding dimension 768.
+
+**Scope boundary**
+- No retrieval algorithm, gold annotation, chunk, corpus content, or embedding
+  model choice changed. No real retrieval index was built and no retrieval
+  evaluation was run.

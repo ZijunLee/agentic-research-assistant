@@ -6,13 +6,13 @@ The goal is to build an agentic scientific-research assistant that can automatic
 
 ## Status
 
-**Phase 1 contracts and Phase 2 literature-corpus builder implemented, with the
-official ten-paper base corpus frozen.**
+**Phases 1–4 implemented through offline hybrid retrieval and page-level
+retrieval evaluation, with the official ten-paper base corpus frozen.**
 
-The repository contains typed contracts plus deterministic OpenAlex discovery,
-rule-based relevance ranking, deduplication, OA PDF download/validation, and a
-reproducible corpus manifest. PDF parsing, retrieval, LLM calls, orchestration,
-and ML analysis are not implemented yet.
+The repository contains typed contracts, reproducible literature discovery,
+page-aware PDF ingestion, and BM25, dense, and rank-fused hybrid retrieval.
+LLM calls, agent orchestration, page-vision reasoning, and ML analysis are not
+implemented yet.
 
 ## Core design
 
@@ -107,14 +107,15 @@ conda env update -n l3s_agent_311 -f environment.yml
 conda run -n l3s_agent_311 python -m pytest
 ```
 
-Phase 2 adds `httpx` for bounded HTTP calls and offline mock-transport tests.
+Runtime dependencies include `httpx`, PyMuPDF, NumPy, Sentence Transformers,
+and Transformers. Tests use `pytest` and do not download an embedding model.
 
 ## Phase 1 configuration
 
-Non-secret defaults are stored in `config/default.toml`. Concrete LLM and local
-sentence-transformers model names are intentionally unset. Configure them later
-through TOML or the documented `L3S_*` environment variables after model
-selection is approved.
+Non-secret defaults are stored in `config/default.toml`. Concrete LLM models
+remain unset. Phase 4 selects `Alibaba-NLP/gte-modernbert-base` as the default
+local embedding model at verified immutable revision
+`e7f32e3c00f91d699e8c43b53106206bcc72bb22`.
 
 The configuration freezes these boundaries:
 
@@ -249,6 +250,57 @@ The finalized frozen-corpus ingestion contains 10 papers, 207 physical PDF
 pages, 207 rendered page images, and 345 page-local text chunks. Its canonical
 artifact path is `data/cache/base_index/`.
 
+## Phase 4 retrieval
+
+Phase 4 reads the finalized `evidence.jsonl` without changing or rechunking its
+345 Evidence records. It implements three modes over `Evidence.content` only:
+
+- local BM25 Okapi with `k1=1.5` and `b=0.75`;
+- normalized Sentence Transformers embeddings with NumPy dot-product search;
+- hybrid Reciprocal Rank Fusion using rank positions only, `rrf_k=60`, and a
+  component depth of 50.
+
+Titles and conservative section labels remain result provenance, not ranking
+features. Hybrid ties resolve deterministically by fused score, best component
+rank, then evidence ID. Results retain the complete Evidence object plus the
+available BM25 rank/score, dense rank/score, and RRF score. The Phase 1
+`RetrievalTool` adapter projects these rich results back to Evidence records and
+explicitly rejects session-evidence retrieval in Phase 4.
+
+Build and query are separate commands:
+
+```bash
+conda run -n l3s_agent_311 python -m l3s_agent.retrieval.cli build
+conda run -n l3s_agent_311 python -m l3s_agent.retrieval.cli query \
+  "How does cloud cover affect photovoltaic power forecasting?" --mode hybrid
+```
+
+The default model has an 8192-token context window, 768-dimensional embeddings,
+and is loaded without remote executable model code. Its verified immutable
+revision is recorded in configuration, and `local_only=true` prevents index
+commands from silently downloading a model. No real dense index has been built
+in Phase 4.
+
+Derived artifacts under `data/cache/retrieval/base/` contain evidence-ID order,
+BM25 statistics, normalized float32 embeddings, and checksummed metadata; they
+do not duplicate evidence content and remain outside Git. Loading rejects a
+changed source `evidence.jsonl`, incompatible configuration/provider metadata,
+or altered index files.
+
+The tracked `evaluation/retrieval_gold.json` contains six manually verified,
+natural scientific questions spanning solar, wind, climate-impact, and
+cross-modality topics. Relevance labels are one or more `(paper_id, physical
+1-based page)` pairs—not exact chunk IDs—and contain no answers or manufactured
+conflicts. The evaluator reports Hit@3, Hit@5, Page Recall@3, Page Recall@5,
+MRR, and first relevant rank for BM25, dense, and hybrid modes:
+
+```bash
+conda run -n l3s_agent_311 python -m l3s_agent.retrieval.cli evaluate
+```
+
+Evaluation requires a built retrieval index. No retrieval metrics are claimed
+yet.
+
 ## Secrets
 
 API keys and local secrets should be stored in:
@@ -269,12 +321,12 @@ The implementation is expected to include:
 - OA paper collection and checksums (implemented)
 - PDF ingestion and page rendering (implemented and finalized for the frozen corpus)
 - provenance-aware evidence objects
-- hybrid retrieval
+- hybrid retrieval (implemented; real dense index not yet built)
 - Research Agent orchestration
 - Evidence Verifier
 - multimodal page inspection
 - small solar-generation ML experiment
-- evaluation harness
+- small page-level retrieval evaluator (implemented); final agent evaluation harness
 - saved execution traces and evaluation results
 
 ## Important constraints
@@ -288,6 +340,6 @@ The implementation is expected to include:
 
 ## Running the project
 
-The Phase 2 corpus-building CLI is available as documented above. There is no
-runtime research-agent CLI yet; that will be added only after later approved
-phases implement retrieval and the lightweight custom orchestration loop.
+The corpus-building, ingestion, and retrieval CLIs are available as documented
+above. There is no runtime Research Agent CLI yet; that will be added only in a
+later approved lightweight custom-orchestration phase.
