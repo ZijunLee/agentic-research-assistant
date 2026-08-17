@@ -2,6 +2,7 @@
 
 from .config import AppConfig, load_config
 from .models import (
+    AnalysisResult,
     Claim,
     CorpusScope,
     Evidence,
@@ -15,6 +16,7 @@ from .models import (
 )
 
 __all__ = [
+    "AnalysisResult",
     "AppConfig",
     "Claim",
     "CorpusScope",

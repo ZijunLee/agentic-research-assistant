@@ -3,6 +3,7 @@ from dataclasses import fields
 import pytest
 
 from l3s_agent.models import (
+    AnalysisResult,
     Claim,
     CorpusScope,
     Evidence,
@@ -14,6 +15,9 @@ from l3s_agent.models import (
     VerifierStatus,
     to_primitive,
 )
+
+
+ANALYSIS_ID = "analysis:test_analysis:" + "0" * 64
 
 
 def make_evidence(**overrides: object) -> Evidence:
@@ -55,9 +59,38 @@ def test_claim_references_are_validated_in_verifier_input() -> None:
         )
 
 
+def test_claim_support_classes_validate_duplicates_and_verifier_resolution() -> None:
+    result = AnalysisResult(ANALYSIS_ID, "Computed", values={"analysis": "test_analysis"})
+    evidence = make_evidence()
+    evidence_only = Claim("c1", "Published", ("ev-1",))
+    computed_only = Claim("c2", "Computed", (), (ANALYSIS_ID,))
+    mixed = Claim("c3", "Mixed", ("ev-1",), (ANALYSIS_ID,))
+    verifier_input = VerifierInput(
+        "Question?",
+        "Answer",
+        (evidence_only, computed_only, mixed),
+        (evidence,),
+        (result,),
+    )
+    assert verifier_input.analysis_results == (result,)
+    with pytest.raises(ValueError, match="analysis result IDs must be unique"):
+        Claim("bad", "Duplicate", (), (ANALYSIS_ID, ANALYSIS_ID))
+    with pytest.raises(ValueError, match="cannot be blank"):
+        Claim("bad", "Blank", (), ("",))
+    with pytest.raises(ValueError, match="missing cited analysis results"):
+        VerifierInput("Question?", "Answer", (computed_only,), (), ())
+
+
+def test_analysis_result_requires_stable_sha256_identity() -> None:
+    with pytest.raises(ValueError, match="analysis_result_id"):
+        AnalysisResult("missing-hash", "Computed")
+
+
 def test_verifier_input_has_no_hidden_reasoning_field() -> None:
     names = {item.name for item in fields(VerifierInput)}
-    assert names == {"question", "draft_answer", "claims", "evidence"}
+    assert names == {
+        "question", "draft_answer", "claims", "evidence", "analysis_results"
+    }
     assert "hidden_reasoning" not in names
 
 

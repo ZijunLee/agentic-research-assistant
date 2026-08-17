@@ -29,6 +29,7 @@ from l3s_agent.runtime.models import (
     InspectPageArguments,
     RetrieveEvidenceArguments,
     RunPythonArguments,
+    ResearchState,
     SearchLiteratureArguments,
     StopArguments,
     TerminalStatus,
@@ -39,13 +40,15 @@ from l3s_agent.runtime.verifier import EvidenceVerifier
 from l3s_agent.retrieval.engine import BaseEvidenceRetrievalTool, RetrievalEngine
 from l3s_agent.retrieval.index import build_retrieval_index
 from l3s_agent.retrieval.models import RetrievalMode
-from l3s_agent.tracing import AgentActionOutcome, FailureCode
+from l3s_agent.tracing import AgentActionOutcome, ExecutionTrace, FailureCode
+from l3s_agent.runtime.registry import ToolDispatchError
 
 from conftest import FakeEmbeddingProvider, make_retrieval_evidence
 
 
 CONFIG = Path(__file__).parents[1] / "config" / "default.toml"
 FIXED_TIME = datetime(2026, 8, 17, 12, 0, tzinfo=timezone.utc)
+ANALYSIS_ID = "analysis:test_analysis:" + "0" * 64
 
 
 def evidence(
@@ -74,9 +77,26 @@ def action(action_type, arguments, reason="Safe rationale") -> AgentAction:
     return AgentAction(action_type, arguments, reason)
 
 
-def draft(question="Question?", ids=("ev-1",), *, uncertainty=()) -> ResearchDraft:
-    claims = (Claim("claim-1", "Supported scientific claim", tuple(ids)),) if ids else ()
-    return ResearchDraft(question, "Evidence-grounded answer", claims, tuple(uncertainty))
+def draft(
+    question="Question?",
+    ids=("ev-1",),
+    *,
+    analysis_ids=(),
+    uncertainty=(),
+    tool_trace=(),
+) -> ResearchDraft:
+    claims = (
+        (Claim("claim-1", "Supported scientific claim", tuple(ids), tuple(analysis_ids)),)
+        if ids or analysis_ids
+        else ()
+    )
+    return ResearchDraft(
+        question,
+        "Evidence-grounded answer",
+        claims,
+        tuple(uncertainty),
+        tuple(tool_trace),
+    )
 
 
 def verification(status: VerifierStatus, claim_id="claim-1") -> VerificationResult:
@@ -439,7 +459,13 @@ def test_page_and_python_routing_preserve_separate_state() -> None:
         page=3,
     )
     page_tool = RecordingPageInspection(visual)
-    python_tool = RecordingPython(AnalysisResult("Computed summary", evidence_ids=("session-visual-1",)))
+    python_tool = RecordingPython(
+        AnalysisResult(
+            ANALYSIS_ID,
+            "Computed summary",
+            evidence_ids=("session-visual-1",),
+        )
+    )
     research = ScriptedResearchProvider(
         [
             action(
@@ -463,8 +489,222 @@ def test_page_and_python_routing_preserve_separate_state() -> None:
     )
     assert not outcome.state.base_evidence
     assert outcome.state.session_evidence == {"session-visual-1": visual}
-    assert outcome.state.analysis_results[0].summary == "Computed summary"
+    assert outcome.state.analysis_results[ANALYSIS_ID].summary == "Computed summary"
     assert len(page_tool.calls) == len(python_tool.calls) == 1
+
+
+def test_computed_only_claim_is_grounded_traced_and_verified() -> None:
+    result = AnalysisResult(
+        ANALYSIS_ID,
+        "Computed result",
+        values={
+            "analysis": "test_analysis",
+            "test_metrics": {"model": {"r2": 0.8}},
+            "limitations": ["Predictive, not causal."],
+            "raw_rows": "must-not-reach-provider-context",
+            "executable_code": "must-not-reach-provider-context",
+        },
+    )
+    events = []
+    research = ScriptedResearchProvider(
+        [
+            action(
+                AgentActionType.RUN_PYTHON,
+                RunPythonArguments({"analysis": "test_analysis"}),
+            ),
+            action(AgentActionType.DRAFT_ANSWER, DraftAnswerArguments()),
+            draft(
+                ids=(),
+                analysis_ids=(ANALYSIS_ID,),
+                tool_trace=("trace-1:tool:001",),
+            ),
+        ]
+    )
+    runtime = orchestrator(
+        research,
+        [verification(VerifierStatus.PASS)],
+        ToolRegistry(python_analysis=RecordingPython(result)),
+        event_sink=events.append,
+    )
+    outcome = run(runtime)
+
+    assert outcome.terminal_status is TerminalStatus.PASS
+    assert outcome.state.analysis_results == {ANALYSIS_ID: result}
+    verifier_input = runtime.verifier.provider.inputs[0]
+    assert verifier_input.evidence == ()
+    assert verifier_input.analysis_results[0].analysis_result_id == ANALYSIS_ID
+    assert "raw_rows" not in repr(verifier_input)
+    assert "executable_code" not in repr(verifier_input)
+    draft_context = research.calls[2][1]
+    assert draft_context["analysis_results"][0]["analysis_result_id"] == ANALYSIS_ID
+    assert draft_context["analysis_results"][0]["producing_tool_call_id"] == (
+        "trace-1:tool:001"
+    )
+    assert draft_context["available_tool_calls"][-1] == {
+        "call_id": "trace-1:tool:001",
+        "tool_name": "run_python",
+        "evidence_ids": [],
+        "analysis_result_ids": [ANALYSIS_ID],
+    }
+    assert "raw_rows" not in repr(draft_context)
+    assert "executable_code" not in repr(draft_context)
+    tool_event = next(item for item in events if item["marker"] == "SAFE_TOOL_RESULT")
+    assert tool_event["analysis_result_ids"] == [ANALYSIS_ID]
+    assert tool_event["analysis_names"] == ["test_analysis"]
+    assert "test_metrics" not in repr(tool_event)
+    draft_event = next(
+        item for item in events if item["marker"] == "SAFE_DRAFT_CALL_RETURNED"
+    )
+    assert draft_event["cited_analysis_result_ids"] == [ANALYSIS_ID]
+    verifier_event = next(
+        item for item in events if item["marker"] == "SAFE_VERIFIER_CALL_START"
+    )
+    assert verifier_event["referenced_analysis_result_ids"] == [ANALYSIS_ID]
+
+
+def test_mixed_evidence_and_analysis_support_is_structurally_valid() -> None:
+    result = AnalysisResult(ANALYSIS_ID, "Computed", values={"analysis": "test_analysis"})
+    research = ScriptedResearchProvider(
+        [
+            action(AgentActionType.RETRIEVE_EVIDENCE, RetrieveEvidenceArguments("solar")),
+            action(
+                AgentActionType.RUN_PYTHON,
+                RunPythonArguments({"analysis": "test_analysis"}),
+            ),
+            action(AgentActionType.DRAFT_ANSWER, DraftAnswerArguments()),
+            draft(
+                ids=("ev-1",),
+                analysis_ids=(ANALYSIS_ID,),
+                tool_trace=("trace-1:tool:002",),
+            ),
+        ]
+    )
+    outcome = run(
+        orchestrator(
+            research,
+            [verification(VerifierStatus.PASS)],
+            ToolRegistry(
+                retrieval=QueueRetrieval([(evidence(),)]),
+                python_analysis=RecordingPython(result),
+            ),
+        )
+    )
+    assert outcome.terminal_status is TerminalStatus.PASS
+    assert outcome.draft.claims[0].evidence_ids == ("ev-1",)
+    assert outcome.draft.claims[0].analysis_result_ids == (ANALYSIS_ID,)
+
+
+def test_unknown_analysis_id_and_missing_analysis_tool_trace_are_rejected() -> None:
+    result = AnalysisResult(ANALYSIS_ID, "Computed", values={"analysis": "test_analysis"})
+    unknown_id = "analysis:test_analysis:" + "f" * 64
+    research = ScriptedResearchProvider(
+        [
+            action(
+                AgentActionType.RUN_PYTHON,
+                RunPythonArguments({"analysis": "test_analysis"}),
+            ),
+            action(AgentActionType.DRAFT_ANSWER, DraftAnswerArguments()),
+            draft(ids=(), analysis_ids=(unknown_id,), tool_trace=("trace-1:tool:001",)),
+            action(AgentActionType.DRAFT_ANSWER, DraftAnswerArguments()),
+            draft(ids=(), analysis_ids=(ANALYSIS_ID,)),
+            action(AgentActionType.DRAFT_ANSWER, DraftAnswerArguments()),
+            draft(ids=(), uncertainty=("Computed support could not be grounded",)),
+        ]
+    )
+    outcome = run(
+        orchestrator(
+            research,
+            [verification(VerifierStatus.PASS, claim_id=None)],
+            ToolRegistry(python_analysis=RecordingPython(result)),
+        )
+    )
+    messages = [item.message for item in outcome.trace.failures]
+    assert any("unknown AnalysisResult IDs" in item for item in messages)
+    assert any("omits producing analysis calls" in item for item in messages)
+    assert outcome.draft.claims == ()
+
+
+def test_zero_support_affirmative_claim_is_rejected_but_cautious_draft_is_valid() -> None:
+    unsupported = ResearchDraft(
+        "Question?",
+        "Unsupported answer",
+        (Claim("claim-1", "Unsupported claim", ()),),
+    )
+    research = ScriptedResearchProvider(
+        [
+            action(AgentActionType.DRAFT_ANSWER, DraftAnswerArguments()),
+            unsupported,
+            action(AgentActionType.DRAFT_ANSWER, DraftAnswerArguments()),
+            draft(ids=(), uncertainty=("No grounded support is available",)),
+        ]
+    )
+    outcome = run(
+        orchestrator(
+            research,
+            [verification(VerifierStatus.PASS, claim_id=None)],
+            ToolRegistry(),
+        )
+    )
+    assert any(
+        "Evidence IDs or AnalysisResult IDs" in item.message
+        for item in outcome.trace.failures
+    )
+    assert outcome.draft.claims == ()
+
+
+def test_analysis_state_duplicate_is_idempotent_but_conflict_fails() -> None:
+    runtime = orchestrator(
+        ScriptedResearchProvider([]),
+        [],
+        ToolRegistry(),
+    )
+    state = ResearchState(
+        "session-1",
+        "Question?",
+        ExecutionTrace("trace-1", "Question?", "session-1"),
+    )
+    first = AnalysisResult(
+        ANALYSIS_ID,
+        "First wording",
+        values={
+            "analysis": "test_analysis",
+            "test_metrics": {"r2": 0.8},
+            "dataset": {"relative_path": "first.csv", "sha256": "a" * 64},
+            "reproducibility": {
+                "runtime_seconds": 1.0,
+                "numpy_version": "one",
+                "scikit_learn_version": "one",
+            },
+        },
+    )
+    operational_duplicate = AnalysisResult(
+        ANALYSIS_ID,
+        "Different wording",
+        values={
+            "analysis": "test_analysis",
+            "test_metrics": {"r2": 0.8},
+            "dataset": {"relative_path": "second.csv", "sha256": "a" * 64},
+            "reproducibility": {
+                "runtime_seconds": 2.0,
+                "numpy_version": "two",
+                "scikit_learn_version": "two",
+            },
+        },
+    )
+    conflicting = AnalysisResult(
+        ANALYSIS_ID,
+        "Conflict",
+        values={
+            "analysis": "test_analysis",
+            "test_metrics": {"r2": 0.95},
+            "dataset": {"sha256": "a" * 64},
+        },
+    )
+    runtime._apply_tool_value(state, AgentActionType.RUN_PYTHON, first)
+    runtime._apply_tool_value(state, AgentActionType.RUN_PYTHON, operational_duplicate)
+    assert state.analysis_results == {ANALYSIS_ID: first}
+    with pytest.raises(ToolDispatchError, match="conflicting AnalysisResult"):
+        runtime._apply_tool_value(state, AgentActionType.RUN_PYTHON, conflicting)
 
 
 def test_page_inspection_budget_and_session_evidence_limit_remain_enforced() -> None:
@@ -820,7 +1060,9 @@ def test_incremental_events_omit_evidence_content_and_arbitrary_python_values() 
         orchestrator(
             research,
             [verification(VerifierStatus.PASS, claim_id=None)],
-            ToolRegistry(python_analysis=RecordingPython(AnalysisResult("summary"))),
+            ToolRegistry(
+                python_analysis=RecordingPython(AnalysisResult(ANALYSIS_ID, "summary"))
+            ),
             event_sink=events.append,
         )
     )

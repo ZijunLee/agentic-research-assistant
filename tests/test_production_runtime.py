@@ -352,6 +352,34 @@ def test_build_production_runtime_registers_canonical_page_tool(monkeypatch) -> 
     assert result == "runtime"
     assert captured["provider"] is provider
     assert captured["page_inspection"] is page_tool
+    assert isinstance(
+        captured["python_analysis"], factory_module.BerlinWeatherSolarAnalysisTool
+    )
+
+
+def test_production_action_context_describes_bounded_berlin_analysis() -> None:
+    item = Evidence(
+        "ev-1", "paper-1", "Paper", 1, EvidenceModality.TEXT, "W1", "Evidence",
+        CorpusScope.BASE,
+    )
+    client = FakeClient([action_wire("draft_answer", reason="Draft")])
+    config = load_config(CONFIG, environ={})
+    provider = OpenAIResponsesProvider(config.llm, client=client)
+    runtime = assemble_runtime(
+        config=config,
+        provider=provider,
+        retrieval=SyntheticRetrieval(item),
+        python_analysis=object(),
+    )
+    runtime.run(question="Question?", session_id="session-1", trace_id="trace-1")
+    action_context = client.responses.calls[0]["input"][1]["content"]
+    assert '"run_python":{"available":true' in action_context
+    assert "berlin_weather_solar_v1" in action_context
+    assert "contemporaneous prediction" in action_context
+    assert "not future forecasting" in action_context
+    assert "unrestricted Python" in action_context
+    assert "accepts no Evidence IDs" in action_context
+    assert config.budgets.max_python_calls == 1
 
 
 def test_second_non_pass_verifier_result_terminates_without_third_call() -> None:

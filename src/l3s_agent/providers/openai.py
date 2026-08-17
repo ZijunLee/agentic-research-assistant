@@ -128,6 +128,7 @@ class _ClaimWire(_WireModel):
     claim_id: str = Field(min_length=1)
     text: str = Field(min_length=1)
     evidence_ids: tuple[str, ...]
+    analysis_result_ids: tuple[str, ...] = ()
 
 
 class _ResearchDraftWire(_WireModel):
@@ -358,7 +359,13 @@ def _draft_from_wire(value: _ResearchDraftWire) -> ResearchDraft:
         question=value.question,
         draft_answer=value.draft_answer,
         claims=tuple(
-            Claim(item.claim_id, item.text, item.evidence_ids) for item in value.claims
+            Claim(
+                item.claim_id,
+                item.text,
+                item.evidence_ids,
+                item.analysis_result_ids,
+            )
+            for item in value.claims
         ),
         uncertainty=value.uncertainty,
         tool_trace=value.tool_trace,
@@ -494,7 +501,10 @@ class OpenAIResponsesProvider:
             operation="verify",
             model=self.config.verifier_model,
             instructions=VERIFICATION_PROMPT,
-            task="Independently verify the supplied draft claims against the supplied Evidence.",
+            task=(
+                "Independently verify the supplied draft claims against supplied Evidence "
+                "and referenced typed AnalysisResults."
+            ),
             context={"verifier_input": to_primitive(verifier_input)},
             response_type=_VerificationResultWire,
         )

@@ -252,13 +252,22 @@ def test_openai_strict_wire_schemas_use_supported_object_shapes() -> None:
             for part in path:
                 current = current[part]
             assert current is False
+    draft_schema = to_strict_json_schema(_ResearchDraftWire)
+    claim_schema = draft_schema["$defs"]["_ClaimWire"]
+    assert "analysis_result_ids" in claim_schema["properties"]
+    assert "analysis_result_ids" in claim_schema["required"]
 
 
 def test_draft_and_claims_convert_to_frozen_domain_contract() -> None:
     payload = {
         "question": "Question?",
         "draft_answer": "Evidence-grounded answer.",
-        "claims": [{"claim_id": "c1", "text": "Claim", "evidence_ids": ["ev-1"]}],
+        "claims": [{
+            "claim_id": "c1",
+            "text": "Claim",
+            "evidence_ids": ["ev-1"],
+            "analysis_result_ids": [],
+        }],
         "uncertainty": ["Limited corpus"],
         "tool_trace": ["trace:tool:001"],
     }
@@ -272,6 +281,31 @@ def test_draft_and_claims_convert_to_frozen_domain_contract() -> None:
         (Claim("c1", "Claim", ("ev-1",)),),
         ("Limited corpus",),
         ("trace:tool:001",),
+    )
+
+
+def test_computed_claim_wire_converts_without_fake_evidence() -> None:
+    analysis_id = "analysis:test_analysis:" + "0" * 64
+    payload = {
+        "question": "Question?",
+        "draft_answer": "Held-out R² was 0.8.",
+        "claims": [
+            {
+                "claim_id": "c1",
+                "text": "Held-out R² was 0.8.",
+                "evidence_ids": [],
+                "analysis_result_ids": [analysis_id],
+            }
+        ],
+        "uncertainty": ["Predictive, not causal."],
+        "tool_trace": ["trace:tool:001"],
+    }
+    model, _ = provider([payload])
+    result = model.generate_structured(
+        prompt="Draft", response_type=ResearchDraft, context={}
+    )
+    assert result.claims == (
+        Claim("c1", "Held-out R² was 0.8.", (), (analysis_id,)),
     )
 
 

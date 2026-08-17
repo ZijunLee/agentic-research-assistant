@@ -45,7 +45,11 @@ def test_defaults_freeze_phase5b_models_and_core_decisions() -> None:
     assert config.paths.base_corpus_manifest == Path("data/manifests/base_corpus.json")
     assert config.ingestion.page_image_format == "png"
     assert config.ingestion.page_image_dpi == 144
-    assert config.ml_dataset == MLDatasetConfig(approved=False, adapter=None, path=None)
+    assert config.ml_dataset == MLDatasetConfig(
+        approved=True,
+        adapter="berlin_weather_solar_v1",
+        path=Path("data/ml/berlin/Berlin_solar_regression.csv"),
+    )
     assert config.literature.topic == "Weather and climate impacts on renewable energy"
     assert config.literature.modalities == ("solar", "wind")
     assert config.literature.selection_target == 10
@@ -106,3 +110,8 @@ def test_base_and_session_paths_must_be_distinct() -> None:
 def test_unapproved_ml_dataset_rejects_implementation_details() -> None:
     with pytest.raises(ValueError, match="unapproved"):
         MLDatasetConfig(approved=False, adapter="csv", path=Path("dataset.csv"))
+
+
+def test_approved_ml_dataset_requires_adapter_and_path() -> None:
+    with pytest.raises(ValueError, match="requires"):
+        MLDatasetConfig(approved=True, adapter=None, path=None)

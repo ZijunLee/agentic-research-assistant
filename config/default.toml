@@ -105,7 +105,7 @@ metadata_completeness = 5
 recency = 5
 
 [ml_dataset]
-# Dataset selection is intentionally blocked pending separate scientific approval.
-approved = false
-adapter = ""
-path = ""
+# Approved Phase 6 local case study. The raw dataset remains outside Git.
+approved = true
+adapter = "berlin_weather_solar_v1"
+path = "data/ml/berlin/Berlin_solar_regression.csv"

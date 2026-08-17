@@ -150,7 +150,7 @@ class ResearchState:
     base_evidence: dict[str, Evidence] = field(default_factory=dict)
     session_evidence: dict[str, Evidence] = field(default_factory=dict)
     discovered_papers: dict[str, PaperRecord] = field(default_factory=dict)
-    analysis_results: list[AnalysisResult] = field(default_factory=list)
+    analysis_results: dict[str, AnalysisResult] = field(default_factory=dict)
     current_draft: ResearchDraft | None = None
     verifier_history: list[VerificationResult] = field(default_factory=list)
     terminal_status: TerminalStatus | None = None

@@ -6,7 +6,28 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from enum import Enum
 import json
+import re
 from typing import Any, Mapping, Sequence
+
+
+_ANALYSIS_RESULT_ID = re.compile(r"^analysis:[a-z0-9][a-z0-9_.-]*:[0-9a-f]{64}$")
+_ANALYSIS_PROVIDER_VALUE_FIELDS = frozenset(
+    {
+        "schema_version",
+        "analysis",
+        "dataset",
+        "task",
+        "split",
+        "features",
+        "preprocessing",
+        "models",
+        "test_metrics",
+        "target_shift",
+        "permutation_importance",
+        "limitations",
+        "reproducibility",
+    }
+)
 
 
 class EvidenceModality(str, Enum):
@@ -105,6 +126,7 @@ class Claim:
     claim_id: str
     text: str
     evidence_ids: tuple[str, ...]
+    analysis_result_ids: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if not self.claim_id.strip() or not self.text.strip():
@@ -113,6 +135,10 @@ class Claim:
             raise ValueError("evidence IDs cannot be blank")
         if len(set(self.evidence_ids)) != len(self.evidence_ids):
             raise ValueError("claim evidence IDs must be unique")
+        if any(not item.strip() for item in self.analysis_result_ids):
+            raise ValueError("analysis result IDs cannot be blank")
+        if len(set(self.analysis_result_ids)) != len(self.analysis_result_ids):
+            raise ValueError("claim analysis result IDs must be unique")
 
 
 @dataclass(frozen=True)
@@ -136,6 +162,7 @@ class VerifierInput:
     draft_answer: str
     claims: tuple[Claim, ...]
     evidence: tuple[Evidence, ...]
+    analysis_results: tuple[AnalysisResult, ...] = ()
 
     def __post_init__(self) -> None:
         claim_ids = [claim.claim_id for claim in self.claims]
@@ -150,6 +177,21 @@ class VerifierInput:
         }
         if unknown:
             raise ValueError(f"verifier input is missing cited evidence: {sorted(unknown)}")
+        result_ids = [item.analysis_result_id for item in self.analysis_results]
+        if len(set(result_ids)) != len(result_ids):
+            raise ValueError("verifier input analysis result IDs must be unique")
+        supplied_result_ids = set(result_ids)
+        unknown_results = {
+            result_id
+            for claim in self.claims
+            for result_id in claim.analysis_result_ids
+            if result_id not in supplied_result_ids
+        }
+        if unknown_results:
+            raise ValueError(
+                "verifier input is missing cited analysis results: "
+                f"{sorted(unknown_results)}"
+            )
 
 
 @dataclass(frozen=True)
@@ -194,9 +236,31 @@ class VerificationResult:
 
 @dataclass(frozen=True)
 class AnalysisResult:
+    analysis_result_id: str
     summary: str
     values: Mapping[str, Any] = field(default_factory=dict)
     evidence_ids: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if not _ANALYSIS_RESULT_ID.fullmatch(self.analysis_result_id):
+            raise ValueError("analysis_result_id must contain an analysis name and SHA-256")
+        if not self.summary.strip():
+            raise ValueError("analysis result summary is required")
+        if any(not item.strip() for item in self.evidence_ids):
+            raise ValueError("analysis result Evidence IDs cannot be blank")
+        if len(set(self.evidence_ids)) != len(self.evidence_ids):
+            raise ValueError("analysis result Evidence IDs must be unique")
+        try:
+            serialized = json.dumps(
+                to_primitive(self.values),
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            )
+        except (TypeError, ValueError):
+            raise ValueError("analysis result values must be JSON-compatible") from None
+        if len(serialized) > 100_000:
+            raise ValueError("analysis result values exceed the provider-context bound")
 
 
 def to_primitive(value: Any) -> Any:
@@ -213,3 +277,38 @@ def to_primitive(value: Any) -> Any:
     if isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
         return [to_primitive(item) for item in value]
     return value
+
+
+def analysis_result_semantic_payload(result: AnalysisResult) -> Mapping[str, Any]:
+    """Return scientific content while excluding explicitly operational provenance."""
+
+    values = dict(to_primitive(result.values))
+    dataset = dict(values.get("dataset", {}))
+    dataset.pop("relative_path", None)
+    if dataset:
+        values["dataset"] = dataset
+    else:
+        values.pop("dataset", None)
+    reproducibility = dict(values.get("reproducibility", {}))
+    for key in ("runtime_seconds", "numpy_version", "scikit_learn_version"):
+        reproducibility.pop(key, None)
+    if reproducibility:
+        values["reproducibility"] = reproducibility
+    else:
+        values.pop("reproducibility", None)
+    return {"values": values, "evidence_ids": list(result.evidence_ids)}
+
+
+def analysis_result_for_provider(result: AnalysisResult) -> AnalysisResult:
+    """Project only bounded, approved scientific fields into provider context."""
+
+    return AnalysisResult(
+        analysis_result_id=result.analysis_result_id,
+        summary=result.summary,
+        values={
+            key: value
+            for key, value in result.values.items()
+            if key in _ANALYSIS_PROVIDER_VALUE_FIELDS
+        },
+        evidence_ids=result.evidence_ids,
+    )

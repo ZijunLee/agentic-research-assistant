@@ -6,14 +6,15 @@ The goal is to build an agentic scientific-research assistant that can automatic
 
 ## Status
 
-**Phases 1–5B implemented through production-provider wiring over the frozen
-ten-paper corpus and checksummed hybrid retrieval index.**
+**Phases 1–6 implemented through a bounded local scientific-analysis tool over
+the frozen corpus, checksummed hybrid retrieval index, and canonical PDF pages.**
 
 The repository contains typed contracts, reproducible literature discovery,
 page-aware PDF ingestion, BM25/dense/hybrid retrieval, a bounded two-role agent
-runtime, and a stateless OpenAI Responses adapter validated entirely with
-deterministic offline tests and an approved end-to-end production smoke test.
-Page-vision reasoning and ML analysis have not been implemented yet.
+runtime, stateless OpenAI Responses adapter, canonical page inspection, and a
+fixed contemporaneous solar-generation regression experiment. Production text,
+multimodal, and bounded scientific-analysis paths have approved smoke-test
+observations; these are not benchmarks.
 
 ## Core design
 
@@ -52,7 +53,11 @@ Primary literature focus:
 
 Focused ML case study:
 
-**weather variables -> solar generation prediction**
+**contemporaneous Berlin-area weather and solar irradiance -> observed regional
+50Hertz solar generation prediction**
+
+This is neither future forecasting nor site-level PV prediction, and predictive
+importance is not interpreted causally.
 
 ## Evaluation
 
@@ -108,8 +113,9 @@ conda env update -n l3s_agent_311 -f environment.yml
 conda run -n l3s_agent_311 python -m pytest
 ```
 
-Runtime dependencies include `httpx`, PyMuPDF, NumPy, Sentence Transformers,
-and Transformers. Tests use `pytest` and do not download an embedding model.
+Runtime dependencies include `httpx`, PyMuPDF, NumPy, scikit-learn, Sentence
+Transformers, and Transformers. Tests use `pytest` and do not download an
+embedding model.
 
 ## Configuration
 
@@ -126,7 +132,7 @@ The configuration freezes these boundaries:
 - chunks never crossing PDF page boundaries
 - exactly two verifier calls at most
 - separate frozen base-corpus and temporary session-evidence paths
-- no ML dataset until separately approved
+- one approved local Berlin ML dataset; raw data remains outside Git
 
 The Python contracts live under `src/l3s_agent/`:
 
@@ -330,7 +336,8 @@ unresolved verifier status, findings, and explicit uncertainty.
 Base and session Evidence remain separate. Literature search returns discovery
 metadata only and cannot become citable Evidence without a future ingestion
 step. Fake page inspection produces session-scoped figure/table Evidence, while
-Python analysis remains a non-Evidence `AnalysisResult` pending Phase 6.
+Python analysis produces a distinct non-Evidence `AnalysisResult` with its own
+stable computed-result provenance.
 
 Every typed decision—including rejected decisions—is traced alongside tool
 calls, tool results, Evidence IDs, sanitized failures, and complete verifier
@@ -408,6 +415,60 @@ session-scoped visual Evidence record with paper/page provenance, drafted with
 mixed text and visual citations, and received verifier `PASS`. This is a smoke
 test observation, not a benchmark or a claim that vision is always necessary.
 
+## Phase 6 bounded scientific analysis
+
+Phase 6 implements one predefined `RUN_PYTHON` operation:
+
+```json
+{"analysis": "berlin_weather_solar_v1"}
+```
+
+It compares a training-mean baseline, Ridge regression, and fixed
+histogram-gradient-boosting model using 2018 for training and 2019 for held-out
+testing, with no shuffle, cross-validation, hyperparameter search, target
+normalization, lags, or future values. It reports held-out MAE, RMSE, R², and
+noncausal permutation importance. Computed results remain non-Evidence
+`AnalysisResult` values. Literature/page `Evidence` and computed
+`AnalysisResult` are separate scientific-support classes: computed claims cite
+a deterministic `analysis_result_id`, while `tool_trace` separately records the
+producing Python call. The verifier checks claim/result consistency, including
+metrics and limitations; it does not rerun or independently reproduce the
+analysis.
+
+In the approved production smoke, the Research Agent naturally selected
+`RUN_PYTHON`, admitted the deterministic AnalysisResult, drafted four affirmative
+computed claims citing its `analysis_result_id`, included the producing call in
+`tool_trace`, and received verifier `PASS`. The verifier checked claim/result
+consistency rather than independently reproducing the computation. This is a
+smoke/evaluation observation, not a benchmark.
+
+Held-out results were:
+
+| Model | MAE (MW) | RMSE (MW) | R² |
+|---|---:|---:|---:|
+| Training-mean baseline | 661.328 | 757.954 | -0.0251 |
+| Ridge | 211.282 | 288.315 | 0.8517 |
+| HistGradientBoosting | 190.356 | 278.180 | 0.8619 |
+
+The target mean shifted from 974.655 MW in training to 856.106 MW in testing
+(-12.163%). The leading held-out permutation-importance variables were
+`Clearsky.GHI`, `GHI`, `Wind.Direction`, `Precipitable.Water`, and
+`Surface.Albedo`; these are predictive, not causal, rankings.
+
+The raw research dataset is intentionally untracked because no redistribution
+or reproducible public acquisition record is present in this repository. A
+local run requires:
+
+```text
+data/ml/berlin/Berlin_solar_regression.csv
+```
+
+The loader requires the frozen 24-column schema, 36,296 rows, target
+`X50Hertz..MW.`, and SHA-256
+`eda6fccb75d8e76d9ae56e806e20fcb12f017041e02d463d60a94817ee5656d8`.
+If the file is absent or does not match, the bounded tool fails clearly without
+training. Offline tests use only a small synthetic fixture.
+
 ## Secrets
 
 API keys and local secrets should be stored in:
@@ -431,8 +492,8 @@ The implementation is expected to include:
 - hybrid retrieval (implemented with a canonical real dense index)
 - bounded Research Agent orchestration (production provider wired and smoke-tested)
 - Evidence Verifier (separate production model/context wired and smoke-tested)
-- multimodal page inspection
-- small solar-generation ML experiment
+- multimodal page inspection (implemented and smoke-tested)
+- small solar-generation ML experiment (implemented as a bounded local tool)
 - small page-level retrieval evaluator (implemented); final agent evaluation harness
 - saved execution traces and evaluation results
 
@@ -447,6 +508,5 @@ The implementation is expected to include:
 
 ## Running the project
 
-The corpus-building, ingestion, and retrieval CLIs are available as documented
-above. Phase 5A exposes the bounded runtime as a Python package; a Research
-Agent CLI awaits a separately approved production-provider integration.
+The corpus-building, ingestion, retrieval, and bounded Research Agent entry
+points are available as documented above.

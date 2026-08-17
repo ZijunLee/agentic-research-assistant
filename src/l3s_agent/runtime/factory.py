@@ -5,9 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from ..analysis import BerlinWeatherSolarAnalysisTool
 from ..config import AppConfig
 from ..events import SafeEventSink
-from ..interfaces import EvidenceRetrievalTool, LLMProvider, PageInspectionTool
+from ..interfaces import EvidenceRetrievalTool, LLMProvider, PageInspectionTool, PythonAnalysisTool
 from ..page_inspection import CanonicalPageInspectionTool, CanonicalPageResolver
 from ..providers import OpenAIResponsesProvider
 from ..retrieval.embeddings import SentenceTransformersEmbeddingProvider
@@ -25,6 +26,7 @@ def assemble_runtime(
     provider: LLMProvider,
     retrieval: EvidenceRetrievalTool,
     page_inspection: PageInspectionTool | None = None,
+    python_analysis: PythonAnalysisTool | None = None,
     event_sink: SafeEventSink | None = None,
 ) -> ResearchOrchestrator:
     """Assemble the bounded runtime with explicitly supplied production tools."""
@@ -32,7 +34,11 @@ def assemble_runtime(
     return ResearchOrchestrator(
         research_provider=provider,
         verifier=EvidenceVerifier(provider),
-        tools=ToolRegistry(retrieval=retrieval, page_inspection=page_inspection),
+        tools=ToolRegistry(
+            retrieval=retrieval,
+            page_inspection=page_inspection,
+            python_analysis=python_analysis,
+        ),
         budgets=config.budgets,
         event_sink=event_sink,
     )
@@ -90,10 +96,12 @@ def build_production_runtime(
         resolver=CanonicalPageResolver(evidence_path.parent),
         provider=provider,
     )
+    python_analysis = BerlinWeatherSolarAnalysisTool(config.ml_dataset)
     return assemble_runtime(
         config=config,
         provider=provider,
         retrieval=retrieval,
         page_inspection=page_inspection,
+        python_analysis=python_analysis,
         event_sink=event_sink,
     )

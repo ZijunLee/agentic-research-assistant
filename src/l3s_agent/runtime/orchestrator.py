@@ -16,6 +16,8 @@ from ..models import (
     PaperRecord,
     ResearchDraft,
     VerifierStatus,
+    analysis_result_semantic_payload,
+    analysis_result_for_provider,
     to_primitive,
 )
 from ..tracing import (
@@ -265,7 +267,7 @@ class ResearchOrchestrator:
             value = self.research_provider.generate_structured(
                 prompt=(
                     "Produce a structured ResearchDraft. Every affirmative scientific claim "
-                    "must cite Evidence IDs present in the supplied context."
+                    "must cite at least one supplied Evidence ID or AnalysisResult ID."
                 ),
                 response_type=ResearchDraft,
                 context=self._provider_context(state),
@@ -296,6 +298,17 @@ class ResearchOrchestrator:
                         evidence_id
                         for claim in value.claims
                         for evidence_id in claim.evidence_ids
+                    )
+                )
+                if isinstance(value, ResearchDraft)
+                else []
+            ),
+            cited_analysis_result_ids=(
+                list(
+                    dict.fromkeys(
+                        result_id
+                        for claim in value.claims
+                        for result_id in claim.analysis_result_ids
                     )
                 )
                 if isinstance(value, ResearchDraft)
@@ -341,12 +354,23 @@ class ResearchOrchestrator:
             "SAFE_VERIFIER_CALL_START",
             sequence=call_number,
             final=final,
+            referenced_evidence_ids=list(
+                dict.fromkeys(
+                    item for claim in draft.claims for item in claim.evidence_ids
+                )
+            ),
+            referenced_analysis_result_ids=list(
+                dict.fromkeys(
+                    item for claim in draft.claims for item in claim.analysis_result_ids
+                )
+            ),
         )
         try:
             result = self.verifier.verify(
                 question=state.question,
                 draft=draft,
                 evidence_by_id=state.all_evidence,
+                analysis_results_by_id=state.analysis_results,
                 trace=state.execution_trace,
             )
         except Exception as exc:
@@ -400,11 +424,47 @@ class ResearchOrchestrator:
         }
         if unknown:
             raise ValueError(f"draft references unknown Evidence IDs: {sorted(unknown)}")
-        if any(not claim.evidence_ids for claim in draft.claims):
-            raise ValueError("affirmative claims require Evidence IDs")
+        unknown_results = {
+            result_id
+            for claim in draft.claims
+            for result_id in claim.analysis_result_ids
+            if result_id not in state.analysis_results
+        }
+        if unknown_results:
+            raise ValueError(
+                "draft references unknown AnalysisResult IDs: "
+                f"{sorted(unknown_results)}"
+            )
+        if any(
+            not claim.evidence_ids and not claim.analysis_result_ids
+            for claim in draft.claims
+        ):
+            raise ValueError(
+                "affirmative claims require Evidence IDs or AnalysisResult IDs"
+            )
         call_ids = {call.call_id for call in state.execution_trace.tool_calls}
         if any(item not in call_ids for item in draft.tool_trace):
             raise ValueError("draft tool trace references unknown calls")
+        producing_calls = self._analysis_result_tool_calls(state)
+        referenced_results = {
+            item for claim in draft.claims for item in claim.analysis_result_ids
+        }
+        missing_producers = referenced_results - producing_calls.keys()
+        if missing_producers:
+            raise ValueError(
+                "draft references AnalysisResults without producing tool calls: "
+                f"{sorted(missing_producers)}"
+            )
+        missing_trace_calls = {
+            producing_calls[item]
+            for item in referenced_results
+            if producing_calls[item] not in draft.tool_trace
+        }
+        if missing_trace_calls:
+            raise ValueError(
+                "draft tool trace omits producing analysis calls: "
+                f"{sorted(missing_trace_calls)}"
+            )
         if not draft.claims and not draft.uncertainty:
             raise ValueError("an evidence-free draft must state explicit uncertainty")
 
@@ -440,7 +500,16 @@ class ResearchOrchestrator:
             return ()
         if action_type is AgentActionType.RUN_PYTHON:
             assert isinstance(value, AnalysisResult)
-            state.analysis_results.append(value)
+            existing = state.analysis_results.get(value.analysis_result_id)
+            if existing is None:
+                state.analysis_results[value.analysis_result_id] = value
+            elif analysis_result_semantic_payload(existing) != analysis_result_semantic_payload(
+                value
+            ):
+                raise ToolDispatchError(
+                    FailureCode.MISSING_FIELDS,
+                    "conflicting AnalysisResult content for stable ID",
+                )
             return value.evidence_ids
         raise ToolDispatchError(FailureCode.INTERNAL, "unsupported tool result")
 
@@ -551,6 +620,14 @@ class ResearchOrchestrator:
             for item in returned_items
             if item.evidence_id in returned_ids
         ]
+        analysis_result_ids = (
+            [value.analysis_result_id] if isinstance(value, AnalysisResult) else []
+        )
+        analysis_names = (
+            [str(value.values.get("analysis", ""))]
+            if isinstance(value, AnalysisResult)
+            else []
+        )
         emit_safe_event(
             self.event_sink,
             "SAFE_TOOL_RESULT",
@@ -564,6 +641,8 @@ class ResearchOrchestrator:
             admitted_evidence_ids=list(admitted_ids),
             duplicate_evidence_ids=list(duplicate_ids),
             evidence_provenance=provenance,
+            analysis_result_ids=analysis_result_ids,
+            analysis_names=analysis_names,
             remaining_tool_budget=max(
                 0, self.budgets.max_tool_calls - state.tool_step_count
             ),
@@ -609,6 +688,55 @@ class ResearchOrchestrator:
             )
         )
 
+    @staticmethod
+    def _analysis_result_tool_calls(state: ResearchState) -> dict[str, str]:
+        return {
+            result.value.analysis_result_id: result.call_id
+            for result in state.execution_trace.tool_results
+            if isinstance(result.value, AnalysisResult)
+        }
+
+    def _analysis_result_context(self, state: ResearchState) -> list[Mapping[str, Any]]:
+        producing_calls = self._analysis_result_tool_calls(state)
+        provider_results = (
+            analysis_result_for_provider(result)
+            for result in state.analysis_results.values()
+        )
+        return [
+            {
+                "analysis_result_id": result.analysis_result_id,
+                "analysis": str(result.values.get("analysis", "")),
+                "summary": result.summary,
+                "values": to_primitive(result.values),
+                "limitations": to_primitive(result.values.get("limitations", ())),
+                "producing_tool_call_id": producing_calls.get(result.analysis_result_id),
+            }
+            for result in provider_results
+        ]
+
+    @staticmethod
+    def _available_tool_calls(state: ResearchState) -> list[Mapping[str, Any]]:
+        calls_by_id = {item.call_id: item for item in state.execution_trace.tool_calls}
+        available: list[Mapping[str, Any]] = []
+        for result in state.execution_trace.tool_results:
+            if result.failure is not None:
+                continue
+            call = calls_by_id[result.call_id]
+            analysis_ids = (
+                [result.value.analysis_result_id]
+                if isinstance(result.value, AnalysisResult)
+                else []
+            )
+            available.append(
+                {
+                    "call_id": result.call_id,
+                    "tool_name": call.tool_name,
+                    "evidence_ids": list(result.evidence_ids),
+                    "analysis_result_ids": analysis_ids,
+                }
+            )
+        return available
+
     def _provider_context(self, state: ResearchState) -> Mapping[str, Any]:
         available_tools = {
             "retrieve_evidence": {
@@ -635,7 +763,15 @@ class ResearchOrchestrator:
             },
             "run_python": {
                 "available": self.tools.python_analysis is not None,
-                "description": "Run bounded numerical analysis over admitted Evidence.",
+                "description": (
+                    "Run the predefined local Berlin-area weather/irradiance to observed "
+                    "regional 50Hertz solar-generation analysis. This is contemporaneous "
+                    "prediction, not future forecasting, causal estimation, site-level PV "
+                    "prediction, or unrestricted Python. The only valid request is "
+                    '{"analysis":"berlin_weather_solar_v1"}; it accepts no Evidence IDs, '
+                    "code, expressions, imports, shell commands, paths, model parameters, "
+                    "tuning parameters, or extra fields."
+                ),
             },
         }
         remaining_budgets = {
@@ -667,7 +803,8 @@ class ResearchOrchestrator:
             "base_evidence": to_primitive(tuple(state.base_evidence.values())),
             "session_evidence": to_primitive(tuple(state.session_evidence.values())),
             "discovered_papers": to_primitive(tuple(state.discovered_papers.values())),
-            "analysis_results": to_primitive(tuple(state.analysis_results)),
+            "analysis_results": self._analysis_result_context(state),
+            "available_tool_calls": self._available_tool_calls(state),
             "current_draft": to_primitive(state.current_draft)
             if state.phase is ResearchPhase.FOLLOW_UP
             else None,

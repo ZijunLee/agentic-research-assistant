@@ -737,3 +737,138 @@ Date: 2026-08-16
 - These are smoke/evaluation observations, not accuracy, performance, cost, or
   efficiency benchmarks. The verifier checked the derived visual Evidence text;
   it did not independently re-read the raw page image.
+
+---
+
+### 2026-08-17 — Phase 6 bounded Berlin scientific-analysis tool
+
+**Codex / AI-assisted work**
+- Inspected the ignored local Berlin CSV before implementation and confirmed
+  36,296 rows, 24 columns, the exact `X50Hertz..MW.` target, chronological
+  2018–2019 timestamps, no missing values, and no duplicate timestamps.
+- Added one bounded `RUN_PYTHON` operation accepting only
+  `{"analysis":"berlin_weather_solar_v1"}`. It accepts no Evidence, arbitrary
+  code, paths, expressions, imports, shell commands, model parameters, tuning
+  parameters, or extra request fields.
+- Added strict schema, row-count, and SHA-256 validation; deterministic
+  chronological splitting; train-only imputation/encoding/scaling; cyclic wind
+  direction; and exactly a training-mean baseline, Ridge, and fixed histogram
+  gradient boosting model.
+- Added held-out MAE, RMSE, R², and raw-feature permutation importance through
+  the complete fitted nonlinear pipeline. Computed values remain a non-Evidence
+  `AnalysisResult` and preserve the tool call through `ResearchDraft.tool_trace`.
+- Added synthetic, network-free tests for temporal leakage controls, exact
+  features/models, bounded requests, reproducibility, provenance, safe missing
+  data behavior, production registration, and capability text.
+
+**Data availability**
+- No tracked source, download, license, or preparation provenance was found for
+  `Berlin_solar_regression.csv`; no public acquisition path was invented.
+- The raw dataset remains ignored. A local run requires
+  `data/ml/berlin/Berlin_solar_regression.csv` with SHA-256
+  `eda6fccb75d8e76d9ae56e806e20fcb12f017041e02d463d60a94817ee5656d8`.
+
+**Frozen real local analysis**
+- Ran the approved analysis exactly once after the offline suite passed. Train
+  was all 18,108 observations from 2018; test was all 18,188 observations from
+  2019, with no shuffle, cross-validation, HPO, or post-result tuning.
+- Held-out baseline: MAE 661.328 MW, RMSE 757.954 MW, R² -0.0251.
+- Held-out Ridge: MAE 211.282 MW, RMSE 288.315 MW, R² 0.8517.
+- Held-out histogram gradient boosting: MAE 190.356 MW, RMSE 278.180 MW,
+  R² 0.8619.
+- The target mean changed from 974.655 MW in training to 856.106 MW in test:
+  -118.549 MW, or -12.163% relative to the training mean. No per-year target
+  normalization was applied.
+- Held-out nonlinear permutation importance using negative MAE was dominated by
+  clear-sky GHI (378.844 MW), followed by observed GHI (36.961 MW), wind
+  direction (20.757 MW), precipitable water (9.908 MW), and surface albedo
+  (9.872 MW). Values are predictive for this table, not causal effects, and
+  correlated irradiance/solar-geometry variables can redistribute importance.
+- The analysis completed in 29.60 seconds with NumPy 1.26.4,
+  scikit-learn 1.9.0, random seed 42, and five permutation repeats.
+
+**Scientific interpretation boundary**
+- This is contemporaneous prediction of regional 50Hertz solar generation from
+  Berlin-area weather, observed irradiance, clear-sky/solar-geometry, and
+  surface conditions. It is not future forecasting, a causal weather-impact
+  estimate, or site-level Berlin PV prediction.
+- The table is daylight-only, includes upstream-filled meteorological values,
+  lacks locally documented timezone/alignment provenance, pairs a local weather
+  representation with a regional target, and exhibits a material interannual
+  target shift.
+
+**Scope boundary**
+- No OpenAI API call, retrieval/index change, provider-schema change, verifier
+  change, page-inspection change, corpus/gold change, runtime-budget change, or
+  processed dataset copy was introduced.
+
+---
+
+### 2026-08-17 — Phase 6B computed-result provenance integration
+
+**Codex / AI-assisted work**
+- Kept literature/page `Evidence` and computed `AnalysisResult` as distinct
+  scientific-support classes. Claims can cite either class or both; computed
+  results are not converted into synthetic Evidence.
+- Added producer-owned deterministic IDs in the form
+  `analysis:berlin_weather_solar_v1:<sha256>`. The hash covers the versioned
+  analysis specification, dataset checksum and target, feature definitions and
+  transforms, chronological split and row counts, preprocessing, exact model
+  parameters, random seed, and permutation-importance specification. It
+  excludes outputs, summaries, runtime, timestamps, request IDs, and software
+  versions.
+- Changed session-local computed-result admission to an ID-keyed mapping.
+  Operational metadata changes are idempotent for an existing ID, while a
+  conflicting scientific result under the same ID fails explicitly.
+- Supplied bounded typed computed results and their producing call IDs to draft
+  generation. Structural validation independently resolves Evidence and
+  AnalysisResult references and requires the producing Python call in
+  `tool_trace` whenever computed support is cited.
+- Extended the verifier input with only claim-referenced AnalysisResults. The
+  verifier checks faithful metric, split, ranking, predictive/causal, and
+  limitation statements; this is claim/result consistency checking, not model
+  retraining or computational reproduction.
+- Extended the strict claim wire schema and safe observability with computed
+  result IDs. CLI output distinguishes literature citations from computed
+  result citations and does not project complete AnalysisResult values into
+  the user-visible trace.
+
+**Validation boundary**
+- Phase 6B was implemented and tested offline only. No OpenAI API call or real
+  Berlin analysis rerun was made, and the revised end-to-end production path
+  is not yet claimed as smoke-tested.
+
+---
+
+### 2026-08-17 — Phase 6 production smoke observation
+
+**Observed route**
+- For the approved Berlin weather/solar question, the Research Agent naturally
+  selected `RUN_PYTHON`, produced the deterministic
+  `analysis:berlin_weather_solar_v1:291f89330918be0febc7596e46975bb1d1823f24aa257ecab392a6811cb61efc`
+  result, and then selected `DRAFT_ANSWER`.
+- The draft contained four affirmative computed claims. Each cited the
+  AnalysisResult ID, cited no fake literature Evidence, and included the
+  producing Python call in `tool_trace`.
+- The independent verifier received only the claim-referenced bounded
+  AnalysisResult and returned `PASS` for all four claims. It checked exact
+  metric and ranking transcription plus the predictive/noncausal limitations;
+  it did not rerun Python, retrain models, or independently reproduce results.
+
+**Observed scientific result**
+- Training-mean baseline: MAE 661.328 MW, RMSE 757.954 MW, R² -0.0251.
+- Ridge: MAE 211.282 MW, RMSE 288.315 MW, R² 0.8517.
+- HistGradientBoosting: MAE 190.356 MW, RMSE 278.180 MW, R² 0.8619.
+- The target mean shifted from 974.655 MW in training to 856.106 MW in testing,
+  a relative change of -12.163%.
+- The leading held-out permutation-importance variables were `Clearsky.GHI`,
+  `GHI`, `Wind.Direction`, `Precipitable.Water`, and `Surface.Albedo`. These are
+  predictive/noncausal rankings, and correlated irradiance variables may
+  redistribute importance.
+
+**Integrity and interpretation boundary**
+- The raw dataset checksum was unchanged, one-call Python budget was respected,
+  and no unavailable tool, retrieval, page inspection, provider failure, or
+  tool failure occurred.
+- This is one production smoke/evaluation observation, not a benchmark or an
+  independent reproduction of the scientific computation.
