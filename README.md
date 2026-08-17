@@ -6,13 +6,14 @@ The goal is to build an agentic scientific-research assistant that can automatic
 
 ## Status
 
-**Phases 1–4 implemented through offline hybrid retrieval and page-level
-retrieval evaluation, with the official ten-paper base corpus frozen.**
+**Phases 1–5B implemented through production-provider wiring over the frozen
+ten-paper corpus and checksummed hybrid retrieval index.**
 
 The repository contains typed contracts, reproducible literature discovery,
-page-aware PDF ingestion, BM25/dense/hybrid retrieval, and a bounded two-role
-agent runtime validated with deterministic offline providers. Production LLM
-calls, page-vision reasoning, and ML analysis are not implemented yet.
+page-aware PDF ingestion, BM25/dense/hybrid retrieval, a bounded two-role agent
+runtime, and a stateless OpenAI Responses adapter validated entirely with
+deterministic offline tests and an approved end-to-end production smoke test.
+Page-vision reasoning and ML analysis have not been implemented yet.
 
 ## Core design
 
@@ -110,11 +111,13 @@ conda run -n l3s_agent_311 python -m pytest
 Runtime dependencies include `httpx`, PyMuPDF, NumPy, Sentence Transformers,
 and Transformers. Tests use `pytest` and do not download an embedding model.
 
-## Phase 1 configuration
+## Configuration
 
-Non-secret defaults are stored in `config/default.toml`. Concrete LLM models
-remain unset. Phase 4 selects `Alibaba-NLP/gte-modernbert-base` as the default
-local embedding model at verified immutable revision
+Non-secret defaults are stored in `config/default.toml`. Phase 5B configures
+`gpt-5.6-terra` for Research Agent decisions/drafting and the fixed
+`gpt-4.1-2025-04-14` snapshot for the separate Evidence Verifier call. Phase 4
+uses `Alibaba-NLP/gte-modernbert-base` as the local embedding model at verified
+immutable revision
 `e7f32e3c00f91d699e8c43b53106206bcc72bb22`.
 
 The configuration freezes these boundaries:
@@ -280,14 +283,14 @@ conda run -n l3s_agent_311 python -m l3s_agent.retrieval.cli query \
 The default model has an 8192-token context window, 768-dimensional embeddings,
 and is loaded without remote executable model code. Its verified immutable
 revision is recorded in configuration, and `local_only=true` prevents index
-commands from silently downloading a model. No real dense index has been built
-in Phase 4.
+commands from silently downloading a model.
 
 Derived artifacts under `data/cache/retrieval/base/` contain evidence-ID order,
 BM25 statistics, normalized float32 embeddings, and checksummed metadata; they
 do not duplicate evidence content and remain outside Git. Loading rejects a
 changed source `evidence.jsonl`, incompatible configuration/provider metadata,
-or altered index files.
+or altered index files. The canonical production index is
+`data/cache/retrieval/base/`; Phase 5B loads it without rebuilding or tuning it.
 
 The tracked `evaluation/retrieval_gold.json` contains six manually verified,
 natural scientific questions spanning solar, wind, climate-impact, and
@@ -336,6 +339,56 @@ and include an offline integration with the existing Phase 4 retrieval adapter.
 Phase 5A does not initialize a production LLM, multimodal model, runtime
 literature ingestion pipeline, or real Python/ML analysis tool.
 
+## Phase 5B production provider wiring
+
+Phase 5B adds a concrete `OpenAIResponsesProvider` behind the existing
+`LLMProvider` Protocol. Action selection, drafting, and verification are
+separate stateless Responses API calls using strict Pydantic Structured Outputs;
+there is no shared conversation state, `previous_response_id`, function-tool
+execution, prose/JSON repair, or hidden SDK retry. Research calls use
+`gpt-5.6-terra`; verification uses the separately configured
+`gpt-4.1-2025-04-14` snapshot and receives only the draft, claims, and cited
+Evidence.
+
+Paper text is serialized as explicitly untrusted scientific data. Action
+selection receives 600-character Evidence previews, while drafting and
+verification receive full admitted/cited Evidence subject to the explicit
+200,000-character request bound. The deterministic runtime still validates
+actions, budgets, Evidence IDs, tool-call IDs, and the exact two-verifier limit.
+The runtime verifier is a reliability mechanism, not the later independent
+system-evaluation judge.
+
+The initial production registry exposes only hybrid base-corpus retrieval.
+Literature search, page inspection, and Python analysis remain explicitly
+unavailable and retain the existing bounded failure behavior. The production
+factory validates and loads the existing retrieval index, initializes the
+frozen GTE revision locally with remote model code disabled, and uses MPS for
+query embeddings.
+
+Real LLM calls require an uncommitted environment variable:
+
+```bash
+export OPENAI_API_KEY="..."
+```
+
+After separate approval of API billing and smoke testing, run one question with:
+
+```bash
+conda run -n l3s_agent_311 python -m l3s_agent.runtime.cli \
+  "How does numerical weather prediction contribute to wind-power forecasting?"
+```
+
+The CLI prints only the final answer, claim citations/provenance, verifier
+status, and terminal status by default. Add `--show-trace` for the sanitized
+`ExecutionTrace`. Prompts, provider request objects, hidden reasoning, and
+credentials are never printed.
+
+In the production smoke test, the observed route was `retrieve (5 new) ->
+retrieve (3 new, 2 duplicate) -> retrieve (0 new, 4 duplicate) -> draft ->
+verifier PASS`. The runtime admitted 8 unique Evidence records, structurally
+grounded 6 claims with valid cited Evidence IDs, received verifier `PASS`, and
+selected no unavailable tool. This is a smoke-test observation, not a benchmark.
+
 ## Secrets
 
 API keys and local secrets should be stored in:
@@ -356,9 +409,9 @@ The implementation is expected to include:
 - OA paper collection and checksums (implemented)
 - PDF ingestion and page rendering (implemented and finalized for the frozen corpus)
 - provenance-aware evidence objects
-- hybrid retrieval (implemented; real dense index not yet built)
-- bounded Research Agent orchestration (offline contracts/state machine implemented)
-- Evidence Verifier (offline isolated-call contract implemented)
+- hybrid retrieval (implemented with a canonical real dense index)
+- bounded Research Agent orchestration (production provider wired and smoke-tested)
+- Evidence Verifier (separate production model/context wired and smoke-tested)
 - multimodal page inspection
 - small solar-generation ML experiment
 - small page-level retrieval evaluator (implemented); final agent evaluation harness

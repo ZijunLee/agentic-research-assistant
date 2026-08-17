@@ -15,6 +15,27 @@ class LLMConfig:
     text_model: str | None
     verifier_model: str | None
     multimodal_model: str | None
+    api_key_env: str
+    timeout_seconds: float
+    max_retries: int
+    max_context_characters: int
+    action_evidence_preview_characters: int
+    temperature: float | None
+    reasoning_effort: str | None
+
+    def __post_init__(self) -> None:
+        if self.api_key_env != "OPENAI_API_KEY":
+            raise ValueError("Phase 5B reads the OpenAI credential only from OPENAI_API_KEY")
+        if self.timeout_seconds <= 0:
+            raise ValueError("LLM timeout must be positive")
+        if self.max_retries != 0:
+            raise ValueError("Phase 5B disables hidden SDK retries")
+        if self.max_context_characters <= 0:
+            raise ValueError("LLM context bound must be positive")
+        if self.action_evidence_preview_characters <= 0:
+            raise ValueError("action Evidence preview bound must be positive")
+        if self.temperature is not None and not 0 <= self.temperature <= 2:
+            raise ValueError("LLM temperature must be between 0 and 2")
 
 
 @dataclass(frozen=True)
@@ -275,6 +296,38 @@ def load_config(
             verifier_model=_optional(_env_value(env, "L3S_LLM_VERIFIER_MODEL", llm["verifier_model"])),
             multimodal_model=_optional(
                 _env_value(env, "L3S_LLM_MULTIMODAL_MODEL", llm["multimodal_model"])
+            ),
+            api_key_env=str(llm["api_key_env"]),
+            timeout_seconds=float(
+                _env_value(env, "L3S_LLM_TIMEOUT_SECONDS", llm["timeout_seconds"])
+            ),
+            max_retries=int(_env_value(env, "L3S_LLM_MAX_RETRIES", llm["max_retries"])),
+            max_context_characters=int(
+                _env_value(
+                    env,
+                    "L3S_LLM_MAX_CONTEXT_CHARACTERS",
+                    llm["max_context_characters"],
+                )
+            ),
+            action_evidence_preview_characters=int(
+                _env_value(
+                    env,
+                    "L3S_LLM_ACTION_EVIDENCE_PREVIEW_CHARACTERS",
+                    llm["action_evidence_preview_characters"],
+                )
+            ),
+            temperature=(
+                float(value)
+                if (
+                    value := _optional(
+                        _env_value(env, "L3S_LLM_TEMPERATURE", llm["temperature"])
+                    )
+                )
+                is not None
+                else None
+            ),
+            reasoning_effort=_optional(
+                _env_value(env, "L3S_LLM_REASONING_EFFORT", llm["reasoning_effort"])
             ),
         ),
         embedding=EmbeddingConfig(

@@ -1,9 +1,18 @@
 [llm]
-# Configure these values locally or with L3S_LLM_* environment variables.
-provider = ""
-text_model = ""
-verifier_model = ""
+# Phase 5B production defaults. Research and verification use separate models,
+# prompts, contexts, and stateless API calls.
+provider = "openai"
+text_model = "gpt-5.6-terra"
+verifier_model = "gpt-4.1-2025-04-14"
 multimodal_model = ""
+api_key_env = "OPENAI_API_KEY"
+timeout_seconds = 60
+max_retries = 0
+max_context_characters = 200000
+action_evidence_preview_characters = 600
+# Optional controls are sent only when explicitly configured and supported.
+temperature = ""
+reasoning_effort = ""
 
 [embedding]
 # Immutable revision verified by an exact-revision, local-only Phase 4 reload.

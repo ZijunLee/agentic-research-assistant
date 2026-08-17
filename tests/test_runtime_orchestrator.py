@@ -158,13 +158,16 @@ class RecordingPython:
         return self.value
 
 
-def orchestrator(research, verifier_results, tools, *, budgets=None) -> ResearchOrchestrator:
+def orchestrator(
+    research, verifier_results, tools, *, budgets=None, event_sink=None
+) -> ResearchOrchestrator:
     return ResearchOrchestrator(
         research_provider=research,
         verifier=EvidenceVerifier(ScriptedVerifierProvider(verifier_results)),
         tools=tools,
         budgets=budgets or load_config(CONFIG, environ={}).budgets,
         clock=lambda: FIXED_TIME,
+        event_sink=event_sink,
     )
 
 
@@ -581,3 +584,189 @@ def test_real_phase4_adapter_integrates_offline(
     )
     assert outcome.terminal_status is TerminalStatus.PASS
     assert tuple(outcome.state.base_evidence) == ("ev-real",)
+
+
+def test_runtime_preserves_true_session_flag_and_phase4_rejects_it(
+    retrieval_artifact_factory, tmp_path
+) -> None:
+    record = make_retrieval_evidence("ev-real", "solar irradiance generation")
+    source = retrieval_artifact_factory([record])
+    embedding = FakeEmbeddingProvider({record.content: (1.0, 0.0)})
+    index = build_retrieval_index(
+        evidence_path=source,
+        output_dir=tmp_path / "retrieval-index",
+        embedding_provider=embedding,
+    )
+    retrieval = BaseEvidenceRetrievalTool(
+        RetrievalEngine(index), mode=RetrievalMode.BM25
+    )
+    research = ScriptedResearchProvider(
+        [
+            action(
+                AgentActionType.RETRIEVE_EVIDENCE,
+                RetrieveEvidenceArguments(
+                    "solar irradiance", include_session_evidence=True
+                ),
+            ),
+            action(AgentActionType.DRAFT_ANSWER, DraftAnswerArguments()),
+            draft(ids=(), uncertainty=("Session retrieval is unavailable",)),
+        ]
+    )
+    outcome = run(
+        orchestrator(
+            research,
+            [verification(VerifierStatus.PASS, claim_id=None)],
+            ToolRegistry(retrieval=retrieval),
+        )
+    )
+    call = outcome.trace.tool_calls[0]
+    assert call.sanitized_input["include_session_evidence"] is True
+    assert outcome.trace.tool_results[0].failure is not None
+    assert outcome.trace.tool_results[0].failure.message == (
+        "retrieve_evidence failed with RetrievalError"
+    )
+    assert not outcome.state.all_evidence
+
+
+def test_incremental_events_distinguish_new_and_duplicate_evidence_without_changing_trace() -> None:
+    item = evidence()
+
+    def execute(event_sink=None):
+        research = ScriptedResearchProvider(
+            [
+                action(
+                    AgentActionType.RETRIEVE_EVIDENCE,
+                    RetrieveEvidenceArguments("first query"),
+                ),
+                action(
+                    AgentActionType.RETRIEVE_EVIDENCE,
+                    RetrieveEvidenceArguments("repeat query"),
+                ),
+                action(AgentActionType.DRAFT_ANSWER, DraftAnswerArguments()),
+                draft(),
+            ]
+        )
+        return run(
+            orchestrator(
+                research,
+                [verification(VerifierStatus.PASS)],
+                ToolRegistry(retrieval=QueueRetrieval([(item,), (item,)])),
+                event_sink=event_sink,
+            )
+        )
+
+    events = []
+    observed = execute(events.append)
+    control = execute()
+
+    action_events = [item for item in events if item["marker"] == "SAFE_ACTION_RETURNED"]
+    tool_events = [item for item in events if item["marker"] == "SAFE_TOOL_RESULT"]
+    assert [item["sequence"] for item in action_events] == [1, 2, 3]
+    assert [item["action_type"] for item in action_events] == [
+        "retrieve_evidence",
+        "retrieve_evidence",
+        "draft_answer",
+    ]
+    assert tool_events[0]["admitted_new_evidence_count"] == 1
+    assert tool_events[0]["admitted_evidence_ids"] == ["ev-1"]
+    assert tool_events[0]["duplicate_evidence_ids"] == []
+    assert tool_events[1]["admitted_new_evidence_count"] == 0
+    assert tool_events[1]["duplicate_evidence_ids"] == ["ev-1"]
+    assert tool_events[1]["evidence_provenance"] == [
+        {"evidence_id": "ev-1", "paper_id": "paper-1", "page": 1}
+    ]
+    assert tool_events[1]["remaining_tool_budget"] == 4
+    assert tool_events[1]["total_base_evidence_count"] == 1
+    assert to_primitive(observed.trace) == to_primitive(control.trace)
+    assert to_primitive(observed.state) == to_primitive(control.state)
+
+
+def test_incremental_events_omit_evidence_content_and_arbitrary_python_values() -> None:
+    secret = "diagnostic-secret-sentinel"
+    events = []
+    research = ScriptedResearchProvider(
+        [
+            action(
+                AgentActionType.RUN_PYTHON,
+                RunPythonArguments({"operation": "summarize", "credential": secret}),
+            ),
+            action(AgentActionType.DRAFT_ANSWER, DraftAnswerArguments()),
+            draft(ids=(), uncertainty=("No citable evidence",)),
+        ]
+    )
+    run(
+        orchestrator(
+            research,
+            [verification(VerifierStatus.PASS, claim_id=None)],
+            ToolRegistry(python_analysis=RecordingPython(AnalysisResult("summary"))),
+            event_sink=events.append,
+        )
+    )
+    rendered = repr(events)
+    assert secret not in rendered
+    assert "Scientific evidence" not in rendered
+    assert "hidden" not in rendered.lower()
+    python_action = next(
+        item
+        for item in events
+        if item["marker"] == "SAFE_ACTION_RETURNED"
+        and item["action_type"] == "run_python"
+    )
+    assert python_action["arguments"] == {
+        "request_field_count": 2,
+        "evidence_ids": [],
+    }
+
+
+def test_completed_incremental_events_remain_observable_after_provider_failure() -> None:
+    class FailAfterOneAction:
+        def __init__(self):
+            self.calls = 0
+
+        def generate_structured(self, *, prompt, response_type, context):
+            self.calls += 1
+            if self.calls == 1:
+                return action(
+                    AgentActionType.RETRIEVE_EVIDENCE,
+                    RetrieveEvidenceArguments("query"),
+                )
+            raise RuntimeError("unsafe-provider-detail")
+
+    events = []
+    outcome = run(
+        orchestrator(
+            FailAfterOneAction(),
+            [],
+            ToolRegistry(retrieval=QueueRetrieval([(evidence(),)])),
+            event_sink=events.append,
+        )
+    )
+    assert outcome.terminal_status is TerminalStatus.RUNTIME_FAILURE
+    assert [item["marker"] for item in events] == [
+        "SAFE_ACTION_RETURNED",
+        "SAFE_TOOL_RESULT",
+    ]
+    assert events[1]["admitted_new_evidence_count"] == 1
+    assert "unsafe-provider-detail" not in repr(events)
+
+
+def test_event_sink_failure_is_best_effort_and_does_not_change_execution() -> None:
+    def broken_sink(event):
+        raise OSError("diagnostic output unavailable")
+
+    research = ScriptedResearchProvider(
+        [
+            action(AgentActionType.RETRIEVE_EVIDENCE, RetrieveEvidenceArguments("query")),
+            action(AgentActionType.DRAFT_ANSWER, DraftAnswerArguments()),
+            draft(),
+        ]
+    )
+    outcome = run(
+        orchestrator(
+            research,
+            [verification(VerifierStatus.PASS)],
+            ToolRegistry(retrieval=QueueRetrieval([(evidence(),)])),
+            event_sink=broken_sink,
+        )
+    )
+    assert outcome.terminal_status is TerminalStatus.PASS

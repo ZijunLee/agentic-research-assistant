@@ -2,19 +2,26 @@ from pathlib import Path
 
 import pytest
 
-from l3s_agent.config import MLDatasetConfig, PathConfig, load_config
+from l3s_agent.config import LLMConfig, MLDatasetConfig, PathConfig, load_config
 
 
 CONFIG_PATH = Path(__file__).parents[1] / "config" / "default.toml"
 
 
-def test_defaults_keep_llms_unset_and_freeze_core_decisions() -> None:
+def test_defaults_freeze_phase5b_models_and_core_decisions() -> None:
     config = load_config(CONFIG_PATH, environ={})
 
-    assert config.llm.provider is None
-    assert config.llm.text_model is None
-    assert config.llm.verifier_model is None
+    assert config.llm.provider == "openai"
+    assert config.llm.text_model == "gpt-5.6-terra"
+    assert config.llm.verifier_model == "gpt-4.1-2025-04-14"
     assert config.llm.multimodal_model is None
+    assert config.llm.api_key_env == "OPENAI_API_KEY"
+    assert config.llm.timeout_seconds == 60
+    assert config.llm.max_retries == 0
+    assert config.llm.max_context_characters == 200_000
+    assert config.llm.action_evidence_preview_characters == 600
+    assert config.llm.temperature is None
+    assert config.llm.reasoning_effort is None
     assert config.retrieval.fusion == "rrf"
     assert config.budgets.max_verifier_calls == 2
     assert config.budgets.max_tool_calls == 6
@@ -68,6 +75,21 @@ def test_environment_overrides_provider_models_without_hard_coding() -> None:
     assert config.llm.provider == "test-provider"
     assert config.llm.verifier_model == "verification-model"
     assert config.embedding.model == "local-embedding-model"
+
+
+def test_optional_generation_controls_are_sent_only_when_configured() -> None:
+    config = load_config(
+        CONFIG_PATH,
+        environ={"L3S_LLM_TEMPERATURE": "0.2", "L3S_LLM_REASONING_EFFORT": "low"},
+    )
+    assert config.llm.temperature == 0.2
+    assert config.llm.reasoning_effort == "low"
+
+
+def test_phase5b_rejects_hidden_sdk_retries() -> None:
+    base = load_config(CONFIG_PATH, environ={}).llm
+    with pytest.raises(ValueError, match="hidden SDK retries"):
+        LLMConfig(**{**base.__dict__, "max_retries": 1})
 
 
 def test_base_and_session_paths_must_be_distinct() -> None:

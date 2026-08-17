@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from typing import Any, Mapping, cast
 
 from ..config import BudgetConfig
+from ..events import SafeEventSink, emit_safe_event
 from ..interfaces import LLMProvider
 from ..models import (
     AnalysisResult,
@@ -67,12 +68,14 @@ class ResearchOrchestrator:
         tools: ToolRegistry,
         budgets: BudgetConfig,
         clock: Clock | None = None,
+        event_sink: SafeEventSink | None = None,
     ) -> None:
         self.research_provider = research_provider
         self.verifier = verifier
         self.tools = tools
         self.budgets = budgets
         self.clock = clock or (lambda: datetime.now(timezone.utc))
+        self.event_sink = event_sink
 
     def run(
         self,
@@ -148,6 +151,14 @@ class ResearchOrchestrator:
             state.phase = ResearchPhase.COMPLETE
             state.terminal_status = TerminalStatus.RUNTIME_FAILURE
             return None
+        emit_safe_event(
+            self.event_sink,
+            "SAFE_ACTION_RETURNED",
+            sequence=state.decision_count + 1,
+            action_type=value.action_type.value,
+            reason=value.reason,
+            arguments=self._safe_action_arguments(value),
+        )
         return value
 
     def _handle_tool_action(self, state: ResearchState, action: AgentAction) -> None:
@@ -180,6 +191,8 @@ class ResearchOrchestrator:
         )
         state.execution_trace.add_tool_call(call)
         self._trace_action(state, action, AgentActionOutcome.DISPATCHED)
+        evidence_before = set(state.all_evidence)
+        value: object | None = None
         try:
             value = self.tools.dispatch(
                 action,
@@ -194,6 +207,15 @@ class ResearchOrchestrator:
                 finished_at=self.clock(),
             )
             state.execution_trace.add_tool_result(result)
+            self._emit_tool_result(
+                state,
+                call,
+                action.action_type,
+                value=value,
+                evidence_ids=evidence_ids,
+                evidence_before=evidence_before,
+                success=True,
+            )
             if isinstance(value, tuple) and not value:
                 state.execution_trace.add_failure(
                     FailureDetail(
@@ -203,6 +225,16 @@ class ResearchOrchestrator:
                 )
         except ToolDispatchError as exc:
             self._record_tool_failure(state, call_id, exc.code, str(exc))
+            self._emit_tool_result(
+                state,
+                call,
+                action.action_type,
+                value=value,
+                evidence_ids=(),
+                evidence_before=evidence_before,
+                success=False,
+                failure_code=exc.code,
+            )
         except Exception as exc:  # tool boundary: retain type, not exception or unsafe message
             code = self._exception_failure_code(action.action_type)
             self._record_tool_failure(
@@ -211,8 +243,24 @@ class ResearchOrchestrator:
                 code,
                 f"{action.action_type.value} failed with {type(exc).__name__}",
             )
+            self._emit_tool_result(
+                state,
+                call,
+                action.action_type,
+                value=value,
+                evidence_ids=(),
+                evidence_before=evidence_before,
+                success=False,
+                failure_code=code,
+            )
 
     def _handle_draft_action(self, state: ResearchState, action: AgentAction) -> None:
+        action_sequence = state.decision_count
+        emit_safe_event(
+            self.event_sink,
+            "SAFE_DRAFT_CALL_START",
+            sequence=action_sequence,
+        )
         try:
             value = self.research_provider.generate_structured(
                 prompt=(
@@ -223,6 +271,12 @@ class ResearchOrchestrator:
                 context=self._provider_context(state),
             )
         except Exception as exc:
+            emit_safe_event(
+                self.event_sink,
+                "SAFE_DRAFT_CALL_FAILED",
+                sequence=action_sequence,
+                error_type=type(exc).__name__,
+            )
             state.execution_trace.add_failure(
                 FailureDetail(
                     FailureCode.PROVIDER,
@@ -231,6 +285,23 @@ class ResearchOrchestrator:
             )
             self._trace_action(state, action, AgentActionOutcome.REJECTED)
             return
+        emit_safe_event(
+            self.event_sink,
+            "SAFE_DRAFT_CALL_RETURNED",
+            sequence=action_sequence,
+            claim_count=len(value.claims) if isinstance(value, ResearchDraft) else None,
+            cited_evidence_ids=(
+                list(
+                    dict.fromkeys(
+                        evidence_id
+                        for claim in value.claims
+                        for evidence_id in claim.evidence_ids
+                    )
+                )
+                if isinstance(value, ResearchDraft)
+                else []
+            ),
+        )
         if not isinstance(value, ResearchDraft):
             state.execution_trace.add_failure(
                 FailureDetail(FailureCode.MISSING_FIELDS, "Research draft is malformed")
@@ -264,6 +335,13 @@ class ResearchOrchestrator:
         if draft is None:
             raise RuntimeError("cannot verify without a draft")
         state.phase = ResearchPhase.VERIFYING_FINAL if final else ResearchPhase.VERIFYING_FIRST
+        call_number = len(state.execution_trace.verifier_calls) + 1
+        emit_safe_event(
+            self.event_sink,
+            "SAFE_VERIFIER_CALL_START",
+            sequence=call_number,
+            final=final,
+        )
         try:
             result = self.verifier.verify(
                 question=state.question,
@@ -272,6 +350,12 @@ class ResearchOrchestrator:
                 trace=state.execution_trace,
             )
         except Exception as exc:
+            emit_safe_event(
+                self.event_sink,
+                "SAFE_VERIFIER_CALL_FAILED",
+                sequence=call_number,
+                error_type=type(exc).__name__,
+            )
             state.execution_trace.add_failure(
                 FailureDetail(
                     FailureCode.PROVIDER,
@@ -281,6 +365,16 @@ class ResearchOrchestrator:
             state.phase = ResearchPhase.COMPLETE
             state.terminal_status = TerminalStatus.RUNTIME_FAILURE
             return
+        emit_safe_event(
+            self.event_sink,
+            "SAFE_VERIFIER_CALL_RETURNED",
+            sequence=call_number,
+            status=result.status.value,
+            findings=[
+                {"claim_id": item.claim_id, "status": item.status.value}
+                for item in result.findings
+            ],
+        )
         state.verifier_history.append(result)
         if result.status is VerifierStatus.PASS:
             state.phase = ResearchPhase.COMPLETE
@@ -419,6 +513,75 @@ class ResearchOrchestrator:
             ToolResult(call_id=call_id, failure=failure, finished_at=self.clock())
         )
 
+    def _emit_tool_result(
+        self,
+        state: ResearchState,
+        call: ToolCall,
+        action_type: AgentActionType,
+        *,
+        value: object | None,
+        evidence_ids: tuple[str, ...],
+        evidence_before: set[str],
+        success: bool,
+        failure_code: FailureCode | None = None,
+    ) -> None:
+        evidence_action = action_type in {
+            AgentActionType.RETRIEVE_EVIDENCE,
+            AgentActionType.INSPECT_PAGE,
+        }
+        returned_items: tuple[Evidence, ...]
+        if isinstance(value, Evidence):
+            returned_items = (value,)
+        elif evidence_action and isinstance(value, tuple):
+            returned_items = tuple(item for item in value if isinstance(item, Evidence))
+        else:
+            returned_items = ()
+        returned_ids = tuple(dict.fromkeys(item.evidence_id for item in returned_items))
+        admitted_ids = tuple(
+            item for item in returned_ids if item not in evidence_before and item in state.all_evidence
+        )
+        duplicate_ids = tuple(item for item in returned_ids if item in evidence_before)
+        provenance = [
+            {
+                "evidence_id": item.evidence_id,
+                "paper_id": item.paper_id,
+                "page": item.page,
+            }
+            for item in returned_items
+            if item.evidence_id in returned_ids
+        ]
+        emit_safe_event(
+            self.event_sink,
+            "SAFE_TOOL_RESULT",
+            sequence=call.sequence,
+            tool_name=call.tool_name,
+            success=success,
+            failure_code=failure_code.value if failure_code is not None else None,
+            returned_evidence_count=len(returned_items),
+            admitted_new_evidence_count=len(admitted_ids),
+            evidence_ids=list(evidence_ids or returned_ids),
+            admitted_evidence_ids=list(admitted_ids),
+            duplicate_evidence_ids=list(duplicate_ids),
+            evidence_provenance=provenance,
+            remaining_tool_budget=max(
+                0, self.budgets.max_tool_calls - state.tool_step_count
+            ),
+            total_base_evidence_count=len(state.base_evidence),
+        )
+
+    @staticmethod
+    def _safe_action_arguments(action: AgentAction) -> Mapping[str, Any]:
+        """Allowlist validated arguments while omitting arbitrary Python payload values."""
+
+        arguments = action.arguments
+        if action.action_type is AgentActionType.RUN_PYTHON:
+            request = cast(Any, arguments).request
+            return {
+                "request_field_count": len(request),
+                "evidence_ids": list(cast(Any, arguments).evidence_ids),
+            }
+        return cast(Mapping[str, Any], to_primitive(arguments))
+
     @staticmethod
     def _exception_failure_code(action_type: AgentActionType) -> FailureCode:
         if action_type is AgentActionType.SEARCH_LITERATURE:
@@ -445,18 +608,65 @@ class ResearchOrchestrator:
         )
 
     def _provider_context(self, state: ResearchState) -> Mapping[str, Any]:
+        available_tools = {
+            "retrieve_evidence": {
+                "available": self.tools.retrieval is not None,
+                "description": (
+                    "Retrieve page-aware Evidence from the frozen base corpus only. "
+                    "Session Evidence retrieval is unavailable in Phase 5B; "
+                    "include_session_evidence must be false."
+                ),
+            },
+            "search_literature": {
+                "available": self.tools.literature is not None,
+                "description": "Discover additional scientific-paper metadata.",
+            },
+            "inspect_page": {
+                "available": self.tools.page_inspection is not None,
+                "description": "Inspect a cited physical PDF page for figure/table Evidence.",
+            },
+            "run_python": {
+                "available": self.tools.python_analysis is not None,
+                "description": "Run bounded numerical analysis over admitted Evidence.",
+            },
+        }
+        remaining_budgets = {
+            "total_tool_calls": max(0, self.budgets.max_tool_calls - state.tool_step_count),
+            "literature_searches": max(
+                0, self.budgets.max_literature_searches - state.literature_search_count
+            ),
+            "page_inspections": max(
+                0, self.budgets.max_page_inspections - state.page_inspection_count
+            ),
+            "python_calls": max(
+                0, self.budgets.max_python_calls - state.python_analysis_count
+            ),
+            "follow_up_tool_calls": max(
+                0, self.budgets.max_follow_up_tool_calls - state.follow_up_tool_count
+            ),
+        }
+        allowed_actions = [item.value for item in _TOOL_ACTIONS] + [
+            AgentActionType.DRAFT_ANSWER.value
+        ]
+        if state.phase is ResearchPhase.FOLLOW_UP:
+            allowed_actions.append(AgentActionType.STOP.value)
         return {
             "question": state.question,
             "phase": state.phase.value,
+            "available_tools": available_tools,
+            "remaining_budgets": remaining_budgets,
+            "allowed_actions": sorted(allowed_actions),
             "base_evidence": to_primitive(tuple(state.base_evidence.values())),
             "session_evidence": to_primitive(tuple(state.session_evidence.values())),
             "discovered_papers": to_primitive(tuple(state.discovered_papers.values())),
             "analysis_results": to_primitive(tuple(state.analysis_results)),
-            "current_draft": to_primitive(state.current_draft),
-            "last_verification": to_primitive(state.verifier_history[-1])
-            if state.verifier_history
+            "current_draft": to_primitive(state.current_draft)
+            if state.phase is ResearchPhase.FOLLOW_UP
             else None,
-            "remaining_tool_calls": self.budgets.max_tool_calls - state.tool_step_count,
+            "last_verification": to_primitive(state.verifier_history[-1])
+            if state.phase is ResearchPhase.FOLLOW_UP and state.verifier_history
+            else None,
+            "remaining_tool_calls": remaining_budgets["total_tool_calls"],
         }
 
     def _add_initial_base_evidence(

@@ -518,3 +518,151 @@ Date: 2026-08-16
 - No production LLM, multimodal model, runtime literature ingestion, real
   Python/ML analysis, retrieval change, chunking change, or network access was
   introduced.
+
+---
+
+### 2026-08-17 — Phase 5B production LLM and retrieval wiring
+
+**Codex / AI-assisted work**
+- Added an OpenAI Responses API adapter behind the existing `LLMProvider`
+  Protocol, with separate stateless calls for typed action selection, structured
+  drafting, and independent verification.
+- Added strict provider-local Pydantic schemas for every `AgentAction` variant,
+  `ResearchDraft`, claims, and complete `VerificationResult` findings, followed
+  by conversion into the frozen Phase 5A dataclasses.
+- Added explicit handling for refusals, incomplete or missing parsed output,
+  schema failures, unsupported response types, unavailable page inspection, and
+  credential-safe SDK failures with no retained exception chain.
+- Added concise prompts that treat all paper Evidence as untrusted data, forbid
+  invented provenance and causal overreach, and isolate verifier context from
+  Research Agent state, rationales, traces, and provider history.
+- Added production assembly for the existing checksummed Phase 4 index, frozen
+  local GTE revision, MPS query embeddings, hybrid retrieval, and a registry in
+  which retrieval is the only available tool.
+- Added a minimal CLI whose default output is limited to answer, claim
+  provenance, verifier status, and terminal status; the sanitized execution
+  trace is opt-in.
+- Added network-free mocked tests covering schemas, provider failures, secret
+  safety, injection boundaries, role/model separation, context and budget
+  exposure, provenance propagation, and bounded end-to-end orchestration.
+
+**Human decisions / review**
+- Froze `gpt-5.6-terra` for Research Agent calls and
+  `gpt-4.1-2025-04-14` for the separate Evidence Verifier call.
+- Froze zero SDK retries, a 60-second timeout, 600-character action Evidence
+  previews, and a 200,000-character complete provider-context bound.
+- Kept the Phase 5A state, action, draft, verification, tracing, budget, and
+  two-verifier termination contracts authoritative and unchanged.
+- Confirmed that runtime verifier PASS is a reliability signal rather than the
+  final system-evaluation judgment.
+
+**Scope boundary**
+- No real OpenAI API call or scientific production question was run.
+- No retrieval index build/tuning, corpus/chunk change, page vision, runtime
+  literature ingestion, session indexing, Python/ML analysis, third role, UI,
+  or final evaluation harness was introduced.
+
+**Validation**
+- The complete network-free suite contains 175 passing tests. The five warnings
+  are the existing upstream PyMuPDF SWIG deprecation warnings under Python 3.11.
+- Python compilation, installed-package consistency, and Git whitespace checks
+  pass. No real OpenAI smoke test was run.
+
+---
+
+### 2026-08-17 — Phase 5B OpenAI action-schema compatibility correction
+
+**Codex / AI-assisted work**
+- Diagnosed the first production action call as an OpenAI API-side
+  `invalid_json_schema` rejection of `properties.action.oneOf` in the
+  provider-local discriminated-union schema.
+- Replaced only the provider action wire format with one flat strict object;
+  the frozen Phase 5A `AgentAction` union and all runtime semantics remain
+  unchanged.
+- Added deterministic action-specific conversion that requires applicable
+  fields, rejects incompatible populated fields, parses Python request JSON
+  only as an object, and performs no repair or enum guessing.
+- Extended credential-safe provider errors with allowlisted OpenAI status,
+  type, code, parameter, request ID, and sanitized short-message metadata while
+  continuing to discard raw SDK exception chains.
+- Added offline schema inspection and conversion/security regressions.
+
+**Validation**
+- The OpenAI strict action schema is a root object with all 13 properties
+  required, `additionalProperties=false`, and no `oneOf` at any depth.
+- The existing draft and verification schemas also contain no `oneOf` or
+  arbitrary `additionalProperties`; no redesign was needed.
+- The complete network-free suite contains 176 passing tests with the five
+  existing upstream PyMuPDF SWIG deprecation warnings.
+
+**Scope boundary**
+- No production API call or smoke-test rerun was made after the correction.
+- No prompt, model, domain contract, orchestrator, budget, retrieval, corpus,
+  gold annotation, or verifier-architecture change was introduced.
+
+---
+
+### 2026-08-17 — Phase 5B production retrieval capability clarification
+
+**Codex / AI-assisted work**
+- Clarified the Research Agent tool contract that Phase 5B retrieval searches
+  only the frozen base corpus, session Evidence retrieval is unavailable, and
+  `include_session_evidence` must be false.
+- Added a generic action-selection instruction to follow tool capability
+  descriptions and argument restrictions without adding question-specific
+  routing logic.
+- Added offline regressions confirming the capability text reaches production
+  action context and that a scripted true flag remains unchanged and is
+  explicitly rejected by the existing Phase 4 adapter rather than coerced.
+
+**Scope boundary**
+- The frozen action field, domain models, adapter behavior, retrieval settings,
+  models, budgets, verifier architecture, corpus, index, and gold annotations
+  remain unchanged.
+- No production API call was made after this correction.
+
+**Validation**
+- The complete network-free suite contains 177 passing tests with the five
+  existing upstream PyMuPDF SWIG deprecation warnings.
+
+---
+
+### 2026-08-17 — Phase 5B incremental safe runtime observability
+
+**Codex / AI-assisted work**
+- Added an opt-in best-effort event callback and `--live-safe-trace` CLI flag
+  that flush safe provider, action, tool, draft, and verifier milestones as
+  soon as each operation completes.
+- Restricted live events to operation/model/request/usage metadata, validated
+  action fields, Evidence IDs with paper/page provenance, admission/duplicate
+  counts, remaining tool budget, and aggregate verifier status.
+- Added offline regressions for duplicate Evidence admission, partial-run
+  preservation, callback isolation, provider-failure safety, and immediate CLI
+  flushing.
+
+**Scope boundary**
+- `ExecutionTrace` remains the authoritative deterministic trace. No prompt,
+  contract, state transition, budget, retrieval behavior, model, corpus,
+  index, verifier behavior, or session-Evidence behavior changed.
+- No OpenAI API or other network request was made.
+
+---
+
+### 2026-08-17 — Phase 5B production Test 1 smoke result
+
+**Observed production result**
+- Ran the approved numerical-weather-prediction and wind-power-forecasting
+  question once through the frozen Phase 5B production runtime with live safe
+  tracing enabled.
+- The observed route was `retrieve (5 new) -> retrieve (3 new, 2 duplicate)
+  -> retrieve (0 new, 4 duplicate) -> draft -> verifier PASS`.
+- The runtime admitted 8 unique Evidence records, produced 6 grounded claims,
+  and passed structural validation for every cited Evidence ID.
+- The independent Evidence Verifier returned `PASS`; no unavailable tool was
+  selected and no second verifier call was required.
+- The run made 6 OpenAI API calls, used 22,167 total tokens, and completed in
+  48.13 seconds of wall-clock time.
+
+**Interpretation boundary**
+- This is one production smoke-test observation, not a benchmark or an
+  efficiency result.
