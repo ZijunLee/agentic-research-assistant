@@ -1,471 +1,358 @@
 # An Agentic Research Assistant for Weather and Climate Impacts on Renewable Energy
 
-Small take-home prototype for an L3S technical interview.
+This compact L3S take-home prototype helps investigate weather and climate
+impacts on solar and wind energy. A Research Agent adaptively chooses bounded
+tools for page-aware retrieval, multimodal PDF-page inspection, and local
+scientific analysis; a separate Evidence Verifier checks whether submitted
+claims are grounded. The focus is scientific provenance and explicit
+limitations rather than a polished UI.
 
-The goal is to build an agentic scientific-research assistant that can automatically collect scientific papers, retrieve multimodal evidence, perform a small ML analysis, and answer scientific questions with explicit provenance and uncertainty.
+## Quick start
 
-## Status
+### A. Fresh clone: API-free review
 
-**Phases 1–6 implemented through a bounded local scientific-analysis tool over
-the frozen corpus, checksummed hybrid retrieval index, and canonical PDF pages.**
-
-The repository contains typed contracts, reproducible literature discovery,
-page-aware PDF ingestion, BM25/dense/hybrid retrieval, a bounded two-role agent
-runtime, stateless OpenAI Responses adapter, canonical page inspection, and a
-fixed contemporaneous solar-generation regression experiment. Production text,
-multimodal, and bounded scientific-analysis paths have approved smoke-test
-observations; these are not benchmarks.
-
-## Core design
-
-The runtime system uses two agents:
-
-1. **Research Agent**
-   - decides which research tools are needed
-   - searches literature
-   - retrieves indexed evidence
-   - inspects PDF pages / figures / tables
-   - invokes Python or ML analysis when appropriate
-   - produces evidence-grounded draft claims
-
-2. **Evidence Verifier**
-   - checks whether claims are supported by cited evidence
-   - detects missing evidence
-   - detects conflicting evidence
-   - prevents unsupported overclaiming
-
-Search, RAG, multimodal inspection, Python analysis, and ML analysis are tools rather than separate agents.
-
-## Scientific scope
-
-Broad topic:
-
-**Weather and climate impacts on renewable-energy systems**
-
-Primary literature focus:
-
-- solar energy
-- wind energy
-- meteorological variables
-- renewable-energy generation
-- renewable-energy forecasting
-- reliability and extreme-weather effects
-
-Focused ML case study:
-
-**contemporaneous Berlin-area weather and solar irradiance -> observed regional
-50Hertz solar generation prediction**
-
-This is neither future forecasting nor site-level PV prediction, and predictive
-importance is not interpreted causally.
-
-## Evaluation
-
-The evaluation is organized around three questions:
-
-1. Did the agent choose the right research action?
-2. Did it retrieve the right scientific evidence?
-3. Did the final claim actually follow from that evidence?
-
-Gate 4A uses a frozen 10-case diagnostic suite: three offline retrieval cases,
-three historical production observations, and four new-live observations. The
-classes retain separate denominators and are not presented as a statistically
-representative benchmark. Full case definitions and results are in
-`docs/EVALUATION_PLAN.md` and `evaluation/system_results_summary.json`.
-
-## Repository documentation
-
-Before implementation, read:
-
-- `AGENTS.md`
-- `docs/PROJECT_SPEC.md`
-- `docs/REQUIREMENTS_MAPPING.md`
-- `docs/EVALUATION_PLAN.md`
-
-Development-agent usage and implementation decisions are recorded in:
-
-- `docs/DEVELOPMENT_LOG.md`
-
-## Environment
-
-Dedicated Conda environment:
+Create the Python 3.11 environment defined by `environment.yml`. Its name is
+`l3s_agent_311`.
 
 ```bash
-l3s_agent_311
-```
+conda env create -f environment.yml
 
-The repository should use only this environment for Python execution and dependency installation.
-
-A reproducible environment definition is stored in:
-
-```text
-environment.yml
-```
-
-Create or update the dedicated environment, then run the offline tests:
-
-```bash
-conda env update -n l3s_agent_311 -f environment.yml
 conda run -n l3s_agent_311 python -m pytest
+
+conda run -n l3s_agent_311 \
+  python -m l3s_agent.system_evaluation validate
+
+conda run -n l3s_agent_311 \
+  python -m json.tool evaluation/system_results_summary.json
 ```
 
-Runtime dependencies include `httpx`, PyMuPDF, NumPy, scikit-learn, Sentence
-Transformers, and Transformers. Tests use `pytest` and do not download an
-embedding model.
+These commands need no API key, PDFs, retrieval index, model cache, or Berlin
+dataset. Tests use synthetic fixtures and do not download an embedding model.
 
-## Configuration
+### B. Prepared local scientific artifacts
 
-Non-secret defaults are stored in `config/default.toml`. Phase 5B configures
-`gpt-5.6-terra` for Research Agent decisions/drafting and the fixed
-`gpt-4.1-2025-04-14` snapshot for the separate Evidence Verifier call. Phase 4
-uses `Alibaba-NLP/gte-modernbert-base` as the local embedding model at verified
-immutable revision
-`e7f32e3c00f91d699e8c43b53106206bcc72bb22`.
-
-The configuration freezes these boundaries:
-
-- BM25 and dense retrieval combined by Reciprocal Rank Fusion
-- chunks never crossing PDF page boundaries
-- exactly two verifier calls at most
-- separate frozen base-corpus and temporary session-evidence paths
-- one approved local Berlin ML dataset; raw data remains outside Git
-
-The Python contracts live under `src/l3s_agent/`:
-
-- `models.py`: papers, evidence, claims, drafts, and verification data
-- `interfaces.py`: configurable provider and Research Agent tool protocols
-- `tracing.py`: tool/verifier traces and structured failures
-- `config.py`: TOML loading, environment overrides, and invariant checks
-
-`PageInspectionTool` is the Research-Agent-facing page-inspection capability.
-It uses `LLMProvider.inspect_page` as the lower-level multimodal provider call;
-the provider method is not exposed to the Research Agent as a separate tool.
-
-The configured Phase 5A limits—six total tool calls, ten Research Agent
-decisions, one literature search, two page inspections, one Python call, and
-three follow-up tool calls—are provisional MVP safety limits, not scientifically
-justified values. The maximum of two verifier calls is architecturally frozen.
-
-## Phase 2 literature corpus
-
-The frozen scientific topic is **Weather and climate impacts on renewable
-energy**, with solar and wind as the main modalities. Phase 2:
-
-1. runs six deterministic OpenAlex queries or accepts explicit queries;
-2. collects 30–50 unique candidates using one bounded fallback page;
-3. evaluates relevance across title, abstract, OpenAlex topics/keywords, and
-   matched-query provenance;
-4. deduplicates by OpenAlex ID, DOI, normalized title, and a conservative
-   title/author/year fallback;
-5. ranks candidates using the approved 35/35/20/5/5 score;
-6. downloads and byte-validates only automatically selected OA PDFs;
-7. backfills failed downloads until the target of ten is reached; and
-8. writes a Git-trackable manifest with decisions, provenance, failures, and
-   SHA-256 checksums.
-
-Raw API caches and PDFs remain outside Git. The corpus builder never silently
-overwrites an existing frozen manifest and imposes no solar/wind, conflict,
-regional, or evaluation-answer quotas.
-
-### Frozen base corpus
-
-The official, Git-trackable base-corpus manifest is:
+Retrieval and Research Agent demos additionally require ignored local artifacts
+that are **not included in Git**:
 
 ```text
-data/manifests/base_corpus.json
+data/papers/base/...                         frozen PDFs recorded by the manifest
+data/cache/base_index/evidence.jsonl        page-aware text Evidence
+data/cache/base_index/pages/...             rendered page images
+data/cache/retrieval/base/index_manifest.json
+local Hugging Face cache                    exact frozen GTE model revision
 ```
 
-It records ten automatically selected papers: four solar-focused, four
-wind-focused, and two cross-modality/general-renewable papers. Five primarily
-address forecasting; five address climate impacts, weather-driven variability,
-performance, or reliability.
-
-The initial 50-candidate pool yielded six validated PDFs. Three focused
-discovery-expansion rounds increased the accumulated pool to 80 unique
-candidates and reached ten validated PDFs, with stop reason `target_reached`.
-All ten local PDFs passed SHA-256 verification against the frozen manifest.
-
-During development, OpenAlex-hosted content downloads returned HTTP 401 with
-the available API credentials. OpenAlex content therefore remains an
-opportunistic first source, while publisher and repository OA fallbacks were
-necessary to construct the complete corpus.
-
-Paper `W3126094341` is retained as an automatically selected but scientifically
-marginal corpus item: its implemented PV forecasting experiment relies mainly
-on historical PV power rather than explicit meteorological predictors. It must
-not be used as primary gold evidence for meteorological-effect claims.
-
-Candidate manifests such as `base_corpus_candidate_v3.json` are local
-development artifacts and are excluded from Git. Freezing the v3 result did
-not change its selected papers, scores, rankings, download records, checksums,
-or discovery provenance.
-
-Live OpenAlex access requires an uncommitted environment variable:
+Check the canonical artifacts before running a demo:
 
 ```bash
-export OPENALEX_API_KEY="..."
+test -f data/cache/base_index/evidence.jsonl
+test -f data/cache/base_index/ingestion_manifest.json
+test -f data/cache/retrieval/base/index_manifest.json
 ```
 
-Build a new candidate corpus with:
+The production Research Agent also requires an Apple system with MPS available,
+because its current query-embedding path explicitly uses `device="mps"`.
 
-```bash
-conda run -n l3s_agent_311 python -m l3s_agent.literature.cli \
-  --output data/manifests/base_corpus_candidate.json
-```
+### C. Berlin computed analysis
 
-The command exits with status 2 if fewer than eight validated PDFs can be
-collected after the bounded fallback procedure. It does not parse, chunk,
-render, inspect, or index PDFs.
-
-## Phase 3 PDF ingestion
-
-Phase 3 provides an offline, all-or-nothing ingestion command for the frozen
-ten-paper base corpus:
-
-```bash
-conda run -n l3s_agent_311 python -m l3s_agent.ingestion.cli
-```
-
-Before reading a paper, ingestion verifies its local path and manifest SHA-256,
-then opens it with PyMuPDF and requires a readable PDF with at least one page.
-Every physical PDF page is represented internally as `page_index + 1`, rendered
-to a 144-DPI RGB PNG with annotations visible, and extracted without OCR.
-
-Text chunks remain within a single page, target approximately 500–800 tokens
-using the deterministic `ceil(character_count / 4)` estimate, and use about 100
-tokens of page-local overlap. Conservative section headings persist until the
-next recognized heading, but remain metadata only and do not force chunk
-boundaries. The final corrected section strategy is
-`deterministic_conservative_regex_v2`; section labels are descriptive,
-optional metadata and are not intended to be a strong retrieval-ranking
-feature. OpenAlex work IDs remain `source_id` values.
-
-The ignored `data/cache/base_index/` output contains:
+The Berlin dataset is **not included in this repository**. The computed-analysis
+demo additionally requires:
 
 ```text
-ingestion_manifest.json
-pages.jsonl
-evidence.jsonl
-pages/{paper_id}/page_0001.png
+data/ml/berlin/Berlin_solar_regression.csv
 ```
 
-The ingestion manifest records input, code, configuration, page-image, and
-JSONL checksums. Existing output is never silently replaced. Phase 3 does not
-perform retrieval, embedding, vision reasoning, LLM calls, or orchestration.
+Expected SHA-256:
 
-The finalized frozen-corpus ingestion contains 10 papers, 207 physical PDF
-pages, 207 rendered page images, and 345 page-local text chunks. Its canonical
-artifact path is `data/cache/base_index/`.
+```text
+eda6fccb75d8e76d9ae56e806e20fcb12f017041e02d463d60a94817ee5656d8
+```
 
-## Phase 4 retrieval
+The loader also requires the frozen 24-column schema, 36,296 rows, and target
+`X50Hertz..MW.`. Literature-only and visual demos do not require this CSV.
 
-Phase 4 reads the finalized `evidence.jsonl` without changing or rechunking its
-345 Evidence records. It implements three modes over `Evidence.content` only:
+## Architecture
 
-- local BM25 Okapi with `k1=1.5` and `b=0.75`;
-- normalized Sentence Transformers embeddings with NumPy dot-product search;
-- hybrid Reciprocal Rank Fusion using rank positions only, `rrf_k=60`, and a
-  component depth of 50.
+The runtime has exactly two reasoning roles—no third agent:
 
-Titles and conservative section labels remain result provenance, not ranking
-features. Hybrid ties resolve deterministically by fused score, best component
-rank, then evidence ID. Results retain the complete Evidence object plus the
-available BM25 rank/score, dense rank/score, and RRF score. The Phase 1
-`RetrievalTool` adapter projects these rich results back to Evidence records and
-explicitly rejects session-evidence retrieval in Phase 4.
+1. **Research Agent**: chooses and sequences available tools, then produces a
+   structured, support-grounded draft.
+2. **Evidence Verifier**: receives the claims and referenced support in a
+   separate stateless call and checks support, provenance, missing evidence,
+   and conflicting evidence.
 
-Build and query are separate commands:
+```text
+Question
+  → Research Agent chooses bounded tools
+  → scientific support
+  → grounded ResearchDraft
+  → Evidence Verifier
+  → answer or explicit limitation
+```
+
+Execution is bounded by typed actions, provisional MVP tool budgets, explicit
+rejection of unavailable tools, and at most two verifier calls:
+
+```text
+gather support → draft → verify #1
+  PASS → complete
+  otherwise → bounded follow-up/revision → verify #2 → stop
+```
+
+Tool availability is intentionally explicit:
+
+| Context | Available capabilities |
+|---|---|
+| Offline corpus construction | automated OpenAlex literature discovery, relevance filtering, OA PDF collection |
+| Frozen production runtime | `retrieve_evidence`, `inspect_page`, `run_python` |
+| Not enabled in frozen production runtime | `search_literature` |
+
+## Scientific support and provenance
+
+The system keeps three scientific-support classes distinct:
+
+| Support class | Identity and scope | Supports | Verification boundary |
+|---|---|---|---|
+| Base text/page `Evidence` | Frozen paper, 1-based physical page, page-local chunk, source, and corpus provenance | Literature claims | Verifier checks the cited paper text and provenance supplied to it |
+| Visual session `Evidence` | Derived from one checksummed canonical paper/page image; session-scoped with the same paper/page provenance | Figure and table claims | Verifier sees the derived visual Evidence text, not the raw image |
+| `AnalysisResult` | Local computed result identified by dataset/spec/result identity through `analysis_result_id` | Computed claims | Verifier checks claim/result consistency; it does **not** reproduce the computation |
+
+`tool_trace` records execution provenance—such as the Python call that produced
+an `AnalysisResult`. It is not scientific support and cannot replace an
+Evidence or AnalysisResult citation.
+
+All PDF page provenance uses physical 1-based page order. Text chunks never
+cross page boundaries.
+
+## Demo commands
+
+### Query the prepared retrieval index
+
+BM25 requires the prepared index but does not compute a query embedding:
 
 ```bash
-conda run -n l3s_agent_311 python -m l3s_agent.retrieval.cli build
-conda run -n l3s_agent_311 python -m l3s_agent.retrieval.cli query \
-  "How does cloud cover affect photovoltaic power forecasting?" --mode hybrid
+conda run -n l3s_agent_311 \
+  python -m l3s_agent.retrieval.cli query \
+  "How does numerical weather prediction contribute to wind-power forecasting?" \
+  --mode bm25 \
+  --top-k 5
 ```
 
-The default model has an 8192-token context window, 768-dimensional embeddings,
-and is loaded without remote executable model code. Its verified immutable
-revision is recorded in configuration, and `local_only=true` prevents index
-commands from silently downloading a model.
-
-Derived artifacts under `data/cache/retrieval/base/` contain evidence-ID order,
-BM25 statistics, normalized float32 embeddings, and checksummed metadata; they
-do not duplicate evidence content and remain outside Git. Loading rejects a
-changed source `evidence.jsonl`, incompatible configuration/provider metadata,
-or altered index files. The canonical production index is
-`data/cache/retrieval/base/`; Phase 5B loads it without rebuilding or tuning it.
-
-The tracked `evaluation/retrieval_gold.json` contains six manually verified,
-natural scientific questions spanning solar, wind, climate-impact, and
-cross-modality topics. Relevance labels are one or more `(paper_id, physical
-1-based page)` pairs—not exact chunk IDs—and contain no answers or manufactured
-conflicts. The evaluator reports Hit@3, Hit@5, Page Recall@3, Page Recall@5,
-MRR, and first relevant rank for BM25, dense, and hybrid modes:
+Hybrid retrieval additionally requires the exact GTE revision already present
+in the local model cache:
 
 ```bash
-conda run -n l3s_agent_311 python -m l3s_agent.retrieval.cli evaluate
+conda run -n l3s_agent_311 \
+  python -m l3s_agent.retrieval.cli query \
+  "How does numerical weather prediction contribute to wind-power forecasting?" \
+  --mode hybrid \
+  --top-k 5
 ```
 
-The final deterministic six-query measurements were:
+The frozen embedding model is `Alibaba-NLP/gte-modernbert-base` at immutable
+revision `e7f32e3c00f91d699e8c43b53106206bcc72bb22`, loaded with
+`trust_remote_code=false`.
 
-| Mode | Hit@3 | Hit@5 | Page Recall@3 | Page Recall@5 | MRR |
-|---|---:|---:|---:|---:|---:|
-| BM25 | 0.833 | 0.833 | 0.264 | 0.375 | 0.611 |
-| Dense | 0.500 | 0.500 | 0.222 | 0.222 | 0.417 |
-| Hybrid RRF | 0.667 | 0.667 | 0.208 | 0.264 | 0.583 |
+### Rebuild prepared artifacts
 
-BM25 outperformed hybrid on this small frozen gold set; no parameters or gold
-labels were changed after measurement.
+Ingestion requires all ten PDFs at the paths and hashes recorded by
+`data/manifests/base_corpus.json`:
 
-## Gate 4A system observations
+```bash
+conda run -n l3s_agent_311 \
+  python -m l3s_agent.ingestion.cli
+```
 
-| Case | Type | Expected → actual tools | Support | Verifier | Manual reliability | Outcome |
+Index construction additionally requires the exact embedding revision already
+cached locally:
+
+```bash
+conda run -n l3s_agent_311 \
+  python -m l3s_agent.retrieval.cli build
+```
+
+Both commands refuse silent replacement of completed artifacts.
+
+### Run the live Research Agent
+
+`OPENAI_API_KEY` must already be exported into the child process environment.
+The application does not automatically load `.env`. If an ignored `.env` is
+used as a shell convenience, load it explicitly without printing its contents:
+
+```bash
+set -a
+source .env
+set +a
+```
+
+The live command requires the canonical ingestion/retrieval artifacts, the
+cached GTE revision, and current MPS support:
+
+```bash
+conda run -n l3s_agent_311 \
+  python -m l3s_agent.runtime.cli \
+  "How does numerical weather prediction contribute to wind-power forecasting?"
+```
+
+The Berlin question also requires the private CSV described above:
+
+```bash
+conda run -n l3s_agent_311 \
+  python -m l3s_agent.runtime.cli \
+  "Using the available Berlin weather and solar-generation data, how well can contemporaneous weather conditions predict 50Hertz regional solar generation, and which variables are most predictive?"
+```
+
+The CLI reports the answer, structured claims and citations, verifier status,
+and terminal status. `--show-trace` adds the sanitized execution trace.
+
+### Demonstrated capability examples
+
+These questions correspond to observed capability categories; they are not
+promises of deterministic routing on every live run.
+
+- **Text-sufficient retrieval:** “How does numerical weather prediction
+  contribute to wind-power forecasting, and how is NWP wind speed processed
+  before producing the final power forecast?”
+- **Visually dependent comparison:** “How do the clearness-index distributions
+  and loss-of-load probability patterns differ between Romania and Dubai in
+  January versus July?”
+- **Computed analysis:** “Using the available Berlin weather and
+  solar-generation data, how well can contemporaneous weather conditions
+  predict 50Hertz regional solar generation, and which variables are most
+  predictive?”
+- **Mixed literature and computation:** “Which atmospheric and irradiance
+  variables does the literature identify as important for photovoltaic power
+  prediction, and do the Berlin–50Hertz results show a similar predictive
+  pattern?”
+
+## Evaluation snapshot
+
+Evaluation separately asks whether the agent chose a useful action, retrieval
+found manually verified paper/pages, and final claims followed from their cited
+support. Offline retrieval cases are not pooled with live answer observations.
+
+### Frozen six-query retrieval evaluation
+
+| Mode | Hit@5 | MRR |
+|---|---:|---:|
+| BM25 | 0.833 | 0.611 |
+| Dense | 0.500 | 0.417 |
+| Hybrid RRF | 0.667 | 0.583 |
+
+BM25 was strongest on this six-query, terminology-heavy frozen gold set. This
+is an observed result, not evidence of universal BM25 superiority, and no
+retrieval parameters or gold labels were tuned after measurement.
+
+The three Gate 4A retrieval diagnostics expose page-level limitations:
+
+- **T01:** correct paper retrieved, but no annotated gold page appeared in the
+  top five.
+- **T02:** correct paper retrieved, but no annotated gold page appeared in the
+  top five.
+- **T03:** a gold page appeared at rank 1.
+
+### Seven real end-to-end observations
+
+| Case | Type | Expected → actual tools | Support | Verifier | Human review | Outcome |
 |---|---|---|---|---|---|---|
 | M01 | historical | retrieve → retrieve | text | PASS | — | text-sufficient route |
 | M02 | historical | retrieve + inspect → retrieve + inspect | text + visual | PASS | — | visual route |
 | A01 | historical | Python → Python | computed | PASS | — | terminal pass |
 | X01 | new live | retrieve + Python → retrieve + Python | text + computed | PASS | SUPPORTED | scoped mixed-provenance answer |
 | O01 | new live | cautious/retrieve → retrieve | none cited | PASS | INSUFFICIENT_EVIDENCE | safe refusal; six retrievals |
-| S01 | new live | retrieve → retrieve | text | PASS | PARTIALLY_SUPPORTED | grounded but incomplete wind coverage |
-| I01 | new live | retrieve → retrieve | text | PASS | SUPPORTED | rejected universal winner |
+| S01 | new live | retrieve → retrieve | text | PASS | PARTIALLY_SUPPORTED | grounded claims, incomplete wind coverage |
+| I01 | new live | retrieve → retrieve | text | PASS | SUPPORTED | rejected a universal winner |
 
-All seven documented verifier outcomes were PASS. Among the four new-live
-cases, routing and structural provenance passed in 4/4, no unavailable tool was
-selected, and the manual-label distribution was 2 SUPPORTED, 1
-PARTIALLY_SUPPORTED, and 1 INSUFFICIENT_EVIDENCE. Historical manual labels
-remain unassigned. These are small diagnostic observations—not a benchmark—and
-verifier PASS is not treated as a human reliability judgment.
+Verifier status was PASS in all seven documented observations. Terminal status
+was recorded for five and was `pass` in 5/5; M01 and M02 are outside that
+denominator. The four new-live cases were 4/4 routing-appropriate and 4/4
+structurally grounded, with no unavailable-tool attempt and no verifier #2.
+Historical human labels remain null rather than being inferred from verifier
+status.
 
-## Phase 5A bounded agent runtime
+S01 makes the evaluation boundary explicit: its verifier status was **PASS**,
+while human review was **PARTIALLY_SUPPORTED**. Verifier PASS means the claims
+that were submitted were supported. It does not establish complete question
+coverage, independent ground truth, or computational reproduction.
 
-Phase 5A adds a lightweight custom runtime under `src/l3s_agent/runtime/` with
-exactly two reasoning roles: a Research Agent/orchestrator and a tool-free
-Evidence Verifier. It uses typed actions for retrieval, literature discovery,
-page inspection, Python analysis, drafting, and stopping; no prose parsing or
-agent framework is involved.
+O01 is a successful robustness observation: the system declined to manufacture
+coral-science claims from an unrelated renewable-energy corpus. Its lack of an
+affirmative answer is appropriate, although using six retrieval calls before
+stopping was inefficient.
 
-The state machine is bounded:
+The full frozen design and safe aggregate are in
+`docs/EVALUATION_PLAN.md` and `evaluation/system_results_summary.json`.
 
-```text
-gather evidence -> draft -> verify #1
-  PASS -> complete
-  otherwise -> bounded follow-up/revision -> verify #2 -> complete
-```
+## What this demo does not establish
 
-Structural draft errors such as unknown Evidence IDs are rejected before
-verification and do not consume the two-call scientific-verification budget.
-After a final non-PASS result, the runtime returns the draft together with the
-unresolved verifier status, findings, and explicit uncertainty.
+- The automatically selected base corpus contains ten papers; it is not broad
+  coverage of renewable-energy science.
+- Retrieval evaluation uses six gold queries. T01 and T02 retrieved the correct
+  papers but missed the annotated pages in the top five.
+- The seven real observations are illustrative, not a statistically
+  representative benchmark or a combined accuracy score.
+- Live literature expansion is not enabled in the frozen production runtime.
+- O01 required six retrieval calls before stopping safely.
+- S01 did not fully cover wind-specific reliability despite supported submitted
+  claims.
+- The verifier checks derived visual Evidence text and does not independently
+  re-read page images.
+- The verifier checks AnalysisResult consistency and does not rerun Python.
+- The Berlin data is private and absent from Git. Its task is regional,
+  contemporaneous, and predictive—not site-level PV modeling, future
+  forecasting, or causal inference.
+- The current production embedding path requires prepared local artifacts, the
+  exact local model cache, and Apple MPS.
+- Single-run token and timing values are operational observations, not latency,
+  cost, or efficiency benchmarks.
 
-Base and session Evidence remain separate. Literature search returns discovery
-metadata only and cannot become citable Evidence without a future ingestion
-step. Fake page inspection produces session-scoped figure/table Evidence, while
-Python analysis produces a distinct non-Evidence `AnalysisResult` with its own
-stable computed-result provenance.
+## Reproducibility and local artifacts
 
-Every typed decision—including rejected decisions—is traced alongside tool
-calls, tool results, Evidence IDs, sanitized failures, and complete verifier
-results. Tests inject a fixed clock and scripted providers, require no network,
-and include an offline integration with the existing Phase 4 retrieval adapter.
-Phase 5A does not initialize a production LLM, multimodal model, runtime
-literature ingestion pipeline, or real Python/ML analysis tool.
+The Git-tracked source of truth includes:
 
-## Phase 5B production provider wiring
+- `data/manifests/base_corpus.json`: ten automatically selected OA papers with
+  source URLs and PDF checksums;
+- `evaluation/retrieval_gold.json`: six page-level retrieval questions;
+- `evaluation/system_cases.json`: frozen Gate 4A case definitions;
+- `evaluation/system_results_summary.json`: safe aggregate results;
+- configuration, source, synthetic fixtures, and tests.
 
-Phase 5B adds a concrete `OpenAIResponsesProvider` behind the existing
-`LLMProvider` Protocol. Action selection, drafting, and verification are
-separate stateless Responses API calls using strict Pydantic Structured Outputs;
-there is no shared conversation state, `previous_response_id`, function-tool
-execution, prose/JSON repair, or hidden SDK retry. Research calls use
-`gpt-5.6-terra`; verification uses the separately configured
-`gpt-4.1-2025-04-14` snapshot and receives only the draft, claims, and cited
-Evidence.
+Exact full local reproduction additionally needs untracked artifacts:
 
-Paper text is serialized as explicitly untrusted scientific data. Action
-selection receives 600-character Evidence previews, while drafting and
-verification receive full admitted/cited Evidence subject to the explicit
-200,000-character request bound. The deterministic runtime still validates
-actions, budgets, Evidence IDs, tool-call IDs, and the exact two-verifier limit.
-The runtime verifier is a reliability mechanism, not the later independent
-system-evaluation judge.
+- the frozen PDFs;
+- the completed Phase 3 ingestion artifact and rendered pages;
+- the completed Phase 4 retrieval index;
+- the exact GTE model cache;
+- the private Berlin CSV for computed-analysis runs.
 
-The Phase 5B production smoke test used only hybrid base-corpus retrieval;
-literature search, page inspection, and Python analysis were unavailable for
-that frozen run. The production factory validates and loads the existing
-retrieval index, initializes the frozen GTE revision locally with remote model
-code disabled, and uses MPS for query embeddings.
+The frozen manifest is sufficient to audit identifiers, source URLs, and
+checksums, but the current corpus command performs fresh OpenAlex discovery; it
+is not a bit-for-bit manifest replay command. OpenAlex results may change over
+time. Live OpenAI calls are external and stochastic and likewise cannot be
+reproduced bit-for-bit. Detailed live records remain in ignored local cache;
+the repository tracks their safe aggregate.
 
-Real LLM calls require an uncommitted environment variable:
+## Compact implementation details
 
-```bash
-export OPENAI_API_KEY="..."
-```
+### Corpus, ingestion, and retrieval
 
-After separate approval of API billing and smoke testing, run one question with:
+- Six deterministic topic queries plus bounded focused expansion produced 80
+  unique candidates and ten validated OA PDFs without manual paper selection.
+- The frozen corpus contains four solar, four wind, and two cross-modality or
+  general-renewable papers. Five focus on forecasting and five on climate
+  impacts, variability, performance, or reliability.
+- Phase 3 verified PDF SHA-256 values, extracted all 207 physical pages,
+  rendered 207 checksummed 144-DPI RGB PNGs, and created 345 page-local chunks.
+- Phase 4 scores `Evidence.content` only with BM25 (`k1=1.5`, `b=0.75`),
+  normalized dense embeddings, and rank-only RRF (`rrf_k=60`, candidate depth
+  50). Section labels are optional descriptive metadata, not ranking features.
 
-```bash
-conda run -n l3s_agent_311 python -m l3s_agent.runtime.cli \
-  "How does numerical weather prediction contribute to wind-power forecasting?"
-```
+### Berlin scientific analysis
 
-The CLI prints only the final answer, claim citations/provenance, verifier
-status, and terminal status by default. Add `--show-trace` for the sanitized
-`ExecutionTrace`. Prompts, provider request objects, hidden reasoning, and
-credentials are never printed.
-
-In the production smoke test, the observed route was `retrieve (5 new) ->
-retrieve (3 new, 2 duplicate) -> retrieve (0 new, 4 duplicate) -> draft ->
-verifier PASS`. The runtime admitted 8 unique Evidence records, structurally
-grounded 6 claims with valid cited Evidence IDs, received verifier `PASS`, and
-selected no unavailable tool. This is a smoke-test observation, not a benchmark.
-
-## Phase 5C canonical page inspection
-
-Phase 5C adds `inspect_page` as a bounded Research Agent tool following the
-principle “text retrieves the page; vision interprets the page.” It resolves
-only `(paper_id, 1-based page)` entries from the completed Phase 3 artifact,
-checks `pages.jsonl` and the selected PNG SHA-256, and never accepts a model- or
-user-supplied filesystem path. One image and one bounded question are sent to
-the existing stateless provider, and the typed interpretation becomes exactly
-one session-scoped figure/table Evidence record with deterministic provenance.
-
-The independent verifier may check cited derived visual Evidence as bounded
-text, but it does not independently re-read the page image. Images, data URLs,
-prompts, raw provider objects, and inspection content are excluded from safe
-runtime events. Phase 5C passed a provider-level multimodal smoke test. In one
-visually dependent evaluation, the Research Agent naturally retrieved the
-relevant paper, inspected its canonical physical page, admitted one
-session-scoped visual Evidence record with paper/page provenance, drafted with
-mixed text and visual citations, and received verifier `PASS`. This is a smoke
-test observation, not a benchmark or a claim that vision is always necessary.
-
-## Phase 6 bounded scientific analysis
-
-Phase 6 implements one predefined `RUN_PYTHON` operation:
-
-```json
-{"analysis": "berlin_weather_solar_v1"}
-```
-
-It compares a training-mean baseline, Ridge regression, and fixed
-histogram-gradient-boosting model using 2018 for training and 2019 for held-out
-testing, with no shuffle, cross-validation, hyperparameter search, target
-normalization, lags, or future values. It reports held-out MAE, RMSE, R², and
-noncausal permutation importance. Computed results remain non-Evidence
-`AnalysisResult` values. Literature/page `Evidence` and computed
-`AnalysisResult` are separate scientific-support classes: computed claims cite
-a deterministic `analysis_result_id`, while `tool_trace` separately records the
-producing Python call. The verifier checks claim/result consistency, including
-metrics and limitations; it does not rerun or independently reproduce the
-analysis.
-
-In the approved production smoke, the Research Agent naturally selected
-`RUN_PYTHON`, admitted the deterministic AnalysisResult, drafted four affirmative
-computed claims citing its `analysis_result_id`, included the producing call in
-`tool_trace`, and received verifier `PASS`. The verifier checked claim/result
-consistency rather than independently reproducing the computation. This is a
-smoke/evaluation observation, not a benchmark.
-
-Held-out results were:
+The bounded operation `berlin_weather_solar_v1` predicts observed 50Hertz
+regional solar generation from contemporaneous meteorological conditions. It
+uses 2018 for training and 2019 for held-out testing without shuffling, lags,
+future values, cross-validation, or hyperparameter search.
 
 | Model | MAE (MW) | RMSE (MW) | R² |
 |---|---:|---:|---:|
@@ -473,63 +360,36 @@ Held-out results were:
 | Ridge | 211.282 | 288.315 | 0.8517 |
 | HistGradientBoosting | 190.356 | 278.180 | 0.8619 |
 
-The target mean shifted from 974.655 MW in training to 856.106 MW in testing
-(-12.163%). The leading held-out permutation-importance variables were
-`Clearsky.GHI`, `GHI`, `Wind.Direction`, `Precipitable.Water`, and
-`Surface.Albedo`; these are predictive, not causal, rankings.
+The leading held-out permutation-importance variables were `Clearsky.GHI`,
+`GHI`, `Wind.Direction`, `Precipitable.Water`, and `Surface.Albedo`. These are
+predictive, noncausal rankings; correlated variables may redistribute
+importance.
 
-The raw research dataset is intentionally untracked because no redistribution
-or reproducible public acquisition record is present in this repository. A
-local run requires:
+## Configuration, security, and deeper documentation
 
-```text
-data/ml/berlin/Berlin_solar_regression.csv
-```
+Non-secret defaults live in `config/default.toml`; environment overrides are
+listed in `.env.example`. The Research Agent uses `gpt-5.6-terra`, while the
+separate verifier uses `gpt-4.1-2025-04-14`. Provider calls are stateless and
+use typed Structured Outputs with SDK retries disabled.
 
-The loader requires the frozen 24-column schema, 36,296 rows, target
-`X50Hertz..MW.`, and SHA-256
-`eda6fccb75d8e76d9ae56e806e20fcb12f017041e02d463d60a94817ee5656d8`.
-If the file is absent or does not match, the bounded tool fails clearly without
-training. Offline tests use only a small synthetic fixture.
+Never commit `.env`, API credentials, the Berlin CSV, PDFs, model caches, or
+derived artifacts. Paper content is treated as untrusted scientific data, not
+executable instructions. Prompts, provider payloads, credentials, hidden
+reasoning, full Evidence content, and full AnalysisResult values are excluded
+from safe tracked evaluation summaries.
 
-## Secrets
+Design and implementation details:
 
-API keys and local secrets should be stored in:
+- `AGENTS.md`
+- `docs/PROJECT_SPEC.md`
+- `docs/REQUIREMENTS_MAPPING.md`
+- `docs/EVALUATION_PLAN.md`
+- `docs/DEVELOPMENT_LOG.md`
 
-```text
-.env
-```
+Core Python contracts:
 
-Do **not** commit `.env`.
-
-Use `.env.example` as the template for required environment variables.
-
-## Planned implementation areas
-
-The implementation is expected to include:
-
-- automated literature discovery (implemented)
-- OA paper collection and checksums (implemented)
-- PDF ingestion and page rendering (implemented and finalized for the frozen corpus)
-- provenance-aware evidence objects
-- hybrid retrieval (implemented with a canonical real dense index)
-- bounded Research Agent orchestration (production provider wired and smoke-tested)
-- Evidence Verifier (separate production model/context wired and smoke-tested)
-- multimodal page inspection (implemented and smoke-tested)
-- small solar-generation ML experiment (implemented as a bounded local tool)
-- page-level retrieval evaluator and bounded Gate 4A system-evaluation harness (implemented)
-- safe ignored live records plus a tracked aggregate evaluation summary
-
-## Important constraints
-
-- Keep the prototype small and testable.
-- Do not manually curate the final literature corpus.
-- Do not fabricate papers, citations, metrics, or experimental results.
-- Prefer scientific reliability over UI polish.
-- Preserve paper/page provenance throughout the system.
-- Return explicit uncertainty when evidence is insufficient or conflicting.
-
-## Running the project
-
-The corpus-building, ingestion, retrieval, and bounded Research Agent entry
-points are available as documented above.
+- `src/l3s_agent/models.py`: Evidence, AnalysisResult, claims, drafts, and
+  verification results;
+- `src/l3s_agent/interfaces.py`: provider and Research Agent tool protocols;
+- `src/l3s_agent/tracing.py`: action, tool, verifier, and failure provenance;
+- `src/l3s_agent/runtime/`: bounded orchestration and production CLI.
