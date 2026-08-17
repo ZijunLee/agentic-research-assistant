@@ -30,11 +30,15 @@ max_search_rounds = 2
 max_tool_calls = 12
 
 [paths]
-base_corpus_manifest = "data/manifests/corpus.json"
+base_corpus_manifest = "data/manifests/base_corpus.json"
 base_index_dir = "data/cache/base_index"
 session_evidence_dir = "data/cache/sessions"
 trace_dir = "results/traces"
 result_dir = "results"
+
+[ingestion]
+page_image_format = "png"
+page_image_dpi = 144
 
 [literature]
 topic = "Weather and climate impacts on renewable energy"

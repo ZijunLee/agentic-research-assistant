@@ -20,6 +20,9 @@ def test_defaults_keep_models_unset_and_freeze_core_decisions() -> None:
     assert config.retrieval.fusion == "rrf"
     assert config.budgets.max_verifier_calls == 2
     assert config.chunking.cross_page_boundaries is False
+    assert config.paths.base_corpus_manifest == Path("data/manifests/base_corpus.json")
+    assert config.ingestion.page_image_format == "png"
+    assert config.ingestion.page_image_dpi == 144
     assert config.ml_dataset == MLDatasetConfig(approved=False, adapter=None, path=None)
     assert config.literature.topic == "Weather and climate impacts on renewable energy"
     assert config.literature.modalities == ("solar", "wind")

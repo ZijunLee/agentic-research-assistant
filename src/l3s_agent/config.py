@@ -80,6 +80,18 @@ class PathConfig:
 
 
 @dataclass(frozen=True)
+class IngestionConfig:
+    page_image_format: str
+    page_image_dpi: int
+
+    def __post_init__(self) -> None:
+        if self.page_image_format.lower() != "png":
+            raise ValueError("Phase 3 page images must use PNG")
+        if self.page_image_dpi <= 0:
+            raise ValueError("page image DPI must be positive")
+
+
+@dataclass(frozen=True)
 class LiteratureRankingConfig:
     query_relevance: int
     domain_relevance: int
@@ -170,6 +182,7 @@ class AppConfig:
     chunking: ChunkingConfig
     budgets: BudgetConfig
     paths: PathConfig
+    ingestion: IngestionConfig
     literature: LiteratureConfig
     ml_dataset: MLDatasetConfig
 
@@ -212,6 +225,7 @@ def load_config(
     chunking = raw["chunking"]
     budgets = raw["budgets"]
     paths = raw["paths"]
+    ingestion = raw["ingestion"]
     literature = raw["literature"]
     literature_ranking = literature["ranking"]
     ml_dataset = raw["ml_dataset"]
@@ -258,6 +272,10 @@ def load_config(
             session_evidence_dir=Path(paths["session_evidence_dir"]),
             trace_dir=Path(paths["trace_dir"]),
             result_dir=Path(paths["result_dir"]),
+        ),
+        ingestion=IngestionConfig(
+            page_image_format=str(ingestion["page_image_format"]),
+            page_image_dpi=int(ingestion["page_image_dpi"]),
         ),
         literature=LiteratureConfig(
             topic=str(literature["topic"]),

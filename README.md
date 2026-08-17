@@ -209,6 +209,46 @@ The command exits with status 2 if fewer than eight validated PDFs can be
 collected after the bounded fallback procedure. It does not parse, chunk,
 render, inspect, or index PDFs.
 
+## Phase 3 PDF ingestion
+
+Phase 3 provides an offline, all-or-nothing ingestion command for the frozen
+ten-paper base corpus:
+
+```bash
+conda run -n l3s_agent_311 python -m l3s_agent.ingestion.cli
+```
+
+Before reading a paper, ingestion verifies its local path and manifest SHA-256,
+then opens it with PyMuPDF and requires a readable PDF with at least one page.
+Every physical PDF page is represented internally as `page_index + 1`, rendered
+to a 144-DPI RGB PNG with annotations visible, and extracted without OCR.
+
+Text chunks remain within a single page, target approximately 500–800 tokens
+using the deterministic `ceil(character_count / 4)` estimate, and use about 100
+tokens of page-local overlap. Conservative section headings persist until the
+next recognized heading, but remain metadata only and do not force chunk
+boundaries. The final corrected section strategy is
+`deterministic_conservative_regex_v2`; section labels are descriptive,
+optional metadata and are not intended to be a strong retrieval-ranking
+feature. OpenAlex work IDs remain `source_id` values.
+
+The ignored `data/cache/base_index/` output contains:
+
+```text
+ingestion_manifest.json
+pages.jsonl
+evidence.jsonl
+pages/{paper_id}/page_0001.png
+```
+
+The ingestion manifest records input, code, configuration, page-image, and
+JSONL checksums. Existing output is never silently replaced. Phase 3 does not
+perform retrieval, embedding, vision reasoning, LLM calls, or orchestration.
+
+The finalized frozen-corpus ingestion contains 10 papers, 207 physical PDF
+pages, 207 rendered page images, and 345 page-local text chunks. Its canonical
+artifact path is `data/cache/base_index/`.
+
 ## Secrets
 
 API keys and local secrets should be stored in:
@@ -227,7 +267,7 @@ The implementation is expected to include:
 
 - automated literature discovery (implemented)
 - OA paper collection and checksums (implemented)
-- PDF ingestion and page rendering
+- PDF ingestion and page rendering (implemented and finalized for the frozen corpus)
 - provenance-aware evidence objects
 - hybrid retrieval
 - Research Agent orchestration

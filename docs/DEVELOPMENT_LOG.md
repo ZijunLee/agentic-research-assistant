@@ -327,3 +327,84 @@ Date: 2026-08-16
   SHA-256 values.
 - Candidate manifests remain local development artifacts; the official manifest
   is `data/manifests/base_corpus.json`.
+
+---
+
+### 2026-08-17 — Phase 3 page-aware PDF ingestion implementation
+
+**Codex / AI-assisted work**
+- Added an offline PyMuPDF ingestion package that validates every frozen PDF
+  against the official manifest before page extraction or rendering.
+- Added deterministic physical-page numbering, 144-DPI RGB PNG rendering,
+  page-local chunking, conservative section propagation, evidence identifiers,
+  structured warnings/failures, and all-or-nothing artifact creation.
+- Added checksummed `pages.jsonl`, `evidence.jsonl`, page-image, and ingestion
+  metadata artifacts for later retrieval and multimodal page inspection.
+- Added synthetic-PDF offline tests for deterministic output, 1-based pages,
+  empty pages, section propagation, integrity failures, encryption, invalid and
+  zero-page PDFs, output overwrite refusal, and source-manifest immutability.
+
+**Human decisions / review**
+- Froze OpenAlex work IDs as `source_id`, physical `page_index + 1` numbering,
+  `ceil(character_count / 4)` token estimation, and page-local overlap.
+- Froze PNG/RGB/144-DPI rendering with visible annotations and no OCR or image
+  post-processing.
+- Required deterministic section persistence, location-plus-content-hash
+  evidence IDs, and explicit output paths for rebuilds.
+
+**Scope boundary**
+- No BM25, embeddings, RRF, retrieval ranking, LLM, vision reasoning, agent,
+  verifier, ML, or evaluation-question implementation was added.
+- The Phase 3 command was not run on the real frozen corpus during implementation.
+
+**Validation**
+- The complete offline suite contains 82 passing tests. PyMuPDF emits five
+  upstream SWIG deprecation warnings under Python 3.11; no test fails.
+- Compilation, dependency consistency, and Git whitespace checks pass.
+
+---
+
+### 2026-08-17 — Phase 3 chunk-quality correction
+
+**Codex / AI-assisted work**
+- Decoupled deterministic section metadata from page-local chunk boundaries;
+  chunks now follow page, paragraph, sentence, and word boundaries only.
+- Tightened heading recognition to reject manuscript IDs, running journal
+  headers, table/equation fragments, isolated values, and heading-plus-body lines.
+- Added backward merging for avoidable short final remainders when the merged
+  chunk remains within the 800-token approximation limit.
+- Added offline regressions for false headings, metadata-only sections, short
+  pages, final merges, page isolation, maximum size, and deterministic output.
+
+**Scope boundary**
+- PDF validation, page rendering, provenance, evidence IDs, checksums, and
+  overwrite protection remain unchanged.
+- The corrected ingestion pipeline was not run on the real frozen corpus.
+
+---
+
+### 2026-08-17 — Phase 3 frozen-corpus finalization
+
+**Codex / AI-assisted work**
+- Rebuilt the corrected ingestion at the canonical ignored cache path
+  `data/cache/base_index/` using only the frozen manifest and existing local
+  PDFs; no discovery, downloading, or network access was performed.
+- Preserved the old v1 cache during comparison, verified the canonical rebuild
+  against the approved v2 artifact, then removed both temporary derived cache
+  copies.
+- Recorded the corrected `deterministic_conservative_regex_v2` section
+  strategy as final. Section labels remain descriptive, optional metadata and
+  are not intended as a strong retrieval-ranking feature.
+
+**Final real-ingestion result**
+- 10 papers, 207 physical PDF pages, 207 rendered page images, and 345
+  page-local text chunks.
+- Approximate chunk-token statistics: minimum 131, median 654, mean 581.07,
+  maximum 800; zero chunks below 100, 230 chunks from 500 through 800, and
+  zero chunks above 800.
+- One nonfatal warning remains for the known empty-text physical page 2 in
+  `paper_W1984703120`; its page record and rendered image are retained.
+- All JSONL, per-image, and image-set checksums passed. No page zero or
+  cross-page chunk was found.
+- The frozen `base_corpus.json` SHA-256 remained
+  `51ea0a37783949f3d6da9eefb86a6fb23de7a2d100f1c807a52bbdf4715663c1`.
