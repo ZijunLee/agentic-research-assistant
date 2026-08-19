@@ -1,6 +1,6 @@
 # An Agentic Research Assistant for Weather and Climate Impacts on Renewable Energy
 
-This compact L3S take-home prototype helps investigate weather and climate
+This compact prototype helps investigate weather and climate
 impacts on solar and wind energy. A Research Agent adaptively chooses bounded
 tools for page-aware retrieval, multimodal PDF-page inspection, and local
 scientific analysis; a separate Evidence Verifier checks whether submitted
