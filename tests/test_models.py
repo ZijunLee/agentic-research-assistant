@@ -2,7 +2,7 @@ from dataclasses import fields
 
 import pytest
 
-from l3s_agent.models import (
+from research_agent.models import (
     AnalysisResult,
     Claim,
     CorpusScope,

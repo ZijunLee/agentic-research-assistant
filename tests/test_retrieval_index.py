@@ -5,8 +5,8 @@ import numpy as np
 import pytest
 
 from conftest import FakeEmbeddingProvider, make_retrieval_evidence
-from l3s_agent.retrieval.index import RetrievalIndex, build_retrieval_index
-from l3s_agent.retrieval.models import RetrievalError
+from research_agent.retrieval.index import RetrievalIndex, build_retrieval_index
+from research_agent.retrieval.models import RetrievalError
 
 
 def build_fixture(retrieval_artifact_factory, tmp_path: Path):

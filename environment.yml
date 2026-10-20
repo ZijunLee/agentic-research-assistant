@@ -1,4 +1,4 @@
-name: l3s_agent_311
+name: research_agent_311
 
 channels:
   - conda-forge

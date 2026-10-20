@@ -5,12 +5,12 @@ import json
 from pathlib import Path
 from types import SimpleNamespace
 
-import l3s_agent.runtime.factory as factory_module
-from l3s_agent.config import load_config
-from l3s_agent.models import CorpusScope, Evidence, EvidenceModality, VerifierStatus
-from l3s_agent.providers import OpenAIResponsesProvider
-from l3s_agent.runtime.factory import assemble_runtime
-from l3s_agent.runtime.models import TerminalStatus
+import research_agent.runtime.factory as factory_module
+from research_agent.config import load_config
+from research_agent.models import CorpusScope, Evidence, EvidenceModality, VerifierStatus
+from research_agent.providers import OpenAIResponsesProvider
+from research_agent.runtime.factory import assemble_runtime
+from research_agent.runtime.models import TerminalStatus
 
 
 CONFIG = Path(__file__).parents[1] / "config" / "default.toml"

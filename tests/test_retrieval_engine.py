@@ -1,10 +1,10 @@
 import pytest
 
 from conftest import FakeEmbeddingProvider, make_retrieval_evidence
-from l3s_agent.interfaces import EvidenceRetrievalTool
-from l3s_agent.retrieval.engine import BaseEvidenceRetrievalTool, RetrievalEngine
-from l3s_agent.retrieval.index import build_retrieval_index
-from l3s_agent.retrieval.models import RetrievalError, RetrievalMode
+from research_agent.interfaces import EvidenceRetrievalTool
+from research_agent.retrieval.engine import BaseEvidenceRetrievalTool, RetrievalEngine
+from research_agent.retrieval.index import build_retrieval_index
+from research_agent.retrieval.models import RetrievalError, RetrievalMode
 
 
 def make_engine(retrieval_artifact_factory, tmp_path):

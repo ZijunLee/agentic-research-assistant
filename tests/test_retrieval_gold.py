@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from l3s_agent.retrieval.evaluation import load_gold
+from research_agent.retrieval.evaluation import load_gold
 
 
 GOLD_PATH = Path(__file__).parents[1] / "evaluation" / "retrieval_gold.json"

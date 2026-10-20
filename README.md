@@ -12,17 +12,17 @@ limitations rather than a polished UI.
 ### A. Fresh clone: API-free review
 
 Create the Python 3.11 environment defined by `environment.yml`. Its name is
-`l3s_agent_311`.
+`research_agent_311`.
 
 ```bash
 conda env create -f environment.yml
 
-conda run -n l3s_agent_311 python -m pytest
+conda run -n research_agent_311 python -m pytest
 
-conda run -n l3s_agent_311 \
-  python -m l3s_agent.system_evaluation validate
+conda run -n research_agent_311 \
+  python -m research_agent.system_evaluation validate
 
-conda run -n l3s_agent_311 \
+conda run -n research_agent_311 \
   python -m json.tool evaluation/system_results_summary.json
 ```
 
@@ -131,8 +131,8 @@ cross page boundaries.
 BM25 requires the prepared index but does not compute a query embedding:
 
 ```bash
-conda run -n l3s_agent_311 \
-  python -m l3s_agent.retrieval.cli query \
+conda run -n research_agent_311 \
+  python -m research_agent.retrieval.cli query \
   "How does numerical weather prediction contribute to wind-power forecasting?" \
   --mode bm25 \
   --top-k 5
@@ -142,8 +142,8 @@ Hybrid retrieval additionally requires the exact GTE revision already present
 in the local model cache:
 
 ```bash
-conda run -n l3s_agent_311 \
-  python -m l3s_agent.retrieval.cli query \
+conda run -n research_agent_311 \
+  python -m research_agent.retrieval.cli query \
   "How does numerical weather prediction contribute to wind-power forecasting?" \
   --mode hybrid \
   --top-k 5
@@ -159,16 +159,16 @@ Ingestion requires all ten PDFs at the paths and hashes recorded by
 `data/manifests/base_corpus.json`:
 
 ```bash
-conda run -n l3s_agent_311 \
-  python -m l3s_agent.ingestion.cli
+conda run -n research_agent_311 \
+  python -m research_agent.ingestion.cli
 ```
 
 Index construction additionally requires the exact embedding revision already
 cached locally:
 
 ```bash
-conda run -n l3s_agent_311 \
-  python -m l3s_agent.retrieval.cli build
+conda run -n research_agent_311 \
+  python -m research_agent.retrieval.cli build
 ```
 
 Both commands refuse silent replacement of completed artifacts.
@@ -189,16 +189,16 @@ The live command requires the canonical ingestion/retrieval artifacts, the
 cached GTE revision, and current MPS support:
 
 ```bash
-conda run -n l3s_agent_311 \
-  python -m l3s_agent.runtime.cli \
+conda run -n research_agent_311 \
+  python -m research_agent.runtime.cli \
   "How does numerical weather prediction contribute to wind-power forecasting?"
 ```
 
 The Berlin question also requires the private CSV described above:
 
 ```bash
-conda run -n l3s_agent_311 \
-  python -m l3s_agent.runtime.cli \
+conda run -n research_agent_311 \
+  python -m research_agent.runtime.cli \
   "Using the available Berlin weather and solar-generation data, how well can contemporaneous weather conditions predict 50Hertz regional solar generation, and which variables are most predictive?"
 ```
 
@@ -382,14 +382,14 @@ Design and implementation details:
 
 - `AGENTS.md`
 - `docs/PROJECT_SPEC.md`
-- `docs/REQUIREMENTS_MAPPING.md`
+- `docs/DESIGN_REQUIREMENTS.md`
 - `docs/EVALUATION_PLAN.md`
 - `docs/DEVELOPMENT_LOG.md`
 
 Core Python contracts:
 
-- `src/l3s_agent/models.py`: Evidence, AnalysisResult, claims, drafts, and
+- `src/research_agent/models.py`: Evidence, AnalysisResult, claims, drafts, and
   verification results;
-- `src/l3s_agent/interfaces.py`: provider and Research Agent tool protocols;
-- `src/l3s_agent/tracing.py`: action, tool, verifier, and failure provenance;
-- `src/l3s_agent/runtime/`: bounded orchestration and production CLI.
+- `src/research_agent/interfaces.py`: provider and Research Agent tool protocols;
+- `src/research_agent/tracing.py`: action, tool, verifier, and failure provenance;
+- `src/research_agent/runtime/`: bounded orchestration and production CLI.

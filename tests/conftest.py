@@ -6,15 +6,15 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from l3s_agent.literature.discovery import normalize_title
-from l3s_agent.literature.models import (
+from research_agent.literature.discovery import normalize_title
+from research_agent.literature.models import (
     AuthorRecord,
     LiteratureCandidate,
     OpenAccessInfo,
     QueryMatch,
 )
-from l3s_agent.models import CorpusScope, Evidence, EvidenceModality
-from l3s_agent.retrieval.embeddings import normalize_rows
+from research_agent.models import CorpusScope, Evidence, EvidenceModality
+from research_agent.retrieval.embeddings import normalize_rows
 
 
 class FakeEmbeddingProvider:

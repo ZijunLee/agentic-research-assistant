@@ -1,8 +1,8 @@
-# L3S Scientific Agent Project
+# Agentic Research Assistant
 
 ## Project goal
 
-Build a small agentic AI system for scientific research for the L3S technical interview.
+Build a small agentic AI system for scientific research.
 
 Project title:
 
@@ -15,7 +15,7 @@ The system should help environmental / energy scientists answer scientific quest
 Before modifying code, read:
 
 1. docs/PROJECT_SPEC.md
-2. docs/REQUIREMENTS_MAPPING.md
+2. docs/DESIGN_REQUIREMENTS.md
 3. docs/EVALUATION_PLAN.md
 
 ## Frozen architecture
@@ -181,17 +181,17 @@ Do not create final gold labels until the automatically collected corpus has bee
 
 Use only the dedicated Conda environment:
 
-l3s_agent_311
+research_agent_311
 
 Do not install packages into Conda base or another environment.
 
 Prefer explicit commands such as:
 
-conda run -n l3s_agent_311 python ...
+conda run -n research_agent_311 python ...
 
 For package installation prefer:
 
-conda run -n l3s_agent_311 python -m pip install ...
+conda run -n research_agent_311 python -m pip install ...
 
 Do not use plain pip install outside the dedicated environment.
 

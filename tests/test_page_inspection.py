@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from l3s_agent.models import CorpusScope, EvidenceModality, PageInspectionResult
-from l3s_agent.page_inspection import (
+from research_agent.models import CorpusScope, EvidenceModality, PageInspectionResult
+from research_agent.page_inspection import (
     CanonicalPageInspectionTool,
     CanonicalPageResolver,
     normalize_inspection_question,

@@ -5,13 +5,13 @@ import inspect
 
 import pytest
 
-from l3s_agent.interfaces import (
+from research_agent.interfaces import (
     EvidenceRetrievalTool,
     LLMProvider,
     LiteratureSearchTool,
     validate_retrieval_scope,
 )
-from l3s_agent.models import (
+from research_agent.models import (
     Evidence,
     PageInspectionResult,
     PaperRecord,

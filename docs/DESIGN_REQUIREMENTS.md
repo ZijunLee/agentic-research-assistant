@@ -1,6 +1,6 @@
 # Requirements -> Architecture -> Evaluation Mapping
 
-This document maps the take-home requirements and interview evaluation criteria to concrete system components and tests.
+This document maps the project's design requirements and evaluation goals to concrete system components and tests.
 
 The purpose is to ensure that every implemented component has a clear reason to exist and a clear way to demonstrate that it works.
 
@@ -325,8 +325,6 @@ A correct refusal to compare incompatible results counts as a successful scienti
 
 Include at least one small machine-learning or scientific data-analysis component.
 
-The interview email also explicitly states interest in machine-learning fundamentals.
-
 ### Architecture
 
 Implement a real supervised regression experiment rather than relying only on embeddings.
@@ -571,7 +569,7 @@ Measure whether the verifier correctly identifies:
 
 ### Evaluation focus
 
-The interview explicitly asks for robustness to missing scientific evidence.
+The system must stay robust when scientific evidence is missing.
 
 ### Architecture
 
@@ -609,7 +607,7 @@ Success means:
 
 ### Evaluation focus
 
-The interview explicitly asks for robustness to conflicting scientific evidence.
+The system must stay robust when scientific evidence conflicts.
 
 ### Architecture
 
@@ -833,7 +831,7 @@ README should contain commands sufficient to reproduce the demo from the saved c
 
 ### Evaluation focus
 
-The take-home explicitly asks how coding / AI agents were used while building the system.
+Document how coding / AI agents were used while building the system.
 
 ### Architecture
 
@@ -878,7 +876,7 @@ README or presentation should briefly explain:
 
 ### Requirement / constraint
 
-The interview does not expect a polished product or UI.
+The project is a research prototype, not a polished product or UI.
 
 ### Architecture
 
@@ -1025,7 +1023,7 @@ Evaluate:
 
 Every implementation choice should answer two questions:
 
-1. Which take-home requirement or interview evaluation criterion does this component serve?
+1. Which design requirement or evaluation goal does this component serve?
 2. How will we demonstrate or measure that it works?
 
 Do not add architectural complexity unless both questions have a clear answer.

@@ -4,10 +4,10 @@ from pathlib import Path
 
 import pytest
 
-from l3s_agent.config import LiteratureConfig, load_config
-from l3s_agent.literature.builder import CorpusBuilder
-from l3s_agent.literature.discovery import domain_signals, score_candidate
-from l3s_agent.literature.models import (
+from research_agent.config import LiteratureConfig, load_config
+from research_agent.literature.builder import CorpusBuilder
+from research_agent.literature.discovery import domain_signals, score_candidate
+from research_agent.literature.models import (
     DownloadRecord,
     DownloadStatus,
     LiteratureCandidate,

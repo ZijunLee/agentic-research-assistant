@@ -2,7 +2,7 @@
 
 This file records meaningful implementation decisions and the use of coding / AI agents during development.
 
-The goal is to make the development process transparent and reproducible, especially because the take-home explicitly asks how coding / AI agents were used while building the system.
+The goal is to make the development process transparent and reproducible.
 
 ---
 
@@ -42,7 +42,7 @@ Detailed design is frozen in:
 
 - `AGENTS.md`
 - `docs/PROJECT_SPEC.md`
-- `docs/REQUIREMENTS_MAPPING.md`
+- `docs/DESIGN_REQUIREMENTS.md`
 - `docs/EVALUATION_PLAN.md`
 
 ---
@@ -107,7 +107,7 @@ Date: 2026-08-16
 **Human actions**
 - Created a dedicated local project directory.
 - Initialized a Git repository on branch `main`.
-- Created a dedicated Conda environment: `l3s_agent_311`.
+- Created a dedicated Conda environment: `research_agent_311`.
 - Created the initial project-design documents.
 - Added `.gitignore` rules for secrets, Python cache files, downloaded papers, caches, and generated results.
 
@@ -149,7 +149,7 @@ Date: 2026-08-16
 
 **Validation**
 - Ran the Phase 1 suite with Python 3.11.15 and pytest 8.4.2 in the dedicated
-  `l3s_agent_311` Conda environment: 17 tests passed.
+  `research_agent_311` Conda environment: 17 tests passed.
 - These unit-test results validate software contracts only and are not
   scientific or system-evaluation metrics.
 
@@ -175,7 +175,7 @@ Date: 2026-08-16
   provisional search/tool limits, and dependency set unchanged.
 
 **Validation**
-- The corrected suite contains 23 passing unit tests in `l3s_agent_311`.
+- The corrected suite contains 23 passing unit tests in `research_agent_311`.
 - Python compilation, dependency consistency, and Git whitespace checks pass.
 
 **Known issues / next steps**
@@ -215,7 +215,7 @@ Date: 2026-08-16
 - Approved `httpx>=0.27,<1` as the sole new runtime dependency.
 
 **Validation**
-- The complete offline suite contains 43 passing tests in `l3s_agent_311`.
+- The complete offline suite contains 43 passing tests in `research_agent_311`.
 - Python compilation, dependency consistency, and Git whitespace checks pass.
 - The live OpenAlex corpus build was not run because `OPENALEX_API_KEY` was not
   configured; no papers, citations, or scientific results were fabricated.

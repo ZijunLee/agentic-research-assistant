@@ -2,7 +2,7 @@ import math
 
 import pytest
 
-from l3s_agent.retrieval.bm25 import BM25Index, tokenize
+from research_agent.retrieval.bm25 import BM25Index, tokenize
 
 
 def test_tokenizer_is_deterministic_without_stemming_or_stop_words() -> None:

@@ -307,7 +307,7 @@ Components:
 
 A simple weighted or rank-fusion approach is sufficient.
 
-The exact implementation should remain simple enough for the take-home scope.
+The exact implementation should remain simple enough for the prototype scope.
 
 Retrieval should return evidence objects with provenance metadata.
 
@@ -513,7 +513,7 @@ Secrets must not be committed.
 
 ## Development with coding agents
 
-The take-home explicitly evaluates how coding / AI agents are used while building the system.
+How coding / AI agents are used while building the system is documented explicitly.
 
 Use Codex as a development accelerator for tasks such as:
 

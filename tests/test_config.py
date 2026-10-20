@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from l3s_agent.config import LLMConfig, MLDatasetConfig, PathConfig, load_config
+from research_agent.config import LLMConfig, MLDatasetConfig, PathConfig, load_config
 
 
 CONFIG_PATH = Path(__file__).parents[1] / "config" / "default.toml"
@@ -68,11 +68,11 @@ def test_environment_overrides_provider_models_without_hard_coding() -> None:
     config = load_config(
         CONFIG_PATH,
         environ={
-            "L3S_LLM_PROVIDER": "test-provider",
-            "L3S_LLM_TEXT_MODEL": "text-model",
-            "L3S_LLM_VERIFIER_MODEL": "verification-model",
-            "L3S_LLM_MULTIMODAL_MODEL": "vision-model",
-            "L3S_EMBEDDING_MODEL": "local-embedding-model",
+            "RA_LLM_PROVIDER": "test-provider",
+            "RA_LLM_TEXT_MODEL": "text-model",
+            "RA_LLM_VERIFIER_MODEL": "verification-model",
+            "RA_LLM_MULTIMODAL_MODEL": "vision-model",
+            "RA_EMBEDDING_MODEL": "local-embedding-model",
         },
     )
 
@@ -84,7 +84,7 @@ def test_environment_overrides_provider_models_without_hard_coding() -> None:
 def test_optional_generation_controls_are_sent_only_when_configured() -> None:
     config = load_config(
         CONFIG_PATH,
-        environ={"L3S_LLM_TEMPERATURE": "0.2", "L3S_LLM_REASONING_EFFORT": "low"},
+        environ={"RA_LLM_TEMPERATURE": "0.2", "RA_LLM_REASONING_EFFORT": "low"},
     )
     assert config.llm.temperature == 0.2
     assert config.llm.reasoning_effort == "low"

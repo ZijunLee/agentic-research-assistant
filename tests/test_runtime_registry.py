@@ -1,14 +1,14 @@
 import pytest
 
-from l3s_agent.models import CorpusScope, Evidence, EvidenceModality
-from l3s_agent.runtime.models import (
+from research_agent.models import CorpusScope, Evidence, EvidenceModality
+from research_agent.runtime.models import (
     AgentAction,
     AgentActionType,
     InspectPageArguments,
     ResearchState,
 )
-from l3s_agent.runtime.registry import ToolDispatchError, ToolRegistry
-from l3s_agent.tracing import ExecutionTrace
+from research_agent.runtime.registry import ToolDispatchError, ToolRegistry
+from research_agent.tracing import ExecutionTrace
 
 
 class PageTool:

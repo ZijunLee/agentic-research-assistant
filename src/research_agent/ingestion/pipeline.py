@@ -419,7 +419,7 @@ def ingest_base_corpus(
             encoding="utf-8",
         )
         try:
-            package_version = metadata.version("l3s-scientific-agent")
+            package_version = metadata.version("agentic-research-assistant")
         except metadata.PackageNotFoundError:
             package_version = "unknown"
         artifact = IngestionArtifact(

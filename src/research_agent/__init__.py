@@ -1,4 +1,4 @@
-"""Public contracts for the L3S scientific research assistant."""
+"""Public contracts for the agentic research assistant."""
 
 from .config import AppConfig, load_config
 from .models import (

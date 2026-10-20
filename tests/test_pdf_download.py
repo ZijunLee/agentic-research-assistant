@@ -4,8 +4,8 @@ import json
 
 import httpx
 
-from l3s_agent.literature.download import PDFDownloader
-from l3s_agent.literature.models import DownloadStatus
+from research_agent.literature.download import PDFDownloader
+from research_agent.literature.models import DownloadStatus
 
 
 def usable_pdf() -> bytes:

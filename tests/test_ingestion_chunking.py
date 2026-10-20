@@ -1,6 +1,6 @@
 import pytest
 
-from l3s_agent.ingestion.chunking import (
+from research_agent.ingestion.chunking import (
     ChunkDraft,
     approximate_token_count,
     chunk_page,

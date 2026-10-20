@@ -2,7 +2,7 @@ from dataclasses import fields
 
 import pytest
 
-from l3s_agent.models import (
+from research_agent.models import (
     AnalysisResult,
     Claim,
     CorpusScope,
@@ -14,8 +14,8 @@ from l3s_agent.models import (
     VerifierInput,
     VerifierStatus,
 )
-from l3s_agent.runtime.verifier import EvidenceVerifier
-from l3s_agent.tracing import ExecutionTrace
+from research_agent.runtime.verifier import EvidenceVerifier
+from research_agent.tracing import ExecutionTrace
 
 
 ANALYSIS_ID = "analysis:test_analysis:" + "0" * 64

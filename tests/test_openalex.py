@@ -7,7 +7,7 @@ from urllib.parse import parse_qs
 import httpx
 import pytest
 
-from l3s_agent.literature.openalex import OpenAlexClient, OpenAlexError, parse_work
+from research_agent.literature.openalex import OpenAlexClient, OpenAlexError, parse_work
 
 
 FIXTURE = Path(__file__).parent / "fixtures" / "openalex_works.json"

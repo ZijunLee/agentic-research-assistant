@@ -6,8 +6,8 @@ import re
 import pymupdf
 import pytest
 
-from l3s_agent.config import load_config
-from l3s_agent.ingestion.pipeline import IngestionError, ingest_base_corpus
+from research_agent.config import load_config
+from research_agent.ingestion.pipeline import IngestionError, ingest_base_corpus
 
 
 def file_sha256(path: Path) -> str:

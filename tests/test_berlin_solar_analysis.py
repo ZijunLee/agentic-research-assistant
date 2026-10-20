@@ -8,8 +8,8 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-import l3s_agent.analysis.berlin_solar as berlin_module
-from l3s_agent.analysis.berlin_solar import (
+import research_agent.analysis.berlin_solar as berlin_module
+from research_agent.analysis.berlin_solar import (
     ANALYSIS_NAME,
     EXCLUDED_COLUMNS,
     FEATURE_GROUPS,
@@ -23,7 +23,7 @@ from l3s_agent.analysis.berlin_solar import (
     run_berlin_weather_solar_analysis,
     split_dataset,
 )
-from l3s_agent.config import MLDatasetConfig
+from research_agent.config import MLDatasetConfig
 
 
 FIXTURE = Path(__file__).parent / "fixtures" / "ml" / "berlin_small.csv"

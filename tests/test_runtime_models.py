@@ -3,15 +3,15 @@ import json
 
 import pytest
 
-from l3s_agent.runtime.models import (
+from research_agent.runtime.models import (
     AgentAction,
     AgentActionType,
     DraftAnswerArguments,
     RetrieveEvidenceArguments,
     StopArguments,
 )
-from l3s_agent.models import to_primitive
-from l3s_agent.tracing import AgentActionOutcome, AgentActionTrace, ExecutionTrace
+from research_agent.models import to_primitive
+from research_agent.tracing import AgentActionOutcome, AgentActionTrace, ExecutionTrace
 
 
 def test_agent_action_requires_matching_typed_arguments() -> None:

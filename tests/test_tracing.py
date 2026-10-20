@@ -1,6 +1,6 @@
 import pytest
 
-from l3s_agent.models import (
+from research_agent.models import (
     Claim,
     Evidence,
     EvidenceModality,
@@ -10,7 +10,7 @@ from l3s_agent.models import (
     VerifierInput,
     VerifierStatus,
 )
-from l3s_agent.tracing import ExecutionTrace, FailureCode, FailureDetail, ToolCall, ToolResult
+from research_agent.tracing import ExecutionTrace, FailureCode, FailureDetail, ToolCall, ToolResult
 
 
 def make_trace() -> ExecutionTrace:

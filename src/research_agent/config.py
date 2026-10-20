@@ -285,34 +285,34 @@ def load_config(
     literature_ranking = literature["ranking"]
     ml_dataset = raw["ml_dataset"]
 
-    approved = _as_bool(_env_value(env, "L3S_ML_DATASET_APPROVED", ml_dataset["approved"]))
-    adapter = _optional(_env_value(env, "L3S_ML_DATASET_ADAPTER", ml_dataset["adapter"]))
-    dataset_path = _optional(_env_value(env, "L3S_ML_DATASET_PATH", ml_dataset["path"]))
+    approved = _as_bool(_env_value(env, "RA_ML_DATASET_APPROVED", ml_dataset["approved"]))
+    adapter = _optional(_env_value(env, "RA_ML_DATASET_ADAPTER", ml_dataset["adapter"]))
+    dataset_path = _optional(_env_value(env, "RA_ML_DATASET_PATH", ml_dataset["path"]))
 
     return AppConfig(
         llm=LLMConfig(
-            provider=_optional(_env_value(env, "L3S_LLM_PROVIDER", llm["provider"])),
-            text_model=_optional(_env_value(env, "L3S_LLM_TEXT_MODEL", llm["text_model"])),
-            verifier_model=_optional(_env_value(env, "L3S_LLM_VERIFIER_MODEL", llm["verifier_model"])),
+            provider=_optional(_env_value(env, "RA_LLM_PROVIDER", llm["provider"])),
+            text_model=_optional(_env_value(env, "RA_LLM_TEXT_MODEL", llm["text_model"])),
+            verifier_model=_optional(_env_value(env, "RA_LLM_VERIFIER_MODEL", llm["verifier_model"])),
             multimodal_model=_optional(
-                _env_value(env, "L3S_LLM_MULTIMODAL_MODEL", llm["multimodal_model"])
+                _env_value(env, "RA_LLM_MULTIMODAL_MODEL", llm["multimodal_model"])
             ),
             api_key_env=str(llm["api_key_env"]),
             timeout_seconds=float(
-                _env_value(env, "L3S_LLM_TIMEOUT_SECONDS", llm["timeout_seconds"])
+                _env_value(env, "RA_LLM_TIMEOUT_SECONDS", llm["timeout_seconds"])
             ),
-            max_retries=int(_env_value(env, "L3S_LLM_MAX_RETRIES", llm["max_retries"])),
+            max_retries=int(_env_value(env, "RA_LLM_MAX_RETRIES", llm["max_retries"])),
             max_context_characters=int(
                 _env_value(
                     env,
-                    "L3S_LLM_MAX_CONTEXT_CHARACTERS",
+                    "RA_LLM_MAX_CONTEXT_CHARACTERS",
                     llm["max_context_characters"],
                 )
             ),
             action_evidence_preview_characters=int(
                 _env_value(
                     env,
-                    "L3S_LLM_ACTION_EVIDENCE_PREVIEW_CHARACTERS",
+                    "RA_LLM_ACTION_EVIDENCE_PREVIEW_CHARACTERS",
                     llm["action_evidence_preview_characters"],
                 )
             ),
@@ -320,28 +320,28 @@ def load_config(
                 float(value)
                 if (
                     value := _optional(
-                        _env_value(env, "L3S_LLM_TEMPERATURE", llm["temperature"])
+                        _env_value(env, "RA_LLM_TEMPERATURE", llm["temperature"])
                     )
                 )
                 is not None
                 else None
             ),
             reasoning_effort=_optional(
-                _env_value(env, "L3S_LLM_REASONING_EFFORT", llm["reasoning_effort"])
+                _env_value(env, "RA_LLM_REASONING_EFFORT", llm["reasoning_effort"])
             ),
         ),
         embedding=EmbeddingConfig(
-            model=_optional(_env_value(env, "L3S_EMBEDDING_MODEL", embedding["model"])),
+            model=_optional(_env_value(env, "RA_EMBEDDING_MODEL", embedding["model"])),
             revision=_optional(
-                _env_value(env, "L3S_EMBEDDING_REVISION", embedding["revision"])
+                _env_value(env, "RA_EMBEDDING_REVISION", embedding["revision"])
             ),
             local_only=_as_bool(
-                _env_value(env, "L3S_EMBEDDING_LOCAL_ONLY", embedding["local_only"])
+                _env_value(env, "RA_EMBEDDING_LOCAL_ONLY", embedding["local_only"])
             ),
             trust_remote_code=_as_bool(
                 _env_value(
                     env,
-                    "L3S_EMBEDDING_TRUST_REMOTE_CODE",
+                    "RA_EMBEDDING_TRUST_REMOTE_CODE",
                     embedding["trust_remote_code"],
                 )
             ),

@@ -29,7 +29,7 @@ class PDFDownloader:
         self._client = client or httpx.Client(
             timeout=timeout_seconds,
             follow_redirects=True,
-            headers={"User-Agent": "l3s-scientific-agent/0.1"},
+            headers={"User-Agent": "agentic-research-assistant/0.1"},
         )
         self._owns_client = client is None
 

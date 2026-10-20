@@ -9,8 +9,8 @@ import traceback
 import pytest
 from openai.lib._pydantic import to_strict_json_schema
 
-from l3s_agent.config import load_config
-from l3s_agent.models import (
+from research_agent.config import load_config
+from research_agent.models import (
     Claim,
     CorpusScope,
     Evidence,
@@ -20,7 +20,7 @@ from l3s_agent.models import (
     VerifierInput,
     VerifierStatus,
 )
-from l3s_agent.providers.openai import (
+from research_agent.providers.openai import (
     OpenAIProviderError,
     OpenAIResponsesProvider,
     _AgentActionWire,
@@ -28,7 +28,7 @@ from l3s_agent.providers.openai import (
     _ResearchDraftWire,
     _VerificationResultWire,
 )
-from l3s_agent.runtime.models import (
+from research_agent.runtime.models import (
     AgentAction,
     AgentActionType,
     DraftAnswerArguments,

@@ -75,7 +75,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             corpus_id=corpus_id,
             generator={
                 "package_version": "0.1.0",
-                "command": "python -m l3s_agent.literature.cli",
+                "command": "python -m research_agent.literature.cli",
                 **_git_metadata(),
             },
         )

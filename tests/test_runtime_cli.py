@@ -3,9 +3,9 @@ from __future__ import annotations
 import builtins
 from types import SimpleNamespace
 
-from l3s_agent.models import AnalysisResult, Claim, ResearchDraft
-from l3s_agent.runtime.cli import _result_payload, _stdout_safe_event_sink, build_parser
-from l3s_agent.tracing import ExecutionTrace, ToolCall, ToolResult
+from research_agent.models import AnalysisResult, Claim, ResearchDraft
+from research_agent.runtime.cli import _result_payload, _stdout_safe_event_sink, build_parser
+from research_agent.tracing import ExecutionTrace, ToolCall, ToolResult
 
 
 ANALYSIS_ID = "analysis:test_analysis:" + "0" * 64

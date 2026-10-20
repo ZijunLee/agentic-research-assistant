@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "l3s-scientific-agent"
+name = "agentic-research-assistant"
 version = "0.1.0"
 description = "Evidence-grounded research assistant for weather and renewable-energy science"
 requires-python = ">=3.11"

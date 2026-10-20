@@ -3,8 +3,8 @@ from dataclasses import replace
 import json
 from pathlib import Path
 
-from l3s_agent.config import load_config
-from l3s_agent.literature.discovery import (
+from research_agent.config import load_config
+from research_agent.literature.discovery import (
     deduplicate_candidates,
     domain_signals,
     exclusion_reasons,
@@ -13,7 +13,7 @@ from l3s_agent.literature.discovery import (
     rank_eligible_candidates,
     score_candidate,
 )
-from l3s_agent.literature.models import LiteratureCandidate, OpenAccessInfo, QueryMatch
+from research_agent.literature.models import LiteratureCandidate, OpenAccessInfo, QueryMatch
 
 
 def test_query_normalization_is_ordered_and_deterministic() -> None:

@@ -3,14 +3,14 @@ import json
 import pytest
 
 from conftest import make_retrieval_evidence
-from l3s_agent.retrieval.evaluation import (
+from research_agent.retrieval.evaluation import (
     GoldQuery,
     evaluate_modes,
     evaluate_query,
     load_gold,
     summarize,
 )
-from l3s_agent.retrieval.models import RetrievalMode, RetrievalResult
+from research_agent.retrieval.models import RetrievalMode, RetrievalResult
 
 
 class FixedEngine:

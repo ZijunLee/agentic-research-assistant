@@ -6,10 +6,10 @@ from pathlib import Path
 
 import pytest
 
-from l3s_agent.config import load_config
-from l3s_agent.literature.builder import CorpusBuilder
-from l3s_agent.literature.manifest import manifest_to_dict, write_manifest
-from l3s_agent.literature.models import (
+from research_agent.config import load_config
+from research_agent.literature.builder import CorpusBuilder
+from research_agent.literature.manifest import manifest_to_dict, write_manifest
+from research_agent.literature.models import (
     DownloadRecord,
     DownloadStatus,
     LiteratureCandidate,

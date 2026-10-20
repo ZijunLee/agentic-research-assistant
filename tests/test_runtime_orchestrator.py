@@ -8,8 +8,8 @@ from pathlib import Path
 
 import pytest
 
-from l3s_agent.config import load_config
-from l3s_agent.models import (
+from research_agent.config import load_config
+from research_agent.models import (
     AnalysisResult,
     Claim,
     CorpusScope,
@@ -22,7 +22,7 @@ from l3s_agent.models import (
     VerifierStatus,
     to_primitive,
 )
-from l3s_agent.runtime.models import (
+from research_agent.runtime.models import (
     AgentAction,
     AgentActionType,
     DraftAnswerArguments,
@@ -34,14 +34,14 @@ from l3s_agent.runtime.models import (
     StopArguments,
     TerminalStatus,
 )
-from l3s_agent.runtime.orchestrator import ResearchOrchestrator
-from l3s_agent.runtime.registry import ToolRegistry
-from l3s_agent.runtime.verifier import EvidenceVerifier
-from l3s_agent.retrieval.engine import BaseEvidenceRetrievalTool, RetrievalEngine
-from l3s_agent.retrieval.index import build_retrieval_index
-from l3s_agent.retrieval.models import RetrievalMode
-from l3s_agent.tracing import AgentActionOutcome, ExecutionTrace, FailureCode
-from l3s_agent.runtime.registry import ToolDispatchError
+from research_agent.runtime.orchestrator import ResearchOrchestrator
+from research_agent.runtime.registry import ToolRegistry
+from research_agent.runtime.verifier import EvidenceVerifier
+from research_agent.retrieval.engine import BaseEvidenceRetrievalTool, RetrievalEngine
+from research_agent.retrieval.index import build_retrieval_index
+from research_agent.retrieval.models import RetrievalMode
+from research_agent.tracing import AgentActionOutcome, ExecutionTrace, FailureCode
+from research_agent.runtime.registry import ToolDispatchError
 
 from conftest import FakeEmbeddingProvider, make_retrieval_evidence
 

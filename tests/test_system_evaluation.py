@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from l3s_agent.models import (
+from research_agent.models import (
     AnalysisResult,
     Claim,
     CorpusScope,
@@ -18,8 +18,8 @@ from l3s_agent.models import (
     VerificationResult,
     VerifierStatus,
 )
-from l3s_agent.runtime.models import ResearchOutcome, ResearchState, TerminalStatus
-from l3s_agent.system_evaluation import (
+from research_agent.runtime.models import ResearchOutcome, ResearchState, TerminalStatus
+from research_agent.system_evaluation import (
     DEFAULT_CASE_FILE,
     ExecutionClass,
     HumanReliabilityLabel,
@@ -37,7 +37,7 @@ from l3s_agent.system_evaluation import (
     validate_outcome_provenance,
     write_result,
 )
-from l3s_agent.tracing import (
+from research_agent.tracing import (
     AgentActionOutcome,
     AgentActionTrace,
     ExecutionTrace,
@@ -148,8 +148,8 @@ def test_explicit_live_selection_rejects_missing_and_non_live_ids() -> None:
 def test_live_harness_calls_keyword_only_runtime_api(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    import l3s_agent.config as config_module
-    import l3s_agent.runtime.factory as factory_module
+    import research_agent.config as config_module
+    import research_agent.runtime.factory as factory_module
 
     captured: dict[str, str] = {}
 
@@ -436,7 +436,7 @@ def test_safe_projection_flags_missing_and_invented_support() -> None:
 def test_result_writer_is_cache_only_and_refuses_overwrite(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    import l3s_agent.system_evaluation as module
+    import research_agent.system_evaluation as module
 
     cache_root = tmp_path / "data" / "cache" / "system_evaluation"
     monkeypatch.setattr(module, "OUTPUT_ROOT", cache_root)

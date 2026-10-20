@@ -15,8 +15,8 @@ from pathlib import Path
 from time import perf_counter
 from typing import Any, Iterable, Mapping, Sequence
 
-from l3s_agent.models import AnalysisResult, CorpusScope, Evidence
-from l3s_agent.retrieval.models import RetrievalMode
+from research_agent.models import AnalysisResult, CorpusScope, Evidence
+from research_agent.retrieval.models import RetrievalMode
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CASE_FILE = PROJECT_ROOT / "evaluation" / "system_cases.json"
@@ -812,8 +812,8 @@ def run_live_case(case: SystemCase) -> dict[str, Any]:
 
     if case.execution_class is not ExecutionClass.NEW_LIVE:
         raise ValueError("run_live_case requires a new_live case")
-    from l3s_agent.config import load_config
-    from l3s_agent.runtime.factory import build_production_runtime
+    from research_agent.config import load_config
+    from research_agent.runtime.factory import build_production_runtime
 
     safe_events: list[dict[str, Any]] = []
 

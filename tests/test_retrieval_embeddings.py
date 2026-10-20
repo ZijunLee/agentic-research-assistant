@@ -4,11 +4,11 @@ import types
 import numpy as np
 import pytest
 
-from l3s_agent.retrieval.embeddings import (
+from research_agent.retrieval.embeddings import (
     SentenceTransformersEmbeddingProvider,
     normalize_rows,
 )
-from l3s_agent.retrieval.models import RetrievalError
+from research_agent.retrieval.models import RetrievalError
 
 
 class FakeSentenceTransformer:
