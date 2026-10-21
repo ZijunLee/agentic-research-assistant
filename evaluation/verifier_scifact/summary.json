@@ -1,0 +1,506 @@
+{
+  "gpt-4.1-2025-04-14": {
+    "distractor": {
+      "n": 339,
+      "accuracy": 0.7817109144542773,
+      "kappa": 0.5087533779814358,
+      "pass_rate": 0.20058997050147492,
+      "pass_precision": 0.9705882352941176,
+      "pass_rate_SUPPORT": 0.4782608695652174,
+      "pass_rate_CONTRADICT": 0.014084507042253521,
+      "pass_rate_NEI": 0.007692307692307693,
+      "false_pass_rate": 0.009950248756218905,
+      "errors": 0,
+      "kappa_ci95": [
+        0.42301391068194044,
+        0.5923590514470322
+      ],
+      "false_pass_rate_ci95": [
+        0.0,
+        0.02577319587628866
+      ],
+      "confusion": {
+        "SUPPORT": {
+          "PASS": 66,
+          "NEED_MORE_EVIDENCE": 43,
+          "UNSUPPORTED_CLAIM": 16,
+          "CONFLICTING_EVIDENCE": 13
+        },
+        "CONTRADICT": {
+          "PASS": 1,
+          "NEED_MORE_EVIDENCE": 14,
+          "UNSUPPORTED_CLAIM": 6,
+          "CONFLICTING_EVIDENCE": 50
+        },
+        "NEI": {
+          "PASS": 1,
+          "NEED_MORE_EVIDENCE": 95,
+          "UNSUPPORTED_CLAIM": 28,
+          "CONFLICTING_EVIDENCE": 6
+        }
+      },
+      "input_tokens": 474668,
+      "output_tokens": 58711,
+      "vs_original": {
+        "n_paired": 339,
+        "pass_flip_rate": 0.13864306784660768,
+        "delta_pass_rate_SUPPORT": -0.24637681159420288,
+        "delta_pass_rate_CONTRADICT": -0.014084507042253521,
+        "delta_pass_rate_NEI": -0.03076923076923077,
+        "false_pass_new": 0,
+        "false_pass_removed": 5,
+        "false_pass_mcnemar_p": 0.0625
+      }
+    },
+    "injection": {
+      "n": 339,
+      "accuracy": 0.8790560471976401,
+      "kappa": 0.7457050332070914,
+      "pass_rate": 0.3687315634218289,
+      "pass_precision": 0.888,
+      "pass_rate_SUPPORT": 0.8043478260869565,
+      "pass_rate_CONTRADICT": 0.07042253521126761,
+      "pass_rate_NEI": 0.06923076923076923,
+      "false_pass_rate": 0.06965174129353234,
+      "errors": 0,
+      "kappa_ci95": [
+        0.6629721101130895,
+        0.8135843456185515
+      ],
+      "false_pass_rate_ci95": [
+        0.036644442626527045,
+        0.1090268736003333
+      ],
+      "confusion": {
+        "SUPPORT": {
+          "PASS": 111,
+          "NEED_MORE_EVIDENCE": 20,
+          "UNSUPPORTED_CLAIM": 2,
+          "CONFLICTING_EVIDENCE": 5
+        },
+        "CONTRADICT": {
+          "PASS": 5,
+          "NEED_MORE_EVIDENCE": 9,
+          "UNSUPPORTED_CLAIM": 6,
+          "CONFLICTING_EVIDENCE": 51
+        },
+        "NEI": {
+          "PASS": 9,
+          "NEED_MORE_EVIDENCE": 97,
+          "UNSUPPORTED_CLAIM": 18,
+          "CONFLICTING_EVIDENCE": 6
+        }
+      },
+      "input_tokens": 356919,
+      "output_tokens": 48723,
+      "vs_original": {
+        "n_paired": 339,
+        "pass_flip_rate": 0.058997050147492625,
+        "delta_pass_rate_SUPPORT": 0.07971014492753625,
+        "delta_pass_rate_CONTRADICT": 0.04225352112676056,
+        "delta_pass_rate_NEI": 0.03076923076923077,
+        "false_pass_new": 7,
+        "false_pass_removed": 0,
+        "false_pass_mcnemar_p": 0.015625
+      }
+    },
+    "original": {
+      "n": 339,
+      "accuracy": 0.8672566371681416,
+      "kappa": 0.7149823440390113,
+      "pass_rate": 0.31563421828908556,
+      "pass_precision": 0.9345794392523364,
+      "pass_rate_SUPPORT": 0.7246376811594203,
+      "pass_rate_CONTRADICT": 0.028169014084507043,
+      "pass_rate_NEI": 0.038461538461538464,
+      "false_pass_rate": 0.03482587064676617,
+      "errors": 0,
+      "kappa_ci95": [
+        0.6414999194323532,
+        0.7857038718228494
+      ],
+      "false_pass_rate_ci95": [
+        0.010635498320268756,
+        0.06280256468624326
+      ],
+      "confusion": {
+        "SUPPORT": {
+          "PASS": 100,
+          "NEED_MORE_EVIDENCE": 29,
+          "UNSUPPORTED_CLAIM": 4,
+          "CONFLICTING_EVIDENCE": 5
+        },
+        "CONTRADICT": {
+          "PASS": 2,
+          "NEED_MORE_EVIDENCE": 7,
+          "UNSUPPORTED_CLAIM": 6,
+          "CONFLICTING_EVIDENCE": 56
+        },
+        "NEI": {
+          "PASS": 5,
+          "NEED_MORE_EVIDENCE": 89,
+          "UNSUPPORTED_CLAIM": 31,
+          "CONFLICTING_EVIDENCE": 5
+        }
+      },
+      "input_tokens": 349134,
+      "output_tokens": 50310
+    },
+    "overconfident": {
+      "n": 339,
+      "accuracy": 0.6017699115044248,
+      "kappa": 0.02567541674650309,
+      "pass_rate": 0.008849557522123894,
+      "pass_precision": 1.0,
+      "pass_rate_SUPPORT": 0.021739130434782608,
+      "pass_rate_CONTRADICT": 0.0,
+      "pass_rate_NEI": 0.0,
+      "false_pass_rate": 0.0,
+      "errors": 0,
+      "kappa_ci95": [
+        0.0,
+        0.05924241785626806
+      ],
+      "false_pass_rate_ci95": [
+        0.0,
+        0.0
+      ],
+      "confusion": {
+        "SUPPORT": {
+          "PASS": 3,
+          "NEED_MORE_EVIDENCE": 82,
+          "UNSUPPORTED_CLAIM": 32,
+          "CONFLICTING_EVIDENCE": 21
+        },
+        "CONTRADICT": {
+          "PASS": 0,
+          "NEED_MORE_EVIDENCE": 6,
+          "UNSUPPORTED_CLAIM": 13,
+          "CONFLICTING_EVIDENCE": 52
+        },
+        "NEI": {
+          "PASS": 0,
+          "NEED_MORE_EVIDENCE": 71,
+          "UNSUPPORTED_CLAIM": 53,
+          "CONFLICTING_EVIDENCE": 6
+        }
+      },
+      "input_tokens": 353697,
+      "output_tokens": 60898,
+      "vs_original": {
+        "n_paired": 339,
+        "pass_flip_rate": 0.30678466076696165,
+        "delta_pass_rate_SUPPORT": -0.7028985507246377,
+        "delta_pass_rate_CONTRADICT": -0.028169014084507043,
+        "delta_pass_rate_NEI": -0.038461538461538464,
+        "false_pass_new": 0,
+        "false_pass_removed": 7,
+        "false_pass_mcnemar_p": 0.015625
+      }
+    },
+    "shuffled": {
+      "n": 339,
+      "accuracy": 0.8761061946902655,
+      "kappa": 0.7336700336700337,
+      "pass_rate": 0.31268436578171094,
+      "pass_precision": 0.9528301886792453,
+      "pass_rate_SUPPORT": 0.7318840579710145,
+      "pass_rate_CONTRADICT": 0.014084507042253521,
+      "pass_rate_NEI": 0.03076923076923077,
+      "false_pass_rate": 0.024875621890547265,
+      "errors": 0,
+      "kappa_ci95": [
+        0.659984641425178,
+        0.8018951799238164
+      ],
+      "false_pass_rate_ci95": [
+        0.00507486671938372,
+        0.049511107827200626
+      ],
+      "confusion": {
+        "SUPPORT": {
+          "PASS": 101,
+          "NEED_MORE_EVIDENCE": 27,
+          "UNSUPPORTED_CLAIM": 2,
+          "CONFLICTING_EVIDENCE": 8
+        },
+        "CONTRADICT": {
+          "PASS": 1,
+          "NEED_MORE_EVIDENCE": 11,
+          "UNSUPPORTED_CLAIM": 7,
+          "CONFLICTING_EVIDENCE": 52
+        },
+        "NEI": {
+          "PASS": 4,
+          "NEED_MORE_EVIDENCE": 98,
+          "UNSUPPORTED_CLAIM": 23,
+          "CONFLICTING_EVIDENCE": 5
+        }
+      },
+      "input_tokens": 349178,
+      "output_tokens": 51443,
+      "vs_original": {
+        "n_paired": 339,
+        "pass_flip_rate": 0.05604719764011799,
+        "delta_pass_rate_SUPPORT": 0.007246376811594235,
+        "delta_pass_rate_CONTRADICT": -0.014084507042253521,
+        "delta_pass_rate_NEI": -0.007692307692307693,
+        "false_pass_new": 1,
+        "false_pass_removed": 3,
+        "false_pass_mcnemar_p": 0.625
+      }
+    }
+  },
+  "gpt-4.1-mini-2025-04-14": {
+    "distractor": {
+      "n": 338,
+      "accuracy": 0.7485207100591716,
+      "kappa": 0.4357151274698512,
+      "pass_rate": 0.21301775147928995,
+      "pass_precision": 0.8611111111111112,
+      "pass_rate_SUPPORT": 0.45255474452554745,
+      "pass_rate_CONTRADICT": 0.04225352112676056,
+      "pass_rate_NEI": 0.05384615384615385,
+      "false_pass_rate": 0.04975124378109453,
+      "errors": 1,
+      "kappa_ci95": [
+        0.3413496273091147,
+        0.5246475379020142
+      ],
+      "false_pass_rate_ci95": [
+        0.023351150087483463,
+        0.08214428697253581
+      ],
+      "confusion": {
+        "SUPPORT": {
+          "PASS": 62,
+          "NEED_MORE_EVIDENCE": 46,
+          "UNSUPPORTED_CLAIM": 27,
+          "CONFLICTING_EVIDENCE": 2
+        },
+        "CONTRADICT": {
+          "PASS": 3,
+          "NEED_MORE_EVIDENCE": 6,
+          "UNSUPPORTED_CLAIM": 61,
+          "CONFLICTING_EVIDENCE": 1
+        },
+        "NEI": {
+          "PASS": 7,
+          "NEED_MORE_EVIDENCE": 33,
+          "UNSUPPORTED_CLAIM": 90,
+          "CONFLICTING_EVIDENCE": 0
+        }
+      },
+      "input_tokens": 473439,
+      "output_tokens": 49601,
+      "vs_original": {
+        "n_paired": 338,
+        "pass_flip_rate": 0.1863905325443787,
+        "delta_pass_rate_SUPPORT": -0.3868613138686131,
+        "delta_pass_rate_CONTRADICT": -0.014084507042253523,
+        "delta_pass_rate_NEI": -0.023076923076923078,
+        "false_pass_new": 2,
+        "false_pass_removed": 6,
+        "false_pass_mcnemar_p": 0.2890625
+      }
+    },
+    "injection": {
+      "n": 339,
+      "accuracy": 0.8436578171091446,
+      "kappa": 0.6871441257901061,
+      "pass_rate": 0.49852507374631266,
+      "pass_precision": 0.7514792899408284,
+      "pass_rate_SUPPORT": 0.9202898550724637,
+      "pass_rate_CONTRADICT": 0.19718309859154928,
+      "pass_rate_NEI": 0.2153846153846154,
+      "false_pass_rate": 0.208955223880597,
+      "errors": 0,
+      "kappa_ci95": [
+        0.6147804558405632,
+        0.7611849428402304
+      ],
+      "false_pass_rate_ci95": [
+        0.15491205942120384,
+        0.26565104166666664
+      ],
+      "confusion": {
+        "SUPPORT": {
+          "PASS": 127,
+          "NEED_MORE_EVIDENCE": 3,
+          "UNSUPPORTED_CLAIM": 8,
+          "CONFLICTING_EVIDENCE": 0
+        },
+        "CONTRADICT": {
+          "PASS": 14,
+          "NEED_MORE_EVIDENCE": 4,
+          "UNSUPPORTED_CLAIM": 48,
+          "CONFLICTING_EVIDENCE": 5
+        },
+        "NEI": {
+          "PASS": 28,
+          "NEED_MORE_EVIDENCE": 39,
+          "UNSUPPORTED_CLAIM": 62,
+          "CONFLICTING_EVIDENCE": 1
+        }
+      },
+      "input_tokens": 356919,
+      "output_tokens": 38157,
+      "vs_original": {
+        "n_paired": 339,
+        "pass_flip_rate": 0.12094395280235988,
+        "delta_pass_rate_SUPPORT": 0.07971014492753625,
+        "delta_pass_rate_CONTRADICT": 0.1408450704225352,
+        "delta_pass_rate_NEI": 0.13846153846153847,
+        "false_pass_new": 28,
+        "false_pass_removed": 0,
+        "false_pass_mcnemar_p": 7.450580596923828e-09
+      }
+    },
+    "original": {
+      "n": 339,
+      "accuracy": 0.8938053097345132,
+      "kappa": 0.7779960707269155,
+      "pass_rate": 0.3834808259587021,
+      "pass_precision": 0.8923076923076924,
+      "pass_rate_SUPPORT": 0.8405797101449275,
+      "pass_rate_CONTRADICT": 0.056338028169014086,
+      "pass_rate_NEI": 0.07692307692307693,
+      "false_pass_rate": 0.06965174129353234,
+      "errors": 0,
+      "kappa_ci95": [
+        0.7072815317015436,
+        0.8352346817250412
+      ],
+      "false_pass_rate_ci95": [
+        0.03571428571428571,
+        0.1077027027027027
+      ],
+      "confusion": {
+        "SUPPORT": {
+          "PASS": 116,
+          "NEED_MORE_EVIDENCE": 15,
+          "UNSUPPORTED_CLAIM": 7,
+          "CONFLICTING_EVIDENCE": 0
+        },
+        "CONTRADICT": {
+          "PASS": 4,
+          "NEED_MORE_EVIDENCE": 7,
+          "UNSUPPORTED_CLAIM": 51,
+          "CONFLICTING_EVIDENCE": 9
+        },
+        "NEI": {
+          "PASS": 10,
+          "NEED_MORE_EVIDENCE": 56,
+          "UNSUPPORTED_CLAIM": 64,
+          "CONFLICTING_EVIDENCE": 0
+        }
+      },
+      "input_tokens": 349134,
+      "output_tokens": 40588
+    },
+    "overconfident": {
+      "n": 339,
+      "accuracy": 0.8082595870206489,
+      "kappa": 0.5763396204649015,
+      "pass_rate": 0.2448377581120944,
+      "pass_precision": 0.9397590361445783,
+      "pass_rate_SUPPORT": 0.5652173913043478,
+      "pass_rate_CONTRADICT": 0.028169014084507043,
+      "pass_rate_NEI": 0.023076923076923078,
+      "false_pass_rate": 0.024875621890547265,
+      "errors": 0,
+      "kappa_ci95": [
+        0.4762558080146239,
+        0.6707407975558044
+      ],
+      "false_pass_rate_ci95": [
+        0.004998762376237624,
+        0.048549609282500586
+      ],
+      "confusion": {
+        "SUPPORT": {
+          "PASS": 78,
+          "NEED_MORE_EVIDENCE": 47,
+          "UNSUPPORTED_CLAIM": 13,
+          "CONFLICTING_EVIDENCE": 0
+        },
+        "CONTRADICT": {
+          "PASS": 2,
+          "NEED_MORE_EVIDENCE": 7,
+          "UNSUPPORTED_CLAIM": 58,
+          "CONFLICTING_EVIDENCE": 4
+        },
+        "NEI": {
+          "PASS": 3,
+          "NEED_MORE_EVIDENCE": 37,
+          "UNSUPPORTED_CLAIM": 90,
+          "CONFLICTING_EVIDENCE": 0
+        }
+      },
+      "input_tokens": 353697,
+      "output_tokens": 44770,
+      "vs_original": {
+        "n_paired": 339,
+        "pass_flip_rate": 0.13864306784660768,
+        "delta_pass_rate_SUPPORT": -0.2753623188405797,
+        "delta_pass_rate_CONTRADICT": -0.028169014084507043,
+        "delta_pass_rate_NEI": -0.05384615384615385,
+        "false_pass_new": 0,
+        "false_pass_removed": 9,
+        "false_pass_mcnemar_p": 0.00390625
+      }
+    },
+    "shuffled": {
+      "n": 339,
+      "accuracy": 0.8731563421828908,
+      "kappa": 0.7345243949079385,
+      "pass_rate": 0.3805309734513274,
+      "pass_precision": 0.8682170542635659,
+      "pass_rate_SUPPORT": 0.8115942028985508,
+      "pass_rate_CONTRADICT": 0.07042253521126761,
+      "pass_rate_NEI": 0.09230769230769231,
+      "false_pass_rate": 0.0845771144278607,
+      "errors": 0,
+      "kappa_ci95": [
+        0.6585244393064658,
+        0.806266578509713
+      ],
+      "false_pass_rate_ci95": [
+        0.04998626373626374,
+        0.1238669285808349
+      ],
+      "confusion": {
+        "SUPPORT": {
+          "PASS": 112,
+          "NEED_MORE_EVIDENCE": 20,
+          "UNSUPPORTED_CLAIM": 6,
+          "CONFLICTING_EVIDENCE": 0
+        },
+        "CONTRADICT": {
+          "PASS": 5,
+          "NEED_MORE_EVIDENCE": 9,
+          "UNSUPPORTED_CLAIM": 47,
+          "CONFLICTING_EVIDENCE": 10
+        },
+        "NEI": {
+          "PASS": 12,
+          "NEED_MORE_EVIDENCE": 50,
+          "UNSUPPORTED_CLAIM": 68,
+          "CONFLICTING_EVIDENCE": 0
+        }
+      },
+      "input_tokens": 349178,
+      "output_tokens": 40522,
+      "vs_original": {
+        "n_paired": 339,
+        "pass_flip_rate": 0.04424778761061947,
+        "delta_pass_rate_SUPPORT": -0.02898550724637672,
+        "delta_pass_rate_CONTRADICT": 0.014084507042253523,
+        "delta_pass_rate_NEI": 0.015384615384615385,
+        "false_pass_new": 5,
+        "false_pass_removed": 2,
+        "false_pass_mcnemar_p": 0.453125
+      }
+    }
+  }
+}

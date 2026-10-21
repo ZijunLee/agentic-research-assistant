@@ -11,3 +11,4 @@ data/session_evidence/
 data/ml/
 data/manifests/base_corpus_candidate*.json
 results/
+data/external/
